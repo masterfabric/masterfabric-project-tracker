@@ -1,0 +1,33 @@
+# Cursor session debug NDJSON (do not commit)
+.cursor/debug-*.log
+
+node_modules/
+sdk/
+.cli-pids.json
+# Ignore most of deployments/; keep compose, Dockerfile, and pgadmin dev assets tracked
+mf-go/deployments/*
+!mf-go/deployments/docker-compose.yml
+!mf-go/deployments/Dockerfile
+!mf-go/deployments/pgadmin/
+!mf-go/deployments/pgadmin/**
+.DS_Store
+
+# Environment & secrets (never push)
+.env
+.env.*
+!.env.example
+local.env
+*.pem
+*.key
+*.p12
+*.p8
+*.jks
+*.mobileprovision
+
+# Local build artifacts
+mf-go-image.tar
+mf-go/server
+mf-go/.build-*/
+
+# Local dev process logs (not for version control)
+.dev-logs/

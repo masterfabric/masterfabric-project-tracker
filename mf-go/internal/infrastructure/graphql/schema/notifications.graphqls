@@ -1,0 +1,75 @@
+# notifications.graphqls — Notification queries and mutations
+
+extend type Query {
+  """List notifications with read status for the authenticated user (or all if unauthenticated)."""
+  notifications(language: String, limit: Int): [NotificationPayload!]!
+}
+
+extend type Mutation {
+  """Mark a notification as read (requires auth)."""
+  markNotificationRead(id: UUID!): Boolean!
+
+  """Mark all notifications as read (requires auth)."""
+  markAllNotificationsRead: Boolean!
+
+  """[Admin] Create a broadcast notification for all users."""
+  adminCreateNotification(input: CreateNotificationInput!): NotificationPayload!
+
+  """[Admin] Delete all notifications. All users will see an empty list."""
+  adminClearAllNotifications: Boolean!
+
+  """[Admin] Delete a single notification by ID. All users will no longer see it."""
+  adminDeleteNotification(id: UUID!): Boolean!
+
+  """[Admin] Update an existing broadcast notification. Omitted fields keep previous values."""
+  adminUpdateNotification(id: UUID!, input: UpdateNotificationInput!): NotificationPayload!
+}
+
+# ── Inputs ──────────────────────────────────────────────────────────────────
+
+input CreateNotificationInput {
+  title:     String!
+  subtitle:  String
+  message:   String!
+  type:      String
+  category:  String
+  icon:      String
+  language:  String
+  actionUrl: String
+  imageUrl:  String
+  priority:  String
+  """When true, enqueue a push to all opted-in subscribers via OneSignal (REST on mf-go). Admin-only mutation."""
+  sendPush: Boolean
+}
+
+input UpdateNotificationInput {
+  title:     String
+  subtitle:  String
+  message:   String
+  type:      String
+  category:  String
+  icon:      String
+  language:  String
+  actionUrl: String
+  imageUrl:  String
+  priority:  String
+}
+
+# ── Response types ───────────────────────────────────────────────────────────
+
+type NotificationPayload {
+  id:        UUID!
+  title:     String!
+  subtitle:  String
+  message:   String!
+  type:      String!
+  category:  String!
+  icon:      String
+  language:  String
+  actionUrl: String
+  imageUrl:  String
+  priority:  String
+  isRead:    Boolean!
+  createdAt: Time!
+  updatedAt: Time!
+}

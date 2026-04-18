@@ -1,0 +1,72 @@
+# feedback.graphqls — In-app feedback threads; admin replies (GFG-24).
+
+extend type Query {
+  """Authenticated user: your feedback threads with message timeline (newest thread first)."""
+  myFeedbackThreads: [FeedbackThread!]!
+
+  """[Admin] Recent feedback threads with submitter info and full timelines."""
+  adminFeedbackThreads(limit: Int): [AdminFeedbackThread!]!
+}
+
+extend type Mutation {
+  """
+  Start a feedback thread with an initial message.
+  Signed-in users: thread is linked to the account (contactEmail ignored).
+  Guests: must provide contactEmail (reaches the same admin inbox).
+  """
+  submitFeedback(input: SubmitFeedbackInput!): FeedbackThread!
+
+  """[Admin] Post a reply on a user's feedback thread (timeline)."""
+  adminReplyToFeedback(input: AdminReplyToFeedbackInput!): FeedbackMessage!
+
+  """[Admin] Permanently delete a feedback thread and all its messages."""
+  adminDeleteFeedbackThread(threadID: UUID!): Boolean!
+}
+
+enum FeedbackAuthorRole {
+  USER
+  ADMIN
+}
+
+type FeedbackMessage {
+  id: UUID!
+  threadID: UUID!
+  authorRole: FeedbackAuthorRole!
+  body: String!
+  createdAt: Time!
+}
+
+type FeedbackThread {
+  id: UUID!
+  """Set when the submitter was signed in; null for guest-only threads."""
+  userID: UUID
+  """Guest email from submission, if any; empty for account-only threads."""
+  contactEmail: String!
+  subject: String!
+  status: String!
+  createdAt: Time!
+  updatedAt: Time!
+  messages: [FeedbackMessage!]!
+}
+
+type AdminFeedbackThread {
+  thread: FeedbackThread!
+  userEmail: String!
+  userDisplayName: String!
+}
+
+input SubmitFeedbackInput {
+  """Optional short title; defaults to \"Feedback\" when omitted or blank."""
+  subject: String
+  message: String!
+  """
+  Required when the request is not authenticated: an email the team can reply to.
+  Ignored when a valid access token is present.
+  """
+  contactEmail: String
+}
+
+input AdminReplyToFeedbackInput {
+  threadID: UUID!
+  message: String!
+}

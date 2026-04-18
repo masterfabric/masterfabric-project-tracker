@@ -1,0 +1,19 @@
+---
+description: Monorepo structure — mf-expo + mf-go
+alwaysApply: true
+---
+
+# MasterFabric Monorepo
+
+- **mf-expo**: React Native + Expo app (TypeScript)
+- **mf-go**: Go GraphQL backend (Auth, User, Settings, Admin)
+
+mf-expo talks to mf-go via GraphQL at `EXPO_PUBLIC_GRAPHQL_URL` in repo-root `local.env` (default `http://localhost:8080/graphql`).
+
+When editing GraphQL schema in mf-go, run `make generate-all` in mf-go. The generated SDKs in `mf-go/sdk/` are never edited by hand. After schema changes, update `mf-expo` GraphQL usage (`mf-go-api.ts` or `graphqlRequest`) as needed.
+
+mf-go Postman: `mf-go/postman/masterfabric.collection.json` + `masterfabric.environment.json` only — one collection file holds all requests; extend it in place (see `.cursor/rules/mf-go-ship-checklist.mdc`).
+
+mf-expo ship checklist: i18n (EN + TR), GraphQL usage in `mf-go-api.ts`, UX notes — `.cursor/rules/mf-expo-ship-checklist.mdc`.
+
+PR conventions (description, verify steps, cross-project): `.cursor/rules/pr-reviews.mdc`.

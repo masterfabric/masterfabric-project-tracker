@@ -1,0 +1,57 @@
+diff --git a/node_modules/expo-av/ios/EXAV/EXAV.m b/node_modules/expo-av/ios/EXAV/EXAV.m
+index 7153d28..533c3a1 100644
+--- a/node_modules/expo-av/ios/EXAV/EXAV.m
++++ b/node_modules/expo-av/ios/EXAV/EXAV.m
+@@ -15,6 +15,12 @@
+ #import <EXAV/EXVideoView.h>
+ #import <EXAV/EXAudioRecordingPermissionRequester.h>
+ #import <EXAV/EXAV+AudioSampleCallback.h>
++#import <ExpoModulesCore/EXDefines.h>
++#import <React/RCTUtils.h>
++
++#define EXErrorWithMessage RCTErrorWithMessage
++#define UMPromiseResolveBlock EXPromiseResolveBlock
++#define UMPromiseRejectBlock EXPromiseRejectBlock
+ #if __has_include(<EXAV/EXAV-Swift.h>)
+ #import <EXAV/EXAV-Swift.h>
+ #else
+diff --git a/node_modules/expo-av/ios/EXAV/EXAVPlayerData.m b/node_modules/expo-av/ios/EXAV/EXAVPlayerData.m
+index 6f6998d..acf4e53 100644
+--- a/node_modules/expo-av/ios/EXAV/EXAVPlayerData.m
++++ b/node_modules/expo-av/ios/EXAV/EXAVPlayerData.m
+@@ -2,6 +2,13 @@
+ 
+ #import <EXAV/EXAVPlayerData.h>
+ #import <MobileCoreServices/MobileCoreServices.h>
++#import <React/RCTLog.h>
++#import <React/RCTUtils.h>
++
++#define EXLogError RCTLogError
++#define EXLogInfo RCTLogInfo
++#define EXLogWarn RCTLogWarn
++#define EXErrorWithMessage RCTErrorWithMessage
+ 
+ // This struct is passed between the MTAudioProcessingTap callbacks.
+ typedef struct AVAudioTapProcessorContext {
+diff --git a/node_modules/expo-av/ios/EXAV/EXAudioRecordingPermissionRequester.m b/node_modules/expo-av/ios/EXAV/EXAudioRecordingPermissionRequester.m
+index 7d8375a..178846d 100644
+--- a/node_modules/expo-av/ios/EXAV/EXAudioRecordingPermissionRequester.m
++++ b/node_modules/expo-av/ios/EXAV/EXAudioRecordingPermissionRequester.m
+@@ -2,6 +2,8 @@
+ 
+ #import <EXAV/EXAudioRecordingPermissionRequester.h>
+ #import <ExpoModulesCore/EXDefines.h>
++#import <React/RCTAssert.h>
++#import <React/RCTUtils.h>
+ 
+ #import <AVFoundation/AVFoundation.h>
+ #import <objc/message.h>
+@@ -27,7 +29,7 @@ - (NSDictionary *)getPermissions
+ 
+   NSString *microphoneUsageDescription = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSMicrophoneUsageDescription"];
+   if (!microphoneUsageDescription) {
+-    EXFatal(EXErrorWithMessage(@"This app is missing NSMicrophoneUsageDescription, so audio services will fail. Add one of these keys to your bundle's Info.plist."));
++    RCTFatal(RCTErrorWithMessage(@"This app is missing NSMicrophoneUsageDescription, so audio services will fail. Add one of these keys to your bundle's Info.plist."));
+     systemStatus = AVAudioSessionRecordPermissionDenied;
+   } else {
+     systemStatus = [[AVAudioSession sharedInstance] recordPermission];

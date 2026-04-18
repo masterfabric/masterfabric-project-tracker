@@ -1,0 +1,41 @@
+# user_messages.graphqls — User-specific messages (snackbar on home). Real-time via subscription.
+
+extend type Query {
+  """List messages for the authenticated user (snackbar content)."""
+  myUserMessages(limit: Int): [UserMessagePayload!]!
+}
+
+extend type Mutation {
+  """Mark a user message as read."""
+  markUserMessageRead(id: UUID!): Boolean!
+
+  """[Admin] Send a message to a specific user (shown as snackbar)."""
+  adminCreateUserMessage(input: CreateUserMessageInput!): UserMessagePayload!
+
+  """[Admin] Delete a user message."""
+  adminDeleteUserMessage(id: UUID!): Boolean!
+}
+
+extend type Subscription {
+  """Real-time: new message for the authenticated user."""
+  userMessageCreated: UserMessagePayload!
+}
+
+# ── Inputs ──────────────────────────────────────────────────────────────────
+
+input CreateUserMessageInput {
+  userID:  UUID!
+  message: String!
+  type:    String  # info, warning, success, error (default: info)
+}
+
+# ── Response types ───────────────────────────────────────────────────────────
+
+type UserMessagePayload {
+  id:        UUID!
+  userID:    UUID!
+  message:   String!
+  type:      String!
+  createdAt: Time!
+  readAt:    Time
+}

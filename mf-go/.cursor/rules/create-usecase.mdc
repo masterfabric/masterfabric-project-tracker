@@ -1,0 +1,46 @@
+---
+description: Create a new use case in the application layer
+globs: internal/application/**/*.go
+---
+
+# Create Use Case
+
+Pattern for creating a new use case:
+
+1. One file per operation: `internal/application/<context>/usecase/<operation>.go`
+2. Use case struct holds repository interfaces + services
+3. Constructor: `NewXxxUseCase(...) *XxxUseCase`
+4. Single public method: `Execute(ctx, req) (resp, error)`
+5. Publish domain event after successful DB write
+6. Return DTO, never domain model directly
+
+```go
+package usecase
+
+import (
+    "context"
+    "fmt"
+
+    domainRepo "<module>/internal/domain/<context>/repository"
+    "<module>/internal/application/<context>/dto"
+    "<module>/internal/shared/events"
+)
+
+type XxxUseCase struct {
+    repo     domainRepo.XxxRepository
+    eventBus events.EventBus
+}
+
+func NewXxxUseCase(repo domainRepo.XxxRepository, bus events.EventBus) *XxxUseCase {
+    return &XxxUseCase{repo: repo, eventBus: bus}
+}
+
+func (uc *XxxUseCase) Execute(ctx context.Context, req *dto.XxxRequest) (*dto.XxxResponse, error) {
+    // 1. validate input
+    // 2. business logic
+    // 3. persist
+    // 4. publish event
+    // 5. return response DTO
+    return nil, nil
+}
+```

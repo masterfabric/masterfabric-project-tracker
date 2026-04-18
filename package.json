@@ -1,0 +1,26 @@
+{
+  "name": "masterfabric-expo-base",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "MasterFabric monorepo: mf-expo (Expo/RN) + mf-go (GraphQL). Dev CLI: npm run start-all / stop-all. Backend needs Docker; see local.env and .cursor/rules.",
+  "scripts": {
+    "start-all": "node scripts/cli.js start",
+    "start-all:detach": "node scripts/cli.js start --detach",
+    "start-all:hold": "node scripts/cli.js start",
+    "start-all:ios": "node scripts/cli.js start --ios",
+    "start-all:live": "node scripts/cli.js start --live",
+    "start-all:live:ios": "node scripts/cli.js start --live --ios",
+    "stop-all": "node scripts/cli.js stop",
+    "mf-expo:version": "bash scripts/app-deploy-version.sh"
+  },
+  "bin": {
+    "start-all": "./scripts/cli.js",
+    "stop-all": "./scripts/cli.js"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "inquirer": "^9.2.23",
+    "ora": "^8.0.1"
+  }
+}

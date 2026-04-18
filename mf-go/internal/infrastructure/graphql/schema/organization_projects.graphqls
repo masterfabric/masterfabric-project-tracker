@@ -1,0 +1,188 @@
+# Organization projects: per-project roster, todos (GFG-92), and purchase line items (GFG-113).
+
+extend type Query {
+  """Projects in an organization (active org members)."""
+  organizationProjects(organizationId: UUID!): [OrganizationProject!]!
+  """Single project (org member on roster, or org admin/owner)."""
+  organizationProject(projectId: UUID!): OrganizationProject!
+  """People assigned to the project (same visibility as organizationProject)."""
+  organizationProjectMembers(projectId: UUID!): [OrganizationProjectMember!]!
+  """Todos on the project (same visibility as organizationProject)."""
+  organizationProjectTodos(projectId: UUID!): [OrganizationProjectTodo!]!
+  """Purchase line items on the project (same visibility as organizationProject)."""
+  organizationProjectPurchases(projectId: UUID!): [OrganizationProjectPurchase!]!
+}
+
+extend type Mutation {
+  """Create a project (org admin or owner). Creator is added to the project roster."""
+  createOrganizationProject(input: CreateOrganizationProjectInput!): OrganizationProject!
+  """Update project name/description (org admin or owner)."""
+  updateOrganizationProject(input: UpdateOrganizationProjectInput!): OrganizationProject!
+  """Delete a project and its roster/todos (org admin or owner)."""
+  deleteOrganizationProject(projectId: UUID!): Boolean!
+  """Add an organization member to the project roster (org admin or owner)."""
+  addOrganizationProjectMember(projectId: UUID!, userId: UUID!): Boolean!
+  """Remove someone from the project roster (org admin or owner)."""
+  removeOrganizationProjectMember(projectId: UUID!, userId: UUID!): Boolean!
+  """Create a todo (project roster member or org admin/owner)."""
+  createOrganizationProjectTodo(input: CreateOrganizationProjectTodoInput!): OrganizationProjectTodo!
+  """Update todo title and/or status (project roster member or org admin/owner)."""
+  updateOrganizationProjectTodo(input: UpdateOrganizationProjectTodoInput!): OrganizationProjectTodo!
+  """Delete a todo (project roster member or org admin/owner)."""
+  deleteOrganizationProjectTodo(todoId: UUID!): Boolean!
+  """Add a checklist item under a project todo (GFG-117)."""
+  createOrganizationProjectTodoSubtask(input: CreateOrganizationProjectTodoSubtaskInput!): OrganizationProjectTodoSubtask!
+  """Update a project todo subtask."""
+  updateOrganizationProjectTodoSubtask(input: UpdateOrganizationProjectTodoSubtaskInput!): OrganizationProjectTodoSubtask!
+  """Delete a project todo subtask."""
+  deleteOrganizationProjectTodoSubtask(id: UUID!): Boolean!
+  """Create a purchase line item (project roster member or org admin/owner)."""
+  createOrganizationProjectPurchase(input: CreateOrganizationProjectPurchaseInput!): OrganizationProjectPurchase!
+  """Update a purchase line item (project roster member or org admin/owner)."""
+  updateOrganizationProjectPurchase(input: UpdateOrganizationProjectPurchaseInput!): OrganizationProjectPurchase!
+  """Delete a purchase line item (project roster member or org admin/owner)."""
+  deleteOrganizationProjectPurchase(purchaseId: UUID!): Boolean!
+}
+
+input CreateOrganizationProjectInput {
+  organizationId: UUID!
+  name:           String!
+  description:    String
+}
+
+input UpdateOrganizationProjectInput {
+  projectId:   UUID!
+  name:        String
+  description: String
+}
+
+input CreateOrganizationProjectTodoInput {
+  projectId: UUID!
+  title:     String!
+  """When set, only org admin/owner may assign; user must be on the project roster."""
+  assignedToUserId: UUID
+  """Optional due instant (RFC3339)."""
+  dueAt:            Time
+}
+
+input UpdateOrganizationProjectTodoInput {
+  todoId: UUID!
+  title:  String
+  status: OrganizationProjectTodoStatus
+  dueAt:  Time
+  clearDueAt: Boolean
+}
+
+type OrganizationProject {
+  id:              UUID!
+  organizationId:  UUID!
+  name:            String!
+  description:     String!
+  createdByUserId: UUID!
+  createdAt:       Time!
+  updatedAt:       Time!
+}
+
+type OrganizationProjectMember {
+  id:           UUID!
+  projectId:    UUID!
+  userId:       UUID!
+  userNickname: String!
+  addedAt:      Time!
+}
+
+type OrganizationProjectTodo {
+  id:              UUID!
+  projectId:       UUID!
+  title:           String!
+  status:          OrganizationProjectTodoStatus!
+  createdByUserId: UUID!
+  assignedToUserId: UUID
+  dueAt:           Time
+  createdAt:       Time!
+  updatedAt:       Time!
+  """Single-level checklist items under this task."""
+  subtasks: [OrganizationProjectTodoSubtask!]!
+}
+
+type OrganizationProjectTodoSubtask {
+  id:            UUID!
+  projectTodoId: UUID!
+  title:         String!
+  completed:     Boolean!
+  sortOrder:     Int!
+  createdAt:     Time!
+  updatedAt:     Time!
+}
+
+input CreateOrganizationProjectTodoSubtaskInput {
+  projectTodoId: UUID!
+  title:         String!
+  completed:     Boolean
+}
+
+input UpdateOrganizationProjectTodoSubtaskInput {
+  id:        UUID!
+  title:     String
+  completed: Boolean
+}
+
+enum OrganizationProjectTodoStatus {
+  OPEN
+  DONE
+}
+
+input CreateOrganizationProjectPurchaseInput {
+  projectId: UUID!
+  productName: String!
+  """Tax rate as a non-negative fraction (e.g. 0.2 for 20%). Defaults to 0."""
+  taxRate: Float
+  productPurpose: String
+  price: Float!
+  """Must be positive. Defaults to 1."""
+  quantity: Float
+  productLink: String
+  """ISO-style code (e.g. TRY, USD). Defaults to TRY."""
+  currency: String
+  """Defaults to REQUESTED when omitted."""
+  status: OrganizationProjectPurchaseStatus
+  statusNote: String
+}
+
+input UpdateOrganizationProjectPurchaseInput {
+  purchaseId: UUID!
+  productName: String
+  taxRate: Float
+  productPurpose: String
+  price: Float
+  quantity: Float
+  productLink: String
+  """When true, clears productLink regardless of productLink."""
+  clearProductLink: Boolean
+  status: OrganizationProjectPurchaseStatus
+  statusNote: String
+  currency: String
+}
+
+type OrganizationProjectPurchase {
+  id: UUID!
+  projectId: UUID!
+  productName: String!
+  taxRate: Float!
+  productPurpose: String!
+  price: Float!
+  quantity: Float!
+  productLink: String
+  status: OrganizationProjectPurchaseStatus!
+  statusNote: String!
+  currency: String!
+  createdByUserId: UUID!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+enum OrganizationProjectPurchaseStatus {
+  REQUESTED
+  PURCHASED
+  CANCELLED
+}

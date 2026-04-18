@@ -1,0 +1,39 @@
+---
+description: Create a GraphQL resolver
+globs: internal/infrastructure/graphql/**/*.go
+---
+
+# Create GraphQL Resolver
+
+Pattern for adding a resolver:
+
+1. One file per domain context: `auth_resolver.go`, `user_resolver.go`, `settings_resolver.go`
+2. Resolver struct holds use case interfaces
+3. Auth-protected resolvers must call `middleware.UserIDFromContext(ctx)`
+4. Return `*model.XxxPayload` from mutations
+5. Never leak domain internals (password hashes, tokens in logs, etc.)
+
+```go
+package resolver
+
+import (
+    "context"
+
+    "github.com/masterfabric/masterfabric_go_basic/internal/application/<context>/dto"
+    "github.com/masterfabric/masterfabric_go_basic/internal/infrastructure/graphql/model"
+    "github.com/masterfabric/masterfabric_go_basic/internal/shared/middleware"
+)
+
+func (r *mutationResolver) XxxMutation(ctx context.Context, input model.XxxInput) (*model.XxxPayload, error) {
+    req := &dto.XxxRequest{
+        // map input → request DTO
+    }
+    resp, err := r.xxxUseCase.Execute(ctx, req)
+    if err != nil {
+        return nil, err
+    }
+    return &model.XxxPayload{
+        // map response DTO → GraphQL model
+    }, nil
+}
+```

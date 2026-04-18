@@ -1,0 +1,135 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mf_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: masterfabric
+      POSTGRES_PASSWORD: masterfabric
+      POSTGRES_DB: masterfabric_basic
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U masterfabric -d masterfabric_basic"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: mf_redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --save 60 1
+      --loglevel warning
+      --requirepass devredis
+      --rename-command FLUSHALL ""
+      --rename-command FLUSHDB ""
+      --rename-command CONFIG ""
+      --rename-command DEBUG ""
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "devredis", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mf_mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP — use SMTP_HOST=mailpit SMTP_PORT=1025 SMTP_PLAIN_NO_TLS=true
+      - "8025:8025"   # Web UI http://localhost:8025
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: mf_rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5673:5672"   # AMQP
+      - "15673:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: mf_pgadmin
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Must pass pgAdmin's email-validator (".local" TLD is rejected in recent images).
+      PGADMIN_DEFAULT_EMAIL: pgadmin-dev@example.com
+      PGADMIN_DEFAULT_PASSWORD: masterfabric
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      PGADMIN_REPLACE_SERVERS_ON_STARTUP: "True"
+    ports:
+      - "5001:80"   # Web UI — http://localhost:5001
+    volumes:
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - ./pgadmin/pgpass:/var/lib/pgadmin/.pgpass:ro
+
+  app:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile
+    container_name: mf_app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    environment:
+      ENV: development
+      SERVER_PORT: 8080
+      DATABASE_DSN: postgres://masterfabric:masterfabric@postgres:5432/masterfabric_basic?sslmode=disable
+      REDIS_ADDR: redis:6379
+      REDIS_PASSWORD: devredis
+      REDIS_REQUIRED: "false"
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      RABBITMQ_ENABLED: "true"
+      RABBITMQ_EXCHANGE: masterfabric.events
+      JWT_SECRET: local-dev-secret-not-for-production-use!!
+      JWT_ACCESS_TTL: 5m
+      JWT_REFRESH_TTL: 168h
+      LOG_LEVEL: info
+      LOG_FORMAT: json
+      GRAPHQL_INTROSPECTION: "true"
+      GRAPHQL_PLAYGROUND: "true"
+      GRAPHQL_COMPLEXITY_LIMIT: 300
+      GRAPHQL_QUERY_DEPTH_LIMIT: 15
+      CORS_ALLOWED_ORIGINS: "*"
+      # OTP via Mailpit (change to admin_panel to skip SMTP)
+      OTP_DELIVERY: email
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      SMTP_FROM: noreply@masterfabric.local
+      SMTP_PLAIN_NO_TLS: "true"
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:

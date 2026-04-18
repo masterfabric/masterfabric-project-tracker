@@ -1,0 +1,55 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# MasterFabric mf-go — Render Blueprint
+# Repo root: masterfabric-expo-base/
+# Blueprint: render.yaml (default at root — no custom path needed)
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+  - type: web
+    runtime: docker
+    name: mf-go
+    # Project path: masterfabric-expo-base/mf-go
+    rootDir: mf-go
+    dockerfilePath: mf-go/deployments/Dockerfile
+    dockerContext: mf-go
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_DSN
+        fromDatabase:
+          name: mf-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: mf-redis
+          property: connectionString
+      - key: RABBITMQ_ENABLED
+        value: "false"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_TTL
+        value: 15m
+      - key: JWT_REFRESH_TTL
+        value: 168h
+      - key: LOG_LEVEL
+        value: info
+      - key: LOG_FORMAT
+        value: json
+      - key: GRAPHQL_INTROSPECTION
+        value: "false"
+
+  - type: keyvalue
+    name: mf-redis
+    region: oregon
+    plan: starter
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: allow all (private network)
+
+databases:
+  - name: mf-postgres
+    databaseName: masterfabric_basic
+    user: masterfabric
+    region: oregon
+    plan: starter

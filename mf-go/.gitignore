@@ -1,0 +1,32 @@
+# Binaries and build output
+bin/
+tmp/
+
+# Go toolchain artifacts
+*.test
+*.out
+vendor/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Air hot-reload logs
+build-errors.log
+
+# Docker volumes (if accidentally created locally)
+postgres_data/
+redis_data/
+rabbitmq_data/
+sdk/

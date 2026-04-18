@@ -1,0 +1,55 @@
+# mail.graphqls — Admin-managed outbound SMTP (system_mail_smtp) and send helpers
+
+extend type Query {
+  """[Admin] Current outbound SMTP settings (password never returned)."""
+  adminMailSmtpSettings: AdminMailSmtpSettings!
+}
+
+extend type Mutation {
+  """[Admin] Replace singleton SMTP settings. Omit password to leave unchanged; empty string clears it."""
+  adminUpdateMailSmtpSettings(input: AdminUpdateMailSmtpSettingsInput!): AdminMailSmtpSettings!
+
+  """[Admin] Send a test email using the effective SMTP config (rate-limited per admin)."""
+  adminSendTestMail(input: AdminSendTestMailInput!): Boolean!
+
+  """[Admin] Send a plain-text email to a user's registered address (noreply/from from effective SMTP)."""
+  adminSendUserEmail(input: AdminSendUserEmailInput!): Boolean!
+}
+
+type AdminMailSmtpSettings {
+  enabled: Boolean!
+  host: String!
+  port: Int!
+  username: String!
+  passwordConfigured: Boolean!
+  fromAddress: String!
+  fromName: String!
+  subjectPrefix: String!
+  implicitTLS: Boolean!
+  plainNoTLS: Boolean!
+  updatedAt: Time!
+}
+
+input AdminUpdateMailSmtpSettingsInput {
+  enabled: Boolean!
+  host: String!
+  port: Int!
+  username: String!
+  """Omit or null to keep existing password; empty string clears stored password."""
+  password: String
+  fromAddress: String!
+  fromName: String!
+  subjectPrefix: String!
+  implicitTLS: Boolean!
+  plainNoTLS: Boolean!
+}
+
+input AdminSendTestMailInput {
+  toEmail: String!
+}
+
+input AdminSendUserEmailInput {
+  userID: UUID!
+  subject: String!
+  body: String!
+}

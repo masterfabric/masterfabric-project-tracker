@@ -1,0 +1,136 @@
+{
+  "expo": {
+    "name": "MF Project Tracker",
+    "slug": "masterfabric",
+    "description": "MasterFabric app connected to mf-go backend",
+    "version": "1.2.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/images/app_icon.png",
+    "scheme": "masterfabricexpo",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "primaryColor": "#000000",
+    "splash": {
+      "image": "./src/assets/images/app_icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "icon": "./src/assets/images/app_icon.png",
+      "bundleIdentifier": "com.masterfabric.monoExpo",
+      "buildNumber": "4",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true,
+          "NSExceptionDomains": {
+            "azurecontainerapps.io": {
+              "NSIncludesSubdomains": true,
+              "NSExceptionRequiresForwardSecrecy": false
+            }
+          }
+        },
+        "NSCalendarsUsageDescription": "The app needs calendar access to schedule and manage events.",
+        "NSCalendarsFullAccessUsageDescription": "The app needs calendar access to schedule and manage events.",
+        "NSRemindersUsageDescription": "The app needs access to Reminders to create and manage reminders.",
+        "NSRemindersFullAccessUsageDescription": "The app needs access to Reminders to create and manage reminders.",
+        "NSCameraUsageDescription": "The app needs camera access to take photos and record video.",
+        "NSMicrophoneUsageDescription": "The app needs microphone access to record audio and video.",
+        "NSPhotoLibraryUsageDescription": "The app needs photo library access to select photos and videos.",
+        "NSPhotoLibraryAddUsageDescription": "The app needs permission to save photos to your library.",
+        "NSContactsUsageDescription": "The app needs contacts access to share content with people you choose.",
+        "NSLocationWhenInUseUsageDescription": "The app needs your location while in use for location-based features.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "The app needs your location in the background for location-based features.",
+        "NSFaceIDUsageDescription": "The app uses Face ID for secure sign-in.",
+        "UIBackgroundModes": [
+          "remote-notification",
+          "fetch"
+        ]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/images/app_icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.masterfabric.monoExpo",
+      "versionCode": 4,
+      "googleServicesFile": "./android/app/google-services.json"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./src/assets/images/favicon.png"
+    },
+    "plugins": [
+      "./plugins/add-media-permissions.js",
+      "expo-secure-store",
+      "expo-router",
+      [
+        "expo-dev-client",
+        {
+          "android": {
+            "launchMode": "launcher"
+          },
+          "ios": {
+            "launchMode": "most-recent"
+          }
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./src/assets/images/app_icon.png",
+          "imageWidth": 140,
+          "resizeMode": "contain",
+          "backgroundColor": "#000000"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app needs photo library access to select photos and videos.",
+          "cameraPermission": "The app needs camera access to take photos and record video.",
+          "microphonePermission": "The app needs microphone access to record video."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "The app needs microphone access to record audio."
+        }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "The app needs calendar access to schedule and manage events.",
+          "remindersPermission": "The app needs access to Reminders to create and manage reminders."
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "The app needs contacts access to share content with people you choose."
+        }
+      ],
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "MF Project Tracker would like permission to measure app usage and notification relevance across apps and websites. This helps us improve the product and respects your choice in Settings."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "da5b233a-cb42-4494-94c7-2b1427d32ebf"
+      }
+    },
+    "owner": "gurkanfikretgunak"
+  }
+}

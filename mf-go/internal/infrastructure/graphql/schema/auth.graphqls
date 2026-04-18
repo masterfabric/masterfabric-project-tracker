@@ -1,0 +1,107 @@
+# auth.graphqls — Authentication mutations and types
+
+extend type Mutation {
+  """Register a new user account and return auth tokens."""
+  register(input: RegisterInput!): AuthPayload!
+
+  """Log in with email and password.
+  If the user has OTP enabled, returns otpRequired=true with a loginToken
+  instead of full auth tokens. Use loginVerifyOTP to complete authentication."""
+  login(input: LoginInput!): LoginPayload!
+
+  """Complete login by verifying the OTP code (only needed when otpRequired=true)."""
+  loginVerifyOTP(input: LoginVerifyOTPInput!): AuthPayload!
+
+  """Exchange a refresh token for a new token pair."""
+  refreshTokens(input: RefreshInput!): AuthPayload!
+
+  """Revoke the current session (blacklists access token, deletes refresh token)."""
+  logout(input: LogoutInput!): Boolean!
+
+  """Request a password-reset code by email. Always returns ok=true (anti-enumeration). Requires OTP email delivery (e.g. OTP_DELIVERY=email or both)."""
+  requestPasswordReset(input: RequestPasswordResetInput!): PasswordResetRequestedPayload!
+
+  """Set a new password using the 6-digit code from requestPasswordReset."""
+  resetPasswordWithOtp(input: ResetPasswordWithOtpInput!): Boolean!
+}
+
+# ── Inputs ──────────────────────────────────────────────────────────────────
+
+input RegisterInput {
+  email:       String!
+  password:    String!
+  displayName: String!
+}
+
+input LoginInput {
+  email:    String!
+  password: String!
+}
+
+input RefreshInput {
+  userID:       UUID!
+  refreshToken: String!
+  """Optional: device ID for session tracking (admin can see active sessions)."""
+  deviceID:     String
+  """Optional: platform (ios, android, web) for session display."""
+  platform:     String
+  """Optional: device name for admin session list."""
+  deviceName:   String
+}
+
+input LoginVerifyOTPInput {
+  """The temporary login token returned by login when otpRequired=true."""
+  loginToken: String!
+  """The 6-digit OTP code."""
+  code:       String!
+}
+
+input LogoutInput {
+  userID:       UUID!
+  accessToken:  String!
+  refreshToken: String!
+}
+
+input RequestPasswordResetInput {
+  email: String!
+}
+
+input ResetPasswordWithOtpInput {
+  email:        String!
+  code:         String!
+  newPassword:  String!
+}
+
+type PasswordResetRequestedPayload {
+  ok: Boolean!
+}
+
+# ── Response types ───────────────────────────────────────────────────────────
+
+"""Returned by login. When otpRequired=false, auth fields are populated.
+When otpRequired=true, only loginToken + user are set — use loginVerifyOTP to complete."""
+type LoginPayload {
+  otpRequired: Boolean!
+  """Temporary token for OTP verification (only set when otpRequired=true)."""
+  loginToken:  String
+  """Full auth tokens (only set when otpRequired=false)."""
+  accessToken:  String
+  refreshToken: String
+  expiresIn:    Int
+  user:         AuthUser!
+}
+
+type AuthPayload {
+  accessToken:  String!
+  refreshToken: String!
+  expiresIn:    Int!
+  user:         AuthUser!
+}
+
+type AuthUser {
+  id:          UUID!
+  email:       String!
+  displayName: String!
+  avatarURL:   String!
+  role:        UserRole!
+}

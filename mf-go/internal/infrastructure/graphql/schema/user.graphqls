@@ -1,0 +1,178 @@
+# user.graphqls — User profile queries and mutations
+
+extend type Query {
+  """Return the profile of the currently authenticated user."""
+  me: UserProfile!
+
+  """
+  Preview relational data removed when you permanently delete your account.
+  Reflects PostgreSQL ON DELETE CASCADE / SET NULL behavior (owned orgs removed entirely, etc.).
+  """
+  myAccountDeletionImpact: MyAccountDeletionImpact!
+
+  """Check if a nickname is available (not taken by another user). Excludes current user when authenticated."""
+  nicknameAvailable(nickname: String!): Boolean!
+
+  """Return all addresses for the currently authenticated user."""
+  myAddresses: [UserAddress!]!
+
+  """Return all addresses that belong to a specific user (admin or self)."""
+  addressesByUserID(userID: UUID!): [UserAddress!]!
+}
+
+extend type Mutation {
+  """Update the authenticated user's profile fields."""
+  updateProfile(input: UpdateProfileInput!): UserProfile!
+
+  """Permanently delete the authenticated user's account."""
+  deleteAccount: Boolean!
+
+  """Create or update an address for the authenticated user.
+  Omit addressID to create a new address; provide it to update an existing one."""
+  upsertAddress(input: UpsertAddressInput!): UserAddress!
+
+  """Permanently delete a saved address belonging to the authenticated user."""
+  deleteMyAddress(id: UUID!): Boolean!
+}
+
+# ── Inputs ──────────────────────────────────────────────────────────────────
+
+input UpdateProfileInput {
+  """New sign-in email (normalized to lowercase). Must be unique; omit to leave unchanged."""
+  email:          String
+  """
+  Required when changing email: the otpID returned from verifyOTP after verifying an EMAIL_CHANGE code
+  sent to your current address. Must be verified within the last few minutes.
+  """
+  emailChangeOtpId: UUID
+  displayName:    String
+  nickname:       String
+  avatarURL:      String
+  bio:            String
+  phoneNumber:    String
+  """Numeric Telegram chat id from @userinfobot or your bot's /start webhook (for Telegram OTP)."""
+  telegramChatId: String
+  dateOfBirth:    String   # ISO-8601 date string (YYYY-MM-DD), parsed server-side
+  gender:         Gender
+  location:       String
+  websiteURL:     String
+  socialTwitter:  String
+  socialGitHub:   String
+  socialLinkedIn: String
+  language:       String
+}
+
+input UpsertAddressInput {
+  addressID:    UUID      # omit to create a new address; provide to update existing
+  title:        String    # e.g. "Home", "Work", "Billing"
+  addressLine1: String
+  addressLine2: String
+  city:         String
+  state:        String
+  postalCode:   String
+  country:      String
+  isDefault:    Boolean
+}
+
+# ── Response types ───────────────────────────────────────────────────────────
+
+"""Organizations you own; deleting your account removes each entire org and its data (members, chat, news, etc.)."""
+type MyOwnedOrganizationDeletionImpact {
+  organizationID: UUID!
+  name: String!
+  """Other members in this org (they lose access when the organization is removed)."""
+  otherMemberCount: Int!
+}
+
+"""
+Summary of what will be deleted or updated when the authenticated user calls deleteAccount.
+"""
+type MyAccountDeletionImpact {
+  """Todos you created (personal and org-linked rows where you are owner user_id)."""
+  ownedTodoCount: Int!
+  """
+  Todos created by other people that assigned you; your assignee field is cleared (todo rows stay).
+  """
+  todoAssigneeClearCount: Int!
+  """Organizations you are a member of; you are removed from each (orgs you do not own stay)."""
+  organizationMembershipCount: Int!
+  ownedOrganizations: [MyOwnedOrganizationDeletionImpact!]!
+  addressCount: Int!
+  deviceCount: Int!
+  hasUserSettings: Boolean!
+  notificationReadCount: Int!
+  sessionCount: Int!
+  """In-app admin/user messages delivered to you."""
+  userMessageCount: Int!
+  pendingInvitationAsInviterCount: Int!
+  """Team chat messages you posted in organizations."""
+  organizationMessageAuthoredCount: Int!
+  """Organization news posts you authored."""
+  organizationNewsAuthoredCount: Int!
+  """OTP request history rows for your account."""
+  otpCodeHistoryCount: Int!
+}
+
+type UserProfile {
+  id:             UUID!
+  email:          String!
+  displayName:    String!
+  nickname:       String!
+  avatarURL:      String!
+  bio:            String!
+  status:         UserStatus!
+  role:           UserRole!
+  createdAt:      Time!
+  updatedAt:      Time!
+  phoneNumber:    String!
+  dateOfBirth:    String
+  gender:         Gender!
+  location:       String!
+  websiteURL:     String!
+  socialTwitter:  String!
+  socialGitHub:   String!
+  socialLinkedIn: String!
+  language:       String!
+  """Linked Telegram chat id for OTP delivery when OTP_DELIVERY=telegram."""
+  telegramChatId: String!
+  """The user's default address, if one has been set."""
+  address:        UserAddress
+  """All saved addresses for this user (same data as myAddresses for the profile owner)."""
+  addresses:      [UserAddress!]!
+}
+
+type UserAddress {
+  id:           UUID!
+  userID:       UUID!
+  title:        String!
+  addressLine1: String!
+  addressLine2: String!
+  city:         String!
+  state:        String!
+  postalCode:   String!
+  country:      String!
+  isDefault:    Boolean!
+  createdAt:    Time!
+  updatedAt:    Time!
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum UserRole {
+  ADMIN
+  MODERATOR
+  USER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+  UNSPECIFIED
+}
+

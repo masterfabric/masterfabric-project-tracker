@@ -1,0 +1,49 @@
+---
+description: When mf-expo work is finished — i18n, API usage, CHANGELOG
+globs: mf-expo/**
+alwaysApply: true
+---
+
+# mf-expo — Ship checklist (i18n + API + Changelog)
+
+Treat a slice of **mf-expo** work as **not finished** until the items below are done when the change affects **user-visible UI**, **GraphQL usage**, **auth/session flows**, or **navigation** that operators or release notes should know about.
+
+## 1. Review what changed
+
+- Inspect recent edits: `app/`, `src/screens/`, `src/shared/services/` (especially `mf-go-api.ts`, `graphql-client.ts`), hooks, store, and `packages/masterfabric-expo-core` when shared UI/helpers changed.
+- If the change is **internal-only** (refactor, types, no user-visible or API contract change), you may skip `CHANGELOG.md` unless release notes should still mention it.
+
+## 2. Internationalization (i18n)
+
+- **User-visible strings** belong in **`mf-expo/src/shared/i18n/translations/`** — update **`en.json`** and **`tr.json`** together for the same keys.
+- Avoid hard-coded English (or Turkish-only) copy on screens users see; use `t('…')` / existing i18n helpers.
+- After adding keys, quick sanity check: switch device language (or app language) if the feature exposes it.
+
+## 3. GraphQL / mf-go coupling
+
+- New or changed operations must be reflected in **`mf-go-api.ts`** (or explicit `graphqlRequest` with types) and match the **mf-go schema** the app targets.
+- If the backend added fields or operations: confirm **`EXPO_PUBLIC_GRAPHQL_URL`** / `local.env` and document any **minimum server version** in the PR description when relevant.
+- Prefer **`graphqlRequest` options** (e.g. `silent: true`) consistent with nearby calls; handle older backends only when the product explicitly supports version skew.
+
+## 4. UX / platform notes
+
+- **Destructive or irreversible flows** (delete account, sign out, data loss): confirm confirmation UI, loading/error states, and **token/session cleanup** paths.
+- **Modals / bottom sheets:** verify **small-screen height**, scroll, and safe areas; avoid clipping primary actions.
+- **Navigation:** `expo-router` routes and auth gates (`isAuthenticated`) should remain consistent after the change.
+
+## 5. Changelog
+
+- Update repo-root **`CHANGELOG.md`** for user-relevant or operator-relevant **mf-expo** changes (features, notable fixes, breaking UI).
+- Match existing style: version/date section, **`### Added` / `### Changed` / `### Fixed`**, bullet lines prefixed with **`mf-expo:`** (see current file).
+
+## 6. Paired mf-go work
+
+If this PR depends on **mf-go** schema or behavior changes, the **mf-go** author (often the same PR) must satisfy **`.cursor/rules/mf-go-ship-checklist.mdc`** (Postman + `CHANGELOG.md` for API/env changes).
+
+## 7. Before the PR is merged (human copy + order)
+
+- On GitHub, align the PR description and any first comment with **`.cursor/rules/pr-reviews.mdc`**: readable maintainer voice *before* marking Ready, then follow the **Merge progression** there (ship steps → prose → ready → CI → merge). Skip the human polish only for truly internal-only diffs that skip this checklist anyway.
+
+---
+
+If this rule is in context because **`mf-expo/**`** files were edited, perform steps **2–5** before ending the task when the change is **user-visible**, touches **GraphQL**, or should appear in **release notes**.

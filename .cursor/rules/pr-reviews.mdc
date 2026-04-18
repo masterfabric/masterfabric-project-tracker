@@ -1,0 +1,48 @@
+---
+description: Pull request hygiene — description, scope, and review-ready bundles
+alwaysApply: true
+---
+
+# Pull requests — review conventions
+
+Use this when opening or updating a PR so reviewers and future you can ship safely.
+
+## Human voice before the PR ships
+
+Automation and agents tend to spit out stiff bullets. **Normalize on maintainer-shaped copy on GitHub** before you mark a PR ready or merge:
+
+- **Pull request description** — Same facts as below (what / why / verify / risk / pre-review), but written in short, plain paragraphs: how you’d explain the change to a teammate, not a spec template. It is fine to keep checklists under that prose.
+- **First PR comment (optional but encouraged when the diff is large or non-obvious)** — One short note in your own words: tradeoffs, what you did not do, or how you tested. This is not a substitute for the description; it is context that reads like a human thread.
+
+## Before opening / marking Ready for review
+
+1. **One coherent slice** — PR title and description match the diff; unrelated refactors or drive-by edits belong in a separate PR.
+2. **Description** — Include:
+   - **What** changed (user- or operator-visible behavior)
+   - **Why** (problem, constraint, or ticket reference if you use one)
+   - **How to verify** (commands, screens, Postman flows if API-related)
+   - **Risk / rollbacks** if migrations, auth, or data deletion are involved
+   - **Pre-review** — A short checklist in the PR body tying back to this section (one coherent slice, cross-project note if needed, applicable ship-checklist items marked N/A or done) so drafts are review-ready when marked ready.
+3. **Cross-project** — If the PR touches both `mf-go` and `mf-expo`, say how they deploy together (API first vs compatible fallbacks).
+4. **Checklists** — When applicable:
+   - **`mf-go`:** `.cursor/rules/mf-go-ship-checklist.mdc` (Postman + `CHANGELOG.md`)
+   - **`mf-expo`:** `.cursor/rules/mf-expo-ship-checklist.mdc` (i18n + `CHANGELOG.md` + API usage)
+
+## Merge progression (do in order)
+
+1. **Finish the work in git** — Commits pushed; scope matches the title.
+2. **Run the ship checklists** for every area you touched (`mf-go` and/or `mf-expo` rules above). Skip only what those rules say is skippable.
+3. **Open or update the PR** — Draft is fine while iterating. When the diff stabilizes, set the **description** to human-shaped prose + structured sections (see **Human voice** above).
+4. **Optional thread comment** — Add a brief human note if it helps reviewers orient.
+5. **Mark Ready for review** — Only after description + applicable checklists are honest.
+6. **Merge** — After required CI / review policy; prefer updating local `main` (`pull`) right after. Delete the branch when your workflow allows (`After merge` below).
+
+## For reviewers (and authors self-reviewing)
+
+- Confirm **user-facing copy** has **EN + TR** (or project-agreed locales) when strings ship to the app.
+- Confirm **GraphQL** changes in `mf-go` have matching **client usage** (`mf-go-api.ts` / `graphqlRequest`) when the app depends on them.
+- Prefer **small commits** with clear messages; squash policy is team choice, but history should remain understandable from PR description + commits.
+
+## After merge
+
+- Delete merged feature branches when your workflow allows; keep `main` the integration branch.

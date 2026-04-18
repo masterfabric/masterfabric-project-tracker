@@ -1,0 +1,3 @@
+{
+  "_readme": "MCP servers are configured in Cursor Settings > MCP. Recommended for this monorepo: Context7 (docs), Supabase (Supabase), GitLens (git)"
+}

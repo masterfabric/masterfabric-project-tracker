@@ -1,0 +1,428 @@
+import { ThemeColors, ThemeMode } from '../types';
+
+/** White-first UI: charcoal on light backgrounds (not iOS system blue). */
+export const accentLight = '#1C1C1E';
+/** Dark mode: soft off-white accent on near-black surfaces. */
+export const accentDark = '#EBEBF5';
+
+const tintColorLight = accentLight;
+const tintColorDark = accentDark;
+
+export const Colors = {
+  light: {
+    text: '#000000',
+    background: '#FFFFFF',
+    tint: tintColorLight,
+    icon: '#666666',
+    tabIconDefault: '#8E8E93',
+    tabIconSelected: tintColorLight,
+    
+    // Home screen / cards — white canvas; use borders & shadows for depth (no grouped grey)
+    cardBackground: '#FFFFFF',
+    cardBackgroundAlt: '#FFFFFF',
+    sectionTitle: '#000000',
+    actionDescription: '#8E8E93',
+    headerBorder: '#E5E5E5',
+    divider: '#C6C6C8',
+    
+    // Quick action colors
+    projectColor: accentLight,
+    templatesColor: '#34C759',
+    documentationColor: '#FF9500',
+    settingsColor: '#8E8E93',
+    
+    // Developer tools colors
+    onboardingColor: '#FF9500',
+    deviceInfoColor: accentLight,
+    
+    // Status colors
+    successColor: '#34C759',
+    errorColor: '#FF3B30',
+    warningColor: '#FF9500',
+    
+    // Header/AppBar colors
+    headerBackground: '#FFFFFF',
+    headerText: '#000000',
+    headerIcon: '#000000',
+    headerShadow: 'rgba(0, 0, 0, 0.12)',
+    
+    // Interactive elements — white fills; borders carry structure
+    buttonBackground: '#FFFFFF',
+    buttonBackgroundHover: 'rgba(28, 28, 30, 0.06)',
+    buttonBorder: '#C7C7CC',
+    activeButton: accentLight,
+    activeButtonText: '#FFFFFF',
+    inactiveText: '#3C3C43',
+    
+    // Onboarding colors
+    onboardingBackground: '#FFFFFF',
+    onboardingIcon: accentLight,
+    onboardingProgressActive: accentLight,
+    onboardingProgressInactive: '#E5E5E5',
+    onboardingSkipText: '#8E8E93',
+    onboardingDescriptionBg: 'rgba(0, 0, 0, 0.03)',
+    onboardingDescriptionBorder: accentLight,
+    
+    // Settings colors — full white screen chrome
+    settingsBackground: '#FFFFFF',
+    settingsCardBackground: '#FFFFFF',
+    settingsCardBorder: '#E5E5E5',
+    settingsHeaderBorder: '#E5E5E5',
+    settingsIconBackground: 'rgba(28, 28, 30, 0.09)',
+    settingsDropdownBorder: '#E1E5E9',
+    settingsThemeOptionBg: '#FFFFFF',
+    settingsThemeOptionBorder: '#E1E5E9',
+    settingsThemeIconBg: 'rgba(28, 28, 30, 0.06)',
+    settingsDescription: '#666666',
+    
+    // Modern minimalist colors
+    surfaceBackground: '#FFFFFF',
+    surfaceBorder: '#E9ECEF',
+    surfaceShadow: 'rgba(0, 0, 0, 0.04)',
+    labelText: '#6C757D',
+    bodyText: '#343A40',
+    
+    // Tab bar colors
+    tabBarBackground: '#FFFFFF',
+    tabBarBorder: '#C7C7CC',
+    tabBarShadow: 'rgba(0, 0, 0, 0.15)',
+    tabBarActiveTint: accentLight,
+    tabBarInactiveTint: '#8E8E93',
+    
+    // Splash colors
+    splashBackground: '#FFFFFF',
+    splashText: '#000000',
+    splashSubtext: '#6C757D',
+    splashProgress: accentLight,
+    splashProgressBg: 'rgba(28, 28, 30, 0.08)',
+    
+    // Input & Form colors (shared by helpers)
+    inputBackground: '#FFFFFF',
+    placeholderText: '#8E8E93',
+    primary: accentLight,
+    titleText: '#000000',
+    
+    // Additional colors for string-helper
+    successBackground: '#E8F5E8',
+    successBorder: '#34C759',
+    successText: '#2E7D32',
+    
+    // Border colors for cards and surfaces (lighter for better visibility)
+    cardBorderLight: 'rgba(0, 0, 0, 0.05)',
+    cardBorderDark: 'rgba(255, 255, 255, 0.08)',
+    
+    // Time helper colors
+    timeHelperSuccessBackground: '#E8F5E8',
+    timeHelperSuccessBorder: '#34C759',
+    timeHelperSuccessText: '#2E7D32',
+    timeHelperErrorBackground: '#F8D7DA',
+    timeHelperErrorBorder: '#DC3545',
+    
+    // Validator helper colors
+    validatorErrorBackground: '#F8D7DA',
+    validatorErrorBorder: '#FF3B30',
+    validatorErrorText: '#DC3545',
+    
+    // Snackbar helper colors
+    snackbarCustomDefault: '#9C27B0',
+    snackbarInfo: '#64748B',
+    snackbarInfoDark: '#334155',
+    snackbarBorderLight: '#E0E0E0',
+    snackbarBorderWhite: '#FFFFFF',
+    snackbarWhite: '#FFFFFF',
+    snackbarBlack: '#000000',
+    snackbarTransparent: 'transparent',
+    snackbarSwitchActiveLight: '#FFFFFF',
+    snackbarSwitchInactiveDark: '#48484A',
+    snackbarSwitchInactiveLight: '#F4F3F4',
+  },
+  dark: {
+    text: '#FFFFFF',
+    background: '#000000',
+    tint: tintColorDark,
+    icon: '#FFFFFF',
+    tabIconDefault: '#8E8E93',
+    tabIconSelected: tintColorDark,
+    
+    // Home screen specific colors
+    cardBackground: '#1C1C1E',
+    cardBackgroundAlt: '#000000',
+    sectionTitle: '#FFFFFF',
+    /** Secondary copy: brighter than before for WCAG-ish contrast on #000 / #1C1C1E */
+    actionDescription: '#AEAEB2',
+    headerBorder: '#38383A',
+    divider: '#3C3C43',
+    
+    // Quick action colors
+    projectColor: accentDark,
+    templatesColor: '#34C759',
+    documentationColor: '#FF9500',
+    settingsColor: '#8E8E93',
+    
+    // Developer tools colors
+    onboardingColor: '#FF9500',
+    deviceInfoColor: accentDark,
+    
+    // Status colors
+    successColor: '#34C759',
+    errorColor: '#FF3B30',
+    warningColor: '#FF9500',
+    
+    // Header/AppBar colors
+    headerBackground: '#1C1C1E',
+    headerText: '#FFFFFF',
+    headerIcon: '#FFFFFF',
+    headerShadow: 'rgba(255, 255, 255, 0.06)',
+    
+    // Interactive elements
+    buttonBackground: '#2C2C2E',
+    buttonBackgroundHover: '#3A3A3C',
+    buttonBorder: '#48484A',
+    activeButton: accentDark,
+    activeButtonText: '#1C1C1E',
+    inactiveText: '#C7C7CC',
+    
+    // Onboarding colors
+    onboardingBackground: '#000000',
+    onboardingIcon: accentDark,
+    onboardingProgressActive: accentDark,
+    onboardingProgressInactive: '#48484A',
+    onboardingSkipText: '#8E8E93',
+    onboardingDescriptionBg: 'rgba(255, 255, 255, 0.05)',
+    onboardingDescriptionBorder: accentDark,
+    
+    // Settings colors
+    settingsBackground: '#000000',
+    settingsCardBackground: '#1C1C1E',
+    settingsCardBorder: '#3C3C43',
+    settingsHeaderBorder: '#1C1C1E',
+    settingsIconBackground: 'rgba(235, 235, 245, 0.12)',
+    settingsDropdownBorder: '#3C3C43',
+    settingsThemeOptionBg: '#2C2C2E',
+    settingsThemeOptionBorder: '#3C3C43',
+    settingsThemeIconBg: '#3C3C3E',
+    settingsDescription: '#AEAEB2',
+    
+    // Modern minimalist colors
+    surfaceBackground: '#1C1C1E',
+    surfaceBorder: '#48484A',
+    surfaceShadow: 'rgba(255, 255, 255, 0.03)',
+    /** Secondary labels / descriptions on dark surfaces */
+    labelText: '#C7C7CC',
+    bodyText: '#F2F2F7',
+    
+    // Tab bar colors
+    tabBarBackground: '#1C1C1E',
+    tabBarBorder: '#38383A',
+    tabBarShadow: 'rgba(255, 255, 255, 0.1)',
+    tabBarActiveTint: accentDark,
+    tabBarInactiveTint: '#8E8E93',
+    
+    // Splash colors
+    splashBackground: '#000000',
+    splashText: '#FFFFFF',
+    splashSubtext: '#8E8E93',
+    splashProgress: accentDark,
+    splashProgressBg: '#333333',
+    
+    // Input & Form colors (shared by helpers)
+    inputBackground: '#2C2C2E',
+    placeholderText: '#8E8E93',
+    primary: accentDark,
+    titleText: '#FFFFFF',
+    
+    // Additional colors for string-helper
+    successBackground: '#1B5E20',
+    successBorder: '#34C759',
+    successText: '#4CAF50',
+    
+    // Border colors for cards and surfaces (lighter for better visibility)
+    cardBorderLight: 'rgba(0, 0, 0, 0.05)',
+    cardBorderDark: 'rgba(255, 255, 255, 0.08)',
+    
+    // Time helper colors
+    timeHelperSuccessBackground: '#1B5E20',
+    timeHelperSuccessBorder: '#34C759',
+    timeHelperSuccessText: '#4CAF50',
+    timeHelperErrorBackground: '#3A1C1C',
+    timeHelperErrorBorder: '#FF3B30',
+    
+    // Validator helper colors
+    validatorErrorBackground: '#3A1C1C',
+    validatorErrorBorder: '#FF3B30',
+    validatorErrorText: '#FF6B6B',
+    
+    // Snackbar helper colors
+    snackbarCustomDefault: '#9C27B0',
+    snackbarInfo: '#64748B',
+    snackbarInfoDark: '#334155',
+    snackbarBorderLight: '#E0E0E0',
+    snackbarBorderWhite: '#FFFFFF',
+    snackbarWhite: '#FFFFFF',
+    snackbarBlack: '#000000',
+    snackbarTransparent: 'transparent',
+    snackbarSwitchActiveLight: '#FFFFFF',
+    snackbarSwitchInactiveDark: '#48484A',
+    snackbarSwitchInactiveLight: '#F4F3F4',
+  },
+  system: {
+    // System theme will be resolved to light or dark at runtime
+    text: '#000000',
+    background: '#FFFFFF',
+    tint: tintColorLight,
+    icon: '#666666',
+    tabIconDefault: '#8E8E93',
+    tabIconSelected: tintColorLight,
+    cardBackground: '#FFFFFF',
+    cardBackgroundAlt: '#FFFFFF',
+    sectionTitle: '#000000',
+    actionDescription: '#8E8E93',
+    headerBorder: '#E5E5E5',
+    divider: '#C6C6C8',
+    headerBackground: '#FFFFFF',
+    headerText: '#000000',
+    headerIcon: '#000000',
+    buttonBackground: '#FFFFFF',
+    buttonBackgroundHover: 'rgba(28, 28, 30, 0.06)',
+    buttonBorder: '#C7C7CC',
+    activeButton: accentLight,
+    activeButtonText: '#FFFFFF',
+    inactiveText: '#3C3C43',
+    surfaceBackground: '#FFFFFF',
+    surfaceBorder: '#E9ECEF',
+    surfaceShadow: 'rgba(0, 0, 0, 0.04)',
+    labelText: '#6C757D',
+    bodyText: '#343A40',
+    successColor: '#34C759',
+    errorColor: '#FF3B30',
+    warningColor: '#FF9500',
+    projectColor: accentLight,
+    templatesColor: '#34C759',
+    documentationColor: '#FF9500',
+    settingsColor: '#8E8E93',
+    onboardingColor: '#FF9500',
+    deviceInfoColor: accentLight,
+    onboardingBackground: '#FFFFFF',
+    onboardingIcon: accentLight,
+    onboardingProgressActive: accentLight,
+    onboardingProgressInactive: '#E5E5E5',
+    onboardingSkipText: '#8E8E93',
+    onboardingDescriptionBg: 'rgba(0, 0, 0, 0.03)',
+    onboardingDescriptionBorder: accentLight,
+    settingsBackground: '#FFFFFF',
+    settingsCardBackground: '#FFFFFF',
+    settingsCardBorder: '#E5E5E5',
+    settingsHeaderBorder: '#E5E5E5',
+    settingsIconBackground: 'rgba(28, 28, 30, 0.09)',
+    settingsDropdownBorder: '#E1E5E9',
+    settingsThemeOptionBg: '#FFFFFF',
+    settingsThemeOptionBorder: '#E1E5E9',
+    settingsThemeIconBg: 'rgba(28, 28, 30, 0.06)',
+    settingsDescription: '#666666',
+    tabBarBackground: '#FFFFFF',
+    tabBarBorder: '#C7C7CC',
+    tabBarShadow: 'rgba(0, 0, 0, 0.15)',
+    tabBarActiveTint: accentLight,
+    tabBarInactiveTint: '#8E8E93',
+    splashBackground: '#FFFFFF',
+    splashText: '#000000',
+    splashSubtext: '#6C757D',
+    splashProgress: accentLight,
+    splashProgressBg: 'rgba(28, 28, 30, 0.08)',
+    
+    // Input & Form colors (shared by helpers)
+    inputBackground: '#FFFFFF',
+    placeholderText: '#8E8E93',
+    primary: accentLight,
+    titleText: '#000000',
+    
+    // Additional colors for string-helper
+    successBackground: '#E8F5E8',
+    successBorder: '#34C759',
+    successText: '#2E7D32',
+    
+    // Border colors for cards and surfaces (lighter for better visibility)
+    cardBorderLight: 'rgba(0, 0, 0, 0.05)',
+    cardBorderDark: 'rgba(255, 255, 255, 0.08)',
+    
+    // Time helper colors
+    timeHelperSuccessBackground: '#E8F5E8',
+    timeHelperSuccessBorder: '#34C759',
+    timeHelperSuccessText: '#2E7D32',
+    timeHelperErrorBackground: '#F8D7DA',
+    timeHelperErrorBorder: '#DC3545',
+    
+    // Validator helper colors
+    validatorErrorBackground: '#F8D7DA',
+    validatorErrorBorder: '#FF3B30',
+    validatorErrorText: '#DC3545',
+    
+    // Snackbar helper colors
+    snackbarCustomDefault: '#9C27B0',
+    snackbarInfo: '#64748B',
+    snackbarInfoDark: '#334155',
+    snackbarBorderLight: '#E0E0E0',
+    snackbarBorderWhite: '#FFFFFF',
+    snackbarBlack: '#000000',
+    snackbarTransparent: 'transparent',
+    snackbarSwitchActiveLight: '#FFFFFF',
+    snackbarSwitchInactiveDark: '#48484A',
+    snackbarSwitchInactiveLight: '#F4F3F4',
+  },
+};
+
+// Theme-aware color getter
+export const getThemeColors = (isDark: boolean): ThemeColors => {
+  return isDark ? Colors.dark : Colors.light;
+};
+
+// Get colors based on theme mode
+export const getColorsByTheme = (theme: ThemeMode, isDark?: boolean): ThemeColors => {
+  if (theme === 'system') {
+    return getThemeColors(isDark ?? false);
+  }
+  return Colors[theme];
+};
+
+// Quick action color mapping
+export const QUICK_ACTION_COLORS: Record<string, string> = {
+  projects: accentLight,
+  'templates': '#FF9500',
+  'documentation': '#34C759',
+  'settings': '#8E8E93',
+  'dev-onboarding': '#FF3B30',
+  'dev-device-info': '#5856D6',
+  'new-project': accentLight,
+};
+
+// Color utilities
+export const colorUtils = {
+  // Get color with opacity
+  withOpacity: (color: string, opacity: number): string => {
+    // Convert hex to rgba
+    if (color.startsWith('#')) {
+      const hex = color.replace('#', '');
+      const r = parseInt(hex.substr(0, 2), 16);
+      const g = parseInt(hex.substr(2, 2), 16);
+      const b = parseInt(hex.substr(4, 2), 16);
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
+    return color;
+  },
+  
+  // Check if color is light or dark
+  isLight: (color: string): boolean => {
+    // Simple brightness check
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 128;
+  },
+  
+  // Get contrast color (black or white)
+  getContrastColor: (color: string): string => {
+    return colorUtils.isLight(color) ? '#000000' : '#FFFFFF';
+  },
+};

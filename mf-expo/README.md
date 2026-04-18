@@ -1,0 +1,185 @@
+# MasterFabric Expo &nbsp;🚀
+
+[![Expo](https://img.shields.io/badge/Expo-54.0.0-1B1F23?logo=expo&logoColor=white)](https://expo.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React Native](https://img.shields.io/badge/React%20Native-0.81-61DAFB?logo=react&logoColor=white)](https://reactnative.dev/)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+
+> **Modern cross-platform mobile application design, management & development tool.**  
+> Cross-platform, type-safe, and lightning fast.
+
+A modern cross-platform mobile application development framework built with React Native and Expo. 
+Offering type-safe development with TypeScript, state management solutions, multi-language support, theming capabilities, and developer tools.
+
+### In the **masterfabric-expo-base** monorepo
+
+This folder is the **Expo client** next to **`mf-go`** (GraphQL API). For full-stack setup, env layout, OTP/messaging on the backend, and CI/deploy, read the **[root README](../README.md)**.
+
+| Topic | Where |
+|--------|--------|
+| GraphQL URL (dev/prod switcher) | Repo root **`local.env`** (`EXPO_PUBLIC_DEV_GRAPHQL_URL`, `EXPO_PUBLIC_GRAPHQL_URL`) — see **`local.env.example`**; also **`app.config.js`** load order. **Physical device:** set dev URL to your computer’s **LAN IP** (not `localhost`). **Android emulator:** app maps `localhost` → `10.0.2.2` for mf-go on the host. |
+| Expo `EXPO_PUBLIC_*` defaults | **[`.env.example`](.env.example)** → copy to `.env.development` / `.env` |
+| EAS / production push (OneSignal) | Set **`EXPO_PUBLIC_ONE_SIGNAL_APP_ID`** (and related keys) in **[Expo Environment variables](https://docs.expo.dev/eas/environment-variables/)** per **`eas.json`** profile environment — local `.env` is not used on EAS builders unless you wire it |
+| Backend env & security | **[`mf-go/.env.example`](../mf-go/.env.example)**, **[`mf-go/docs/SECURITY.md`](../mf-go/docs/SECURITY.md)** |
+| Typed API calls | [`src/shared/services/mf-go-api.ts`](src/shared/services/mf-go-api.ts) |
+
+<!-- Optionally, add a screenshot or GIF here -->
+<!-- ![App Screenshot](assets/screenshots/app-demo.gif) -->
+
+## 🚀 Features
+
+| **Category** | **Feature**        | **Details**                             |
+|--------------|--------------------|------------------------------------------|
+| Platform     | Cross-Platform      | iOS · Android · Web (PWA)                |
+| Localization | Internationalization| English · Turkish · RTL support          |
+| UI/UX        | Modern UI           | Adaptive theming · Material Design 3     |
+| Design       | Design Tools        | Pattern design · Visual editor           |
+| Development  | Type-Safe           | Fully typed with TypeScript              |
+| State Mgmt   | State Management    | Zustand · React Query                    |
+| Routing      | Navigation          | Expo Router · Type-safe routing          |
+| Storage      | Offline Support     | Local & encrypted storage                |
+| Security     | Secure Storage      | Async + encrypted layer                  |
+| Testing      | Tested              | Jest · RN Testing Library                |
+
+
+## 🛠️ Tech Stack
+
+| Category         | Stack                                                                 |
+|------------------|----------------------------------------------------------------------|
+| **Framework**    | [Expo SDK 54](https://docs.expo.dev/) + [React Native](https://reactnative.dev/) |
+| **Language**     | [TypeScript](https://www.typescriptlang.org/)                        |
+| **Navigation**   | [Expo Router](https://expo.github.io/router/)                        |
+| **State**        | [Zustand](https://zustand-demo.pmnd.rs/) + [React Query](https://tanstack.com/query/latest) |
+| **Styling**      | React Native StyleSheet, Expo Components                             |
+| **Animations**   | [Reanimated](https://docs.swmansion.com/react-native-reanimated/)    |
+| **Storage**      | Async Storage, Encrypted Storage                                     |
+| **Testing**      | Jest, React Native Testing Library                                   |
+| **i18n**         | Expo Localization, JSON translations                                 |
+| **Dev Tools**    | ESLint, Prettier                                                     |
+
+---
+
+## 📦 Project Structure
+
+```dart
+src
+├── screens            # Application views, grouped by feature
+│   ├── home           # Home screen with dashboard
+│   ├── splash         # Initial loading screen
+│   ├── onboarding     # User onboarding flow
+│   ├── projects       # Project listing and details
+│   ├── settings       # User and app settings
+│   ├── notifications  # In-app notifications
+├── navigation         # Navigation configuration and typed routes
+├── shared             # Shared code and modules
+│   ├── components     # Reusable UI components
+│   ├── hooks          # Custom React hooks
+│   ├── i18n           # Internationalization setup
+│   ├── services       # API services and utility logic
+│   ├── store          # Global state management (Zustand, etc.)
+│   ├── types          # Global TypeScript type definitions
+│   └── utils          # General utility functions
+└── assets             # Static assets (images, fonts, icons)
+```
+
+---
+
+## ⚡ Quick Start
+
+> **Requirements:** Node.js 18+, npm or yarn, Expo CLI
+
+```diff
++ Clone the repo
+git clone https://github.com/masterfabric/masterfabric-project-tracker.git
+cd masterfabric-project-tracker/mf-expo
+
++ Install dependencies
+npm install
+
++ Start development server
+npx expo start
+```
+
+- Press `i` for iOS, `a` for Android, or scan QR with Expo Go.
+
+### Running on a physical iOS/Android device (development build)
+
+If the app stays on a **black screen** on a real device:
+
+1. **Metro must be running** and the device must reach it:
+   - **Same Wi‑Fi:** Start with `npx expo start`, then run the app from the device (or use `npx expo run:ios --device` so Metro starts and the app is installed with the correct server URL).
+   - **Different network / remote:** Use tunnel: `npx expo start --tunnel`, then open the app on the device and connect to the shown URL if the dev client asks.
+2. **Build and run in one go (recommended):**  
+   `npx expo run:ios --device`  
+   This builds, installs, starts Metro, and points the app at your Mac.
+
+---
+
+## 📱 Platforms
+
+- **iOS:** iPhone/iPad (native patterns)
+- **Android:** Phone/Tablet (Material 3)
+- **Web:** PWA, responsive for desktop/mobile
+
+---
+
+## 🌍 Internationalization
+
+- 🇺🇸 English (default)
+- 🇹🇷 Turkish  
+Switch languages in-app, with auto locale detection and RTL support.
+
+---
+
+## 🧑‍💻 Scripts
+
+| Script                | Description                       |
+|-----------------------|-----------------------------------|
+| `npm start`           | Start Expo dev server             |
+| `npm run android`     | Run on Android emulator           |
+| `npm run ios`         | Run on iOS simulator              |
+| `npm run web`         | Run web version                   |
+| `npm run type-check`  | TypeScript check                  |
+| `npm run lint`        | ESLint analysis                   |
+| `npm run format`      | Prettier formatting               |
+| `npm run test`        | Run Jest tests                    |
+
+---
+
+## 🏗️ Build & Deploy
+
+```diff
++ Android
+npx expo build:android
++ iOS
+npx expo build:ios
++ Web
+npx expo build:web
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome!  
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) and open issues or PRs.
+
+---
+
+## 📄 License
+
+[GNU AGPL v3.0](LICENSE)
+
+---
+
+## 👤 Author
+
+[Gürkan Fikret Günak](https://github.com/gurkanfikretgunak)  
+✉️ gurkanfikretgunak@masterfabric.co
+
+---
+
+## 📚 Documentation
+
+- **Monorepo / backend:** [root README](../README.md), [mf-go README](../mf-go/README.md), [SECURITY.md](../mf-go/docs/SECURITY.md)
+- **This app:** [`docs/`](docs/) — [Internationalization](docs/i18n-implementation.md), [Development Rules](rules/expo-development-rules.md)

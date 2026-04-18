@@ -1,0 +1,112 @@
+import { Button, Dropdown, ThemedText } from '@/src/shared/components';
+import { ScreenHeader } from '@/src/shared/components/ScreenHeader';
+import { t } from '@/src/shared/i18n';
+import { Sizing, getThemeColors, typographyHelper, useTheme } from 'masterfabric-expo-core';
+import React from 'react';
+import { ScrollView, Switch, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLoggerHelperViewModel } from '../hooks/use-logger-helper-view-model';
+import { loggerHelperScreenStyles } from '../styles/logger-helper-screen.styles';
+import { LogViewer } from './log-viewer';
+import { LoggerInputField } from './logger-input-field';
+
+// Main screen component for logger helper tool - allows testing and viewing logs
+export function LoggerHelperScreen() {
+  const { input, isLoading, updateInput, runAllTests, runSingleTest } = useLoggerHelperViewModel();
+  const { isDark } = useTheme();
+  const colors = getThemeColors(isDark);
+  // Available log levels for dropdown selection
+  const levels: ('info' | 'debug' | 'warning' | 'error' | 'verbose')[] = ['info', 'debug', 'warning', 'error', 'verbose'];
+
+  return (
+    <SafeAreaView style={[loggerHelperScreenStyles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <ScreenHeader
+        title={t('helpers.loggerHelper.title')}
+        subtitle={t('helpers.loggerHelper.description')}
+        variant="minimal"
+      />
+      <ScrollView
+        style={{ flex: Sizing.flexNumber.full }}
+        contentContainerStyle={[loggerHelperScreenStyles.scrollContent]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View
+          style={[
+            loggerHelperScreenStyles.card,
+            { backgroundColor: colors.surfaceBackground, borderColor: colors.surfaceBorder }
+          ]}
+        >
+          <Text style={[loggerHelperScreenStyles.sectionTitle, { color: colors.labelText }]}> 
+            {t('helpers.toastHelper.input')}
+          </Text>
+          <View style={loggerHelperScreenStyles.section}>
+            <LoggerInputField
+              message={input.message}
+              level={input.level}
+              component={input.component}
+              includeStackTrace={input.includeStackTrace}
+              onChange={updateInput}
+            />
+
+            {/* Log level selection dropdown */}
+            <View style={{ gap: Sizing.gap.s, marginTop: Sizing.spacing.s }}>
+              <ThemedText style={[{ color: colors.titleText }, typographyHelper.fromSizing.createStyle(Sizing, 'm', 'semibold', 'normal')]}>
+                {t('helpers.loggerHelper.level')} {input.level.toUpperCase()}
+              </ThemedText>
+              <Dropdown
+                options={levels.map((lvl) => ({ label: lvl.toUpperCase(), value: lvl }))}
+                selectedValue={input.level}
+                onSelect={(value) => updateInput({ level: value as typeof input.level })}
+                placeholder={t('helpers.loggerHelper.level')}
+              />
+            </View>
+
+            {/* Toggle timestamp visibility in logs */}
+            <View style={{ flexDirection: Sizing.layout.flexDirection.row, alignItems: Sizing.layout.alignItems.center, gap: Sizing.gap.s, marginTop: Sizing.spacing.s }}>
+              <Switch
+                value={input.showTimestamp}
+                onValueChange={(value) => updateInput({ showTimestamp: value })}
+                trackColor={{ false: colors.surfaceBorder, true: colors.tint }}
+              />
+              <ThemedText style={{ color: colors.bodyText }}>
+                {t('helpers.loggerHelper.showTimestamp')}
+              </ThemedText>
+            </View>
+
+            {/* Action buttons - run single test or run all tests */}
+            <View style={[loggerHelperScreenStyles.actions, { gap: Sizing.gap.m }]}>
+              <Button
+                title={isLoading ? t('helpers.loggerHelper.running') : t('helpers.loggerHelper.run')}
+                onPress={runSingleTest}
+                disabled={isLoading}
+                variant="primary"
+                size="large"
+              />
+              <Button
+                title={isLoading ? t('helpers.loggerHelper.running') : t('helpers.loggerHelper.runTests')}
+                onPress={runAllTests}
+                disabled={isLoading}
+                variant="secondary"
+                size="large"
+              />
+            </View>
+          </View>
+        </View>
+
+        <View
+          style={[
+            loggerHelperScreenStyles.card,
+            { backgroundColor: colors.surfaceBackground, borderColor: colors.surfaceBorder }
+          ]}
+        >
+          <Text style={[loggerHelperScreenStyles.sectionTitle, { color: colors.labelText }]}>
+            {t('helpers.toastHelper.results')}
+          </Text>
+          <View style={[loggerHelperScreenStyles.resultsList, { marginTop: Sizing.spacing.s }]}>
+            <LogViewer />
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>YOUR_FIREBASE_IOS_API_KEY</string>
+	<key>GCM_SENDER_ID</key>
+	<string>YOUR_PROJECT_NUMBER</string>
+	<key>PROJECT_ID</key>
+	<string>your-firebase-project-id</string>
+	<key>STORAGE_BUCKET</key>
+	<string>your-firebase-project-id.firebasestorage.app</string>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:YOUR_PROJECT_NUMBER:ios:YOUR_APP_ID</string>
+</dict>
+</plist>

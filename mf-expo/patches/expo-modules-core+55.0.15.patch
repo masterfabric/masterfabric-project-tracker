@@ -1,0 +1,149 @@
+diff --git a/node_modules/expo-modules-core/ios/Core/AppContext.swift b/node_modules/expo-modules-core/ios/Core/AppContext.swift
+index 450f568..167afff 100644
+--- a/node_modules/expo-modules-core/ios/Core/AppContext.swift
++++ b/node_modules/expo-modules-core/ios/Core/AppContext.swift
+@@ -271,6 +271,14 @@ public final class AppContext: NSObject, @unchecked Sendable {
+     return LegacyEventEmitterCompat(appContext: self)
+   }
+ 
++  /**
++   Sends a legacy event to JS. Used by EXLegacyEventEmitterService for expo-av and other legacy modules.
++   */
++  @objc
++  public func sendLegacyEvent(withName name: String, body: Any?) {
++    eventEmitter?.sendEvent(withName: name, body: body)
++  }
++
+   /**
+    Starts listening to `UIApplication` notifications.
+    */
+diff --git a/node_modules/expo-modules-core/ios/Core/ExpoBridgeModule.mm b/node_modules/expo-modules-core/ios/Core/ExpoBridgeModule.mm
+index 9584342..b33c352 100644
+--- a/node_modules/expo-modules-core/ios/Core/ExpoBridgeModule.mm
++++ b/node_modules/expo-modules-core/ios/Core/ExpoBridgeModule.mm
+@@ -2,6 +2,7 @@
+ 
+ #import <ReactCommon/RCTTurboModule.h>
+ #import <ExpoModulesCore/ExpoBridgeModule.h>
++#import <ExpoModulesCore/EXEventEmitterService.h>
+ #import <ExpoModulesCore/EXRuntime.h>
+ #import <ExpoModulesCore/Swift.h>
+ 
+@@ -66,6 +67,12 @@ - (void)legacyProxyDidSetBridge:(nonnull EXNativeModulesProxy *)moduleProxy
+ {
+   _appContext.legacyModulesProxy = moduleProxy;
+   _appContext.legacyModuleRegistry = moduleRegistry;
++
++  // Wire up EXLegacyEventEmitterService for legacy modules (e.g. expo-av)
++  id eventEmitterService = [moduleRegistry getModuleImplementingProtocol:@protocol(EXEventEmitterService)];
++  if ([eventEmitterService respondsToSelector:@selector(setAppContext:)]) {
++    [eventEmitterService setAppContext:_appContext];
++  }
+ }
+ 
+ /**
+diff --git a/node_modules/expo-modules-core/ios/ExpoModulesCore.h b/node_modules/expo-modules-core/ios/ExpoModulesCore.h
+index c90f976..9af100b 100644
+--- a/node_modules/expo-modules-core/ios/ExpoModulesCore.h
++++ b/node_modules/expo-modules-core/ios/ExpoModulesCore.h
+@@ -47,6 +47,9 @@
+ #import <ExpoModulesCore/EXNativeModulesProxy.h>
+ #import <ExpoModulesCore/EXAppLifecycleListener.h>
+ #import <ExpoModulesCore/EXAppLifecycleService.h>
++#import <ExpoModulesCore/EXEventEmitter.h>
++#import <ExpoModulesCore/EXEventEmitterService.h>
++#import <ExpoModulesCore/EXLegacyExpoViewProtocol.h>
+ #import <ExpoModulesCore/EXInternalModule.h>
+ #import <ExpoModulesCore/EXJavaScriptContextProvider.h>
+ #import <ExpoModulesCore/EXModuleRegistryConsumer.h>
+diff --git a/node_modules/expo-modules-core/ios/Legacy/Protocols/EXEventEmitter.h b/node_modules/expo-modules-core/ios/Legacy/Protocols/EXEventEmitter.h
+new file mode 100644
+index 0000000..ddd8260
+--- /dev/null
++++ b/node_modules/expo-modules-core/ios/Legacy/Protocols/EXEventEmitter.h
+@@ -0,0 +1,11 @@
++// Copyright 2018-present 650 Industries. All rights reserved.
++// Compatibility header for legacy modules (e.g. expo-av) - EXEventEmitter was removed in SDK 55.
++
++#import <Foundation/Foundation.h>
++
++@protocol EXEventEmitter <NSObject>
++
++- (void)startObserving;
++- (void)stopObserving;
++
++@end
+diff --git a/node_modules/expo-modules-core/ios/Legacy/Protocols/EXEventEmitterService.h b/node_modules/expo-modules-core/ios/Legacy/Protocols/EXEventEmitterService.h
+new file mode 100644
+index 0000000..1e664b4
+--- /dev/null
++++ b/node_modules/expo-modules-core/ios/Legacy/Protocols/EXEventEmitterService.h
+@@ -0,0 +1,10 @@
++// Copyright 2018-present 650 Industries. All rights reserved.
++// Compatibility header for legacy modules (e.g. expo-av) - EXEventEmitterService was removed in SDK 55.
++
++#import <Foundation/Foundation.h>
++
++@protocol EXEventEmitterService <NSObject>
++
++- (void)sendEventWithName:(NSString *)eventName body:(id)body;
++
++@end
+diff --git a/node_modules/expo-modules-core/ios/Legacy/Protocols/EXLegacyExpoViewProtocol.h b/node_modules/expo-modules-core/ios/Legacy/Protocols/EXLegacyExpoViewProtocol.h
+new file mode 100644
+index 0000000..b946512
+--- /dev/null
++++ b/node_modules/expo-modules-core/ios/Legacy/Protocols/EXLegacyExpoViewProtocol.h
+@@ -0,0 +1,15 @@
++// Copyright 2022-present 650 Industries. All rights reserved.
++// Compatibility header for legacy modules (e.g. expo-av) - removed in SDK 55.
++
++#import <Foundation/Foundation.h>
++
++@class EXModuleRegistry;
++
++/**
++ The protocol required for the Objective-C views to be initialized with the legacy module registry.
++ */
++@protocol EXLegacyExpoViewProtocol <NSObject>
++
++- (instancetype)initWithModuleRegistry:(nullable EXModuleRegistry *)moduleRegistry;
++
++@end
+diff --git a/node_modules/expo-modules-core/ios/Legacy/Services/EXLegacyEventEmitterService.mm b/node_modules/expo-modules-core/ios/Legacy/Services/EXLegacyEventEmitterService.mm
+new file mode 100644
+index 0000000..07a12c6
+--- /dev/null
++++ b/node_modules/expo-modules-core/ios/Legacy/Services/EXLegacyEventEmitterService.mm
+@@ -0,0 +1,31 @@
++// Copyright 2018-present 650 Industries. All rights reserved.
++// Compatibility implementation for legacy modules (e.g. expo-av) - bridges to LegacyEventEmitterCompat.
++
++#import <ExpoModulesCore/EXEventEmitterService.h>
++#import <ExpoModulesCore/EXDefines.h>
++#import <ExpoModulesCore/Swift.h>
++
++@interface EXLegacyEventEmitterService : NSObject <EXInternalModule, EXEventEmitterService>
++@property (nonatomic, weak) EXAppContext *appContext;
++@end
++
++@implementation EXLegacyEventEmitterService
++
++EX_REGISTER_MODULE();
++
+++ (const NSArray<Protocol *> *)exportedInterfaces
++{
++  return @[@protocol(EXEventEmitterService)];
++}
++
++- (void)setAppContext:(EXAppContext *)appContext
++{
++  _appContext = appContext;
++}
++
++- (void)sendEventWithName:(NSString *)eventName body:(id)body
++{
++  [_appContext sendLegacyEventWithName:eventName body:body];
++}
++
++@end

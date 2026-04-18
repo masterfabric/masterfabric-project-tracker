@@ -1,0 +1,37 @@
+schema:
+  - internal/infrastructure/graphql/schema/*.graphqls
+
+exec:
+  layout: single-file
+  filename: internal/infrastructure/graphql/generated/generated.go
+  package: generated
+
+model:
+  filename: internal/infrastructure/graphql/model/models_gen.go
+  package: model
+
+resolver:
+  layout: follow-schema
+  dir: internal/infrastructure/graphql/resolver
+  package: resolver
+  filename_template: "{name}.resolvers.go"
+
+models:
+  UUID:
+    model:
+      - github.com/99designs/gqlgen/graphql.UUID
+  Time:
+    model:
+      - github.com/99designs/gqlgen/graphql.Time
+  UserProfile:
+    fields:
+      addresses:
+        resolver: true
+  UserTodo:
+    fields:
+      subtasks:
+        resolver: true
+  OrganizationProjectTodo:
+    fields:
+      subtasks:
+        resolver: true

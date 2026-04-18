@@ -1,0 +1,45 @@
+# device.graphqls — User device registration queries and mutations
+
+extend type Query {
+  """List all devices registered for the authenticated user."""
+  myDevices: [UserDevice!]!
+}
+
+extend type Mutation {
+  """Register or update a device for the authenticated user."""
+  registerDevice(input: RegisterDeviceInput!): UserDevice!
+}
+
+# ── Inputs ──────────────────────────────────────────────────────────────────
+
+input RegisterDeviceInput {
+  deviceId:   String!
+  platform:   String!
+  deviceName: String
+  model:      String
+  brand:      String
+  osName:     String
+  osVersion:  String
+  appName:    String
+  appVersion: String
+  appBuild:   String
+}
+
+# ── Response types ───────────────────────────────────────────────────────────
+
+type UserDevice {
+  id:         UUID!
+  userID:     UUID!
+  deviceId:   String!
+  platform:   String!
+  deviceName: String!
+  model:      String!
+  brand:      String!
+  osName:     String!
+  osVersion:  String!
+  appName:    String!
+  appVersion: String!
+  appBuild:   String!
+  createdAt:  Time!
+  updatedAt:  Time!
+}

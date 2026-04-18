@@ -1,0 +1,175 @@
+# admin.graphqls — Admin-only queries and mutations (requires role: ADMIN)
+
+extend type Query {
+  """[Admin] Return a paginated list of all users."""
+  adminUsers(page: Int, pageSize: Int): AdminUserList!
+
+  """[Admin] Return a single user by ID."""
+  adminUser(id: UUID!): AdminUserProfile!
+
+  """[Admin] Return all app settings (including non-public). Used for project visibility, etc."""
+  adminAppSettings: [AdminAppSetting!]!
+
+  """[Admin] Return active user sessions (last refreshed). Admin can see who is online."""
+  adminUserSessions(userID: UUID, limit: Int): [UserSession!]!
+
+  """[Admin] Return session stats: total sessions, active users, total users, registered devices."""
+  adminSessionStats: AdminSessionStats!
+
+  """
+  [Admin] Preview relational data removed or updated when permanently deleting a user.
+  PostgreSQL FK cascades remove settings, addresses, devices, owned todos, memberships, etc.;
+  owned organizations are deleted entirely (see ownedOrganizations).
+  """
+  adminUserDeletionImpact(id: UUID!): AdminUserDeletionImpact!
+
+  """[Admin] Todos owned by this user (creator user_id). For full user detail / management."""
+  adminUserOwnedTodos(userID: UUID!): [UserTodo!]!
+
+  """
+  [Admin] All rows in `notifications` (no language filter), newest first.
+  Use this to verify DB contents; user-facing `notifications` may filter by locale.
+  """
+  adminNotifications(limit: Int): [NotificationPayload!]!
+}
+
+"""Active user session — device, platform, last refresh time, user and org info."""
+type UserSession {
+  id:                 UUID!
+  userID:             UUID!
+  userEmail:          String!
+  userDisplayName:    String!
+  organizationNames:  [String!]!
+  deviceID:           String!
+  platform:           String!
+  deviceName:         String!
+  createdAt:          Time!
+  lastRefreshedAt:    Time!
+}
+
+"""Session stats for admin dashboard."""
+type AdminSessionStats {
+  totalActiveSessions:    Int!
+  uniqueActiveUsers:      Int!
+  totalUsers:            Int!
+  totalRegisteredDevices: Int!
+}
+
+"""Per-organization impact when deleting a user who owns the organization (org row is CASCADE-deleted)."""
+type AdminOwnedOrganizationDeletionImpact {
+  organizationID:   UUID!
+  name:             String!
+  """Other members in this org (they lose access when the organization is removed)."""
+  otherMemberCount: Int!
+}
+
+"""
+Summary shown to admins before adminDeleteUser.
+Matches database ON DELETE CASCADE / SET NULL behavior in migrations.
+"""
+type AdminUserDeletionImpact {
+  userID: UUID!
+  email: String!
+  displayName: String!
+  """Todos where this user is the owner (deleted with the user)."""
+  ownedTodoCount: Int!
+  """
+  Todos created by other users that assign this user; assignee is cleared (ON DELETE SET NULL).
+  """
+  todoAssigneeClearCount: Int!
+  """organization_members rows for this user (removed when user is deleted)."""
+  organizationMembershipCount: Int!
+  """Organizations this user owns; each entire org and its memberships are removed."""
+  ownedOrganizations: [AdminOwnedOrganizationDeletionImpact!]!
+  addressCount: Int!
+  deviceCount: Int!
+  hasUserSettings: Boolean!
+  notificationReadCount: Int!
+  sessionCount: Int!
+  userMessageCount: Int!
+  pendingInvitationAsInviterCount: Int!
+  """Team chat messages in organizations that you authored (removed when your account is deleted)."""
+  organizationMessageAuthoredCount: Int!
+  """Organization news posts you authored (removed when your account is deleted)."""
+  organizationNewsAuthoredCount: Int!
+  """OTP audit/history rows for your account (removed when your account is deleted)."""
+  otpCodeHistoryCount: Int!
+}
+
+extend type Mutation {
+  """[Admin] Suspend or reactivate a user account."""
+  adminSuspendUser(id: UUID!, suspend: Boolean!): AdminUserProfile!
+
+  """[Admin] Change a user's role."""
+  adminChangeRole(id: UUID!, role: UserRole!): AdminUserProfile!
+
+  """[Admin] Set a user's status (active, inactive, suspended). Inactive/suspended users cannot login."""
+  adminSetUserStatus(id: UUID!, status: UserStatus!): AdminUserProfile!
+
+  """[Admin] Permanently delete a user account. Cannot delete yourself."""
+  adminDeleteUser(id: UUID!): Boolean!
+
+  """[Admin] Create or update an app setting (e.g. project visibility)."""
+  adminUpsertAppSetting(input: AdminAppSettingInput!): AdminAppSetting!
+
+  """[Admin] Delete any todo by id (e.g. moderation)."""
+  adminDeleteUserTodo(id: UUID!): Boolean!
+
+  """[Admin] Update a todo's title and/or completed flag."""
+  adminUpdateUserTodo(input: AdminUpdateUserTodoInput!): UserTodo!
+}
+
+input AdminUpdateUserTodoInput {
+  id:         UUID!
+  title:      String
+  completed:  Boolean
+  dueAt:      Time
+  clearDueAt: Boolean
+}
+
+# ── Response types ───────────────────────────────────────────────────────────
+
+type AdminUserProfile {
+  id:             UUID!
+  email:          String!
+  displayName:    String!
+  nickname:       String!
+  avatarURL:      String!
+  bio:            String!
+  status:         UserStatus!
+  role:           UserRole!
+  createdAt:      Time!
+  updatedAt:      Time!
+  phoneNumber:    String!
+  dateOfBirth:    String
+  gender:         Gender!
+  location:       String!
+  websiteURL:     String!
+  socialTwitter:  String!
+  socialGitHub:   String!
+  socialLinkedIn: String!
+  language:       String!
+  telegramChatId: String!
+}
+
+type AdminUserList {
+  users:      [AdminUserProfile!]!
+  totalCount: Int!
+  page:       Int!
+  pageSize:   Int!
+}
+
+# Admin app setting (includes isPublic)
+type AdminAppSetting {
+  key:         String!
+  value:       String!
+  description: String!
+  isPublic:    Boolean!
+}
+
+input AdminAppSettingInput {
+  key:         String!
+  value:       String!
+  description: String
+  isPublic:    Boolean
+}

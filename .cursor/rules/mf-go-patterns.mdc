@@ -1,0 +1,14 @@
+---
+description: mf-go patterns and conventions
+globs: mf-go/**/*.go
+alwaysApply: false
+---
+
+# mf-go Patterns
+
+- Domain → Application → Infrastructure (strict dependency rule)
+- Schema: `internal/infrastructure/graphql/schema/*.graphqls` — source of truth
+- After schema changes: `make generate-all` in mf-go
+- Use cases: `Execute(ctx, req) (resp, error)` pattern
+- Errors: `internal/shared/errors` sentinels
+- Postman: **one** collection (`mf-go/postman/masterfabric.collection.json`) and **one** environment (`mf-go/postman/masterfabric.environment.json`) — extend those files only; see `.cursor/rules/mf-go-ship-checklist.mdc` when shipping API changes

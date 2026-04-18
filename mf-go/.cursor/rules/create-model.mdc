@@ -1,0 +1,37 @@
+---
+description: Create a new domain model entity
+globs: internal/domain/**/*.go
+---
+
+# Create Domain Model
+
+When creating a new domain model:
+
+1. Place in `internal/domain/<context>/model/<entity>.go`
+2. Use pure Go structs — no external dependencies
+3. Add typed enums for status fields
+4. Include `CreatedAt`, `UpdatedAt time.Time` fields
+5. Use `uuid.UUID` for IDs (from `github.com/google/uuid`)
+
+```go
+package model
+
+import (
+    "time"
+    "github.com/google/uuid"
+)
+
+type <Entity> struct {
+    ID        uuid.UUID
+    // ... fields
+    CreatedAt time.Time
+    UpdatedAt time.Time
+}
+
+type <Entity>Status string
+
+const (
+    <Entity>StatusActive   <Entity>Status = "active"
+    <Entity>StatusInactive <Entity>Status = "inactive"
+)
+```

@@ -1,0 +1,36 @@
+---
+description: Error handling conventions
+globs: **/*.go
+---
+
+# Error Handling
+
+Always follow these patterns:
+
+## Domain errors (sentinel values)
+```go
+var ErrXxx = domainErr.New("XXX_CODE", "human message", nil)
+```
+
+## Wrapping errors
+```go
+return fmt.Errorf("userRepo.FindByEmail: %w", err)
+```
+
+## Checking errors
+```go
+if err != nil {
+    return nil, fmt.Errorf("failed to create user: %w", err)
+}
+```
+
+## Never
+- `panic()` in business logic
+- Swallow errors with `_ = err`
+- Return raw DB errors to GraphQL layer (map to domain errors)
+
+## GraphQL error extension
+Errors should include a `code` extension for clients:
+```go
+// use graphql.ErrorWithCode from gqlgen extensions
+```

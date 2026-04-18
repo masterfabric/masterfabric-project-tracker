@@ -1,0 +1,8 @@
+# schema.graphqls — shared scalars and root types
+
+scalar Time
+scalar UUID
+
+type Query
+type Mutation
+type Subscription

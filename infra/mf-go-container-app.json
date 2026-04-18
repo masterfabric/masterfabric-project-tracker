@@ -1,0 +1,243 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.41.2.15936",
+      "templateHash": "14589155854324131586"
+    }
+  },
+  "parameters": {
+    "acrServer": {
+      "type": "string",
+      "metadata": {
+        "description": "ACR server name, e.g. masterfabricexpogo.azurecr.io"
+      }
+    },
+    "acrName": {
+      "type": "string",
+      "defaultValue": "masterfabricexpogo",
+      "metadata": {
+        "description": "ACR registry name (e.g. masterfabricexpogo)"
+      }
+    },
+    "acrAdminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "ACR admin password"
+      }
+    },
+    "containerImage": {
+      "type": "string",
+      "metadata": {
+        "description": "Container image, e.g. masterfabricexpogo.azurecr.io/mf-go:latest"
+      }
+    },
+    "envName": {
+      "type": "string",
+      "defaultValue": "mf-go-env",
+      "metadata": {
+        "description": "Environment name for Container Apps"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location"
+      }
+    },
+    "appName": {
+      "type": "string",
+      "defaultValue": "mf-go",
+      "metadata": {
+        "description": "App name"
+      }
+    },
+    "databaseDsn": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Postgres DSN"
+      }
+    },
+    "redisUrl": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Shared Redis URL (redis://...)"
+      }
+    },
+    "jwtSecret": {
+      "type": "securestring",
+      "metadata": {
+        "description": "JWT secret (min 32 chars)"
+      }
+    },
+    "minReplicas": {
+      "type": "int",
+      "defaultValue": 2,
+      "minValue": 0,
+      "metadata": {
+        "description": "Minimum replicas. Use >= 2 in production so Container Apps can roll out a new revision without dropping all capacity (zero-downtime image deploys)."
+      }
+    },
+    "maxReplicas": {
+      "type": "int",
+      "defaultValue": 5,
+      "minValue": 1,
+      "metadata": {
+        "description": "Maximum replicas"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.App/managedEnvironments",
+      "apiVersion": "2024-02-02-preview",
+      "name": "[parameters('envName')]",
+      "location": "[parameters('location')]",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2024-02-02-preview",
+      "name": "[parameters('appName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('envName'))]",
+        "configuration": {
+          "ingress": {
+            "external": true,
+            "targetPort": 8080,
+            "transport": "auto"
+          },
+          "registries": [
+            {
+              "server": "[parameters('acrServer')]",
+              "username": "[parameters('acrName')]",
+              "passwordSecretRef": "acr-password"
+            }
+          ],
+          "activeRevisionsMode": "multiple",
+          "secrets": [
+            {
+              "name": "database-dsn",
+              "value": "[parameters('databaseDsn')]"
+            },
+            {
+              "name": "jwt-secret",
+              "value": "[parameters('jwtSecret')]"
+            },
+            {
+              "name": "redis-url",
+              "value": "[parameters('redisUrl')]"
+            },
+            {
+              "name": "acr-password",
+              "value": "[parameters('acrAdminPassword')]"
+            }
+          ]
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "mf-go",
+              "image": "[parameters('containerImage')]",
+              "resources": {
+                "cpu": 1,
+                "memory": "2Gi"
+              },
+              "probes": [
+                {
+                  "type": "Liveness",
+                  "httpGet": {
+                    "path": "/health",
+                    "port": 8080,
+                    "scheme": "HTTP"
+                  },
+                  "initialDelaySeconds": 15,
+                  "periodSeconds": 20,
+                  "timeoutSeconds": 3,
+                  "failureThreshold": 3
+                },
+                {
+                  "type": "Readiness",
+                  "httpGet": {
+                    "path": "/health/ready",
+                    "port": 8080,
+                    "scheme": "HTTP"
+                  },
+                  "initialDelaySeconds": 10,
+                  "periodSeconds": 10,
+                  "timeoutSeconds": 6,
+                  "failureThreshold": 3
+                }
+              ],
+              "env": [
+                {
+                  "name": "PORT",
+                  "value": "8080"
+                },
+                {
+                  "name": "DATABASE_DSN",
+                  "secretRef": "database-dsn"
+                },
+                {
+                  "name": "REDIS_URL",
+                  "secretRef": "redis-url"
+                },
+                {
+                  "name": "RABBITMQ_URL",
+                  "value": "amqp://guest:guest@127.0.0.1:5672/"
+                },
+                {
+                  "name": "RABBITMQ_ENABLED",
+                  "value": "true"
+                },
+                {
+                  "name": "JWT_SECRET",
+                  "secretRef": "jwt-secret"
+                },
+                {
+                  "name": "JWT_ACCESS_TTL",
+                  "value": "15m"
+                },
+                {
+                  "name": "JWT_REFRESH_TTL",
+                  "value": "168h"
+                },
+                {
+                  "name": "LOG_LEVEL",
+                  "value": "info"
+                },
+                {
+                  "name": "LOG_FORMAT",
+                  "value": "json"
+                },
+                {
+                  "name": "GRAPHQL_INTROSPECTION",
+                  "value": "false"
+                }
+              ]
+            },
+            {
+              "name": "rabbitmq",
+              "image": "rabbitmq:3-management-alpine",
+              "resources": {
+                "cpu": "[json('0.5')]",
+                "memory": "1Gi"
+              }
+            }
+          ],
+          "scale": {
+            "minReplicas": "[parameters('minReplicas')]",
+            "maxReplicas": "[parameters('maxReplicas')]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', parameters('envName'))]"
+      ]
+    }
+  ]
+}

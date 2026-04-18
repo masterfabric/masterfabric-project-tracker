@@ -1,0 +1,14 @@
+---
+description: mf-expo patterns and conventions
+globs: mf-expo/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# mf-expo Patterns
+
+- **GraphQL**: `graphqlRequest` from `src/shared/services/graphql-client`; `setGraphQLAuthToken` / `clearGraphQLAuthToken` for auth
+- **Toast**: `useToast()` → `success()`, `error()`, `warning()`, `info()` — from `@/src/shared/hooks/use-toast`
+- **Screens**: PascalCase folders (e.g. `ProfileScreen/ProfileScreen.tsx`)
+- **Core**: `packages/masterfabric-expo-core` — PascalCase for views
+- **Style**: Functional components, TypeScript interfaces, Prettier; avoid enums (use maps)
+- **State**: Zustand, React Query; minimize useState/useEffect
