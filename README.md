@@ -1,4 +1,4 @@
-# MasterFabric Expo Base [AI Monorepo]
+# MasterFabric Project Tracker [AI Monorepo]
 
 > **Production-ready** full-stack mobile monorepo — React Native + Expo + Go GraphQL. Built for **AI-assisted development** with Cursor, TypeScript, and Clean Architecture.
 
