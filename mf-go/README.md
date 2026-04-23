@@ -10,6 +10,7 @@ A mobile-backend Go service built with Clean/Hexagonal Architecture and DDD prin
 - [Project Structure](#project-structure)
 - [Quick Start](#quick-start)
 - [Environment Variables](#environment-variables)
+  - [Refresh session cap (`AUTH_MAX_REFRESH_SESSIONS_PER_USER`)](#refresh-session-cap-auth_max_refresh_sessions_per_user)
 - [OTP delivery (email, WhatsApp, Telegram)](#otp-delivery-email-whatsapp-telegram)
 - [CLI — `masterfabric_go`](#cli--masterfabric_go)
 - [GraphQL API Reference](#graphql-api-reference)
@@ -215,6 +216,8 @@ RABBITMQ_EXCHANGE=masterfabric.events
 JWT_SECRET=change-me-in-production-at-least-32-chars
 JWT_ACCESS_TTL=5m
 JWT_REFRESH_TTL=168h
+# Cap concurrent refresh-token sessions per user (Redis). See § Refresh session cap below.
+AUTH_MAX_REFRESH_SESSIONS_PER_USER=10
 
 # Logging: debug | info | warn | error
 LOG_LEVEL=info
@@ -229,6 +232,14 @@ OTP_APP_NAME=MasterFabric
 # When using email/both, set SMTP_* . For WhatsApp/Telegram see .env.example.
 # Docker Compose includes Mailpit on :1025 / UI :8025 — see deployments/docker-compose.yml.
 ```
+
+### Refresh session cap (`AUTH_MAX_REFRESH_SESSIONS_PER_USER`)
+
+Each successful **login** or **refresh** stores a new refresh token in Redis. The server enforces a **maximum number of concurrent refresh-token keys per user** (default **10** via `AUTH_MAX_REFRESH_SESSIONS_PER_USER`). When a new session would exceed the cap, it **deletes the oldest keys** (shortest remaining TTL first). Devices holding those revoked refresh tokens then receive **`TOKEN_INVALID`** on the next refresh — the “surprise logout” called out in ops reviews.
+
+- **`0`** disables the cap (unlimited concurrent refresh sessions).
+- **Production / Azure Container Apps (or any host):** If legitimate users often exceed **10** signed-in clients, **raise the value** in environment configuration rather than chasing false-positive auth bugs. Evictions emit a structured **`WARN`** log with **`event=refresh_session_eviction`**, **`user_id`**, **`evicted`**, **`max_sessions`**, **`session_count_before`** — visible at the default production **`LOG_LEVEL=warn`** (Azure Monitor / Log Analytics).
+- **Not Azure AD:** This setting applies to **mf-go’s own** refresh tokens in Redis, not Microsoft Entra ID token limits.
 
 ### OTP delivery (email, WhatsApp, Telegram)
 

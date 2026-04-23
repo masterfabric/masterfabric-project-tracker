@@ -24,6 +24,7 @@ func testLogoutResolver() *mutationResolver {
 			MaxRefreshTokensPerUser: 10,
 		},
 		infraRedis.NewCacheHandler(nil),
+		nil,
 	)
 	return &mutationResolver{
 		&Resolver{

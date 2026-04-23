@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"sort"
 	"strconv"
 	"strings"
@@ -37,12 +38,17 @@ type Claims struct {
 type JWTService struct {
 	cfg   config.JWTConfig
 	cache *infraRedis.CacheHandler
+	log   *slog.Logger
 }
 
 // NewJWTService creates a JWTService. cache may wrap a nil Redis client
 // (tokens won't be blacklisted / refresh tokens won't be stored).
-func NewJWTService(cfg config.JWTConfig, cache *infraRedis.CacheHandler) *JWTService {
-	return &JWTService{cfg: cfg, cache: cache}
+// log may be nil; eviction events use slog.Default().
+func NewJWTService(cfg config.JWTConfig, cache *infraRedis.CacheHandler, log *slog.Logger) *JWTService {
+	if log == nil {
+		log = slog.Default()
+	}
+	return &JWTService{cfg: cfg, cache: cache, log: log}
 }
 
 // GenerateTokenPair creates an access + refresh token pair for the given user.
@@ -253,8 +259,20 @@ func (s *JWTService) enforceRefreshTokenLimit(ctx context.Context, userID uuid.U
 	}
 	sort.Slice(rows, func(i, j int) bool { return rows[i].ttl < rows[j].ttl })
 	excess := len(keys) - max
+	evicted := 0
 	for i := 0; i < excess && i < len(rows); i++ {
-		_ = s.cache.Del(ctx, rows[i].key)
+		if err := s.cache.Del(ctx, rows[i].key); err == nil {
+			evicted++
+		}
+	}
+	if evicted > 0 {
+		s.log.Warn("auth refresh sessions evicted (per-user cap)",
+			slog.String("event", "refresh_session_eviction"),
+			slog.String("user_id", userID.String()),
+			slog.Int("evicted", evicted),
+			slog.Int("max_sessions", max),
+			slog.Int("session_count_before", len(keys)),
+		)
 	}
 	return nil
 }

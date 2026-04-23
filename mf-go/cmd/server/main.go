@@ -182,7 +182,7 @@ func main() {
 	emailOTPProvider := infraOTP.NewEmailDeliveryProvider(log, userRepo, effectiveSMTPResolver, cfg.OTP.AppName, appSettingsRepo)
 	otpProvider := infraOTP.WithUserFacingOTPSMTP(baseOTPProvider, emailOTPProvider, effectiveSMTPResolver, log)
 
-	jwtSvc := infraAuth.NewJWTService(cfg.JWT, cacheHandler)
+	jwtSvc := infraAuth.NewJWTService(cfg.JWT, cacheHandler, log)
 	userMessageBroadcaster := broadcaster.NewUserMessageBroadcaster()
 	orgMessageBroadcaster := broadcaster.NewOrganizationMessageBroadcaster()
 	getProfileUC := userUC.NewGetProfileUseCase(userRepo)

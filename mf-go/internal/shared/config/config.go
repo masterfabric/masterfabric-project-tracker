@@ -124,6 +124,7 @@ type JWTConfig struct {
 	AccessTokenTTL  time.Duration
 	RefreshTokenTTL time.Duration
 	// MaxRefreshTokensPerUser caps concurrent refresh-token sessions per user in Redis (0 = unlimited).
+	// When exceeded, oldest sessions are deleted; see AUTH_MAX_REFRESH_SESSIONS_PER_USER in README and eviction logs (event=refresh_session_eviction).
 	MaxRefreshTokensPerUser int
 }
 
