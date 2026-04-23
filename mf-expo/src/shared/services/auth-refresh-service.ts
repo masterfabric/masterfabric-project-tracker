@@ -1,5 +1,6 @@
 /**
  * Auth refresh service — attempts token refresh on 401, app launch, every 3 min.
+ * Access token expiry is server-driven; see `expiresIn` on login/refresh responses (not a fixed client-side TTL).
  * Updates session and user (email, role, etc.) from refresh payload.
  * Passes device info for session tracking (admin can see active sessions).
  *

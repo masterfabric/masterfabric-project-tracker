@@ -6,6 +6,8 @@ Notable changes to the **masterfabric-expo-base** monorepo are recorded here. St
 
 ### Fixed
 
+- **mf-expo:** **Auth sync** — comments in **`use-mf-go-auth-sync`** and **`auth-refresh-service`** no longer claim a fixed **5 min** access token TTL. Access lifetime is **server-driven** (login/refresh **`expiresIn`**; e.g. Azure may return **900s** / 15 min), clarifying how that relates to the **3 min** proactive refresh. (**GFG-81**)
+
 - **mf-expo:** Home **Add / edit todo** — **iOS** inline **due date** calendar used **light** typography on a **dark** sheet (weekday labels and day numbers nearly invisible). **`DateTimePicker`** now sets **`themeVariant`** from app **`useTheme()`** so the native picker matches **dark / light** mode. (**MF-145**)
 
 - **mf-expo:** Home **My Todos** with an **organization project** filter: task rows were static (only the checkbox toggled). Rows now **toggle done** when tapping the title area (aligned with project detail). **Long-press** opens **edit**; project-filtered items save via **`updateOrganizationProjectTodo`** / delete via project API (`TodoSheet` **`organizationProjectEditLock`**). User list: **tap row = toggle**, **long-press = edit** (replaces tap-to-edit and the home quick-actions sheet). EN + TR **`home.todos.description`**. (**GFG-118**)

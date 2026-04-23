@@ -2,7 +2,7 @@
  * Syncs app-store auth state with mf-go GraphQL client.
  * - On 401: attempts token refresh first; updates session + user from payload. Logs out only if refresh fails.
  * - On launch: if mfGoSession exists, refresh before first API call (keeps session alive).
- * - Every 3 min: proactive refresh (access token TTL 5 min).
+ * - Every 3 min: proactive refresh. Access token lifetime is server-driven (login/refresh `expiresIn`; e.g. Azure may return 900s, not a fixed 5 min).
  * - On app relaunch (foreground): refresh to keep session current.
  */
 
@@ -48,7 +48,7 @@ export function useMfGoAuthSync(): void {
     attemptAuthRefresh().catch(() => {});
   }, [splashCompleted, mfGoSession?.refreshToken]);
 
-  // Every 3 min: proactive refresh (access token TTL 5 min)
+  // Every 3 min: proactive refresh — use login/refresh `expiresIn` for actual TTL, not a fixed 5 min
   useEffect(() => {
     if (!mfGoSession?.refreshToken) return;
     const id = setInterval(() => {
