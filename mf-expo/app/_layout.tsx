@@ -3,7 +3,10 @@ import { ErrorBoundary } from '@/src/shared/components/ErrorBoundary';
 import { SnackbarQueue } from '@/src/shared/components/SnackbarQueue';
 import { LocaleProvider } from '@/src/shared/contexts';
 import { useDeviceRegistration } from '@/src/shared/hooks/use-device-registration';
-import { useMfGoAuthSync } from '@/src/shared/hooks/use-mf-go-auth-sync';
+import {
+  useMfGoAuthGraphQLBinding,
+  useMfGoAuthLifecycle,
+} from '@/src/shared/hooks/use-mf-go-auth-sync';
 import { useOneSignalUserSync } from '@/src/shared/hooks/use-onesignal-user-sync';
 import '@/src/shared/services/logger-service';
 import { loadEnvironment } from '@/src/shared/services/environment-service';
@@ -29,7 +32,7 @@ import {
 } from 'masterfabric-expo-core';
 import type { FirebaseConfig } from 'masterfabric-expo-core';
 import Constants from 'expo-constants';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { InteractionManager, Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-get-random-values';
@@ -65,10 +68,19 @@ function getFirebaseConfigFromExtra(): Partial<FirebaseConfig> | undefined {
   };
 }
 
-// Sync auth token when app loads. Device registration runs when conditions are met
-// (boot, splash, relaunch) — multiple conditions, validation, user-scoped devices.
+/**
+ * GraphQL 401 handler + Bearer sync as soon as {@link loadEnvironment} finishes (GFG-80).
+ * Stays mounted through the rest of boot so requests during `initMasterView` recover from expired tokens.
+ */
+function MfGoGraphQLAuthBootstrap() {
+  useMfGoAuthGraphQLBinding();
+  return null;
+}
+
+// Refresh intervals, splash launch refresh, foreground refresh — after `isAppReady` only (no duplicate timers).
+// Device registration runs when conditions are met (boot, splash, relaunch).
 function AppProviders() {
-  useMfGoAuthSync();
+  useMfGoAuthLifecycle();
   useOneSignalUserSync();
   useDeviceRegistration();
   return null;
@@ -100,6 +112,8 @@ function NavigationWrapper({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout() {
   const { isAppReady, setAppReady } = useAppStore();
+  /** True after AsyncStorage env is applied; GraphQL client URL is trustworthy (parallel with initMasterView). */
+  const [graphqlEnvReady, setGraphqlEnvReady] = useState(false);
   
   const [loaded] = useFonts({
     SpaceMono: require('../src/assets/fonts/SpaceMono-Regular.ttf'),
@@ -167,14 +181,20 @@ export default function RootLayout() {
   }, [loaded]);
 
   useEffect(() => {
-    if (loaded) {
-      const firebaseFromExtra = getFirebaseConfigFromExtra();
-      // Start connectivity monitoring while app is active
-      connectivityHelper.start(5000);
-      // Initialize MasterView
-      Promise.all([
-        loadEnvironment(),
-        initMasterView({
+    if (!loaded) {
+      setGraphqlEnvReady(false);
+      return;
+    }
+    let cancelled = false;
+    const firebaseFromExtra = getFirebaseConfigFromExtra();
+    // Start connectivity monitoring while app is active
+    connectivityHelper.start(5000);
+    const envLoaded = loadEnvironment().then(() => {
+      if (!cancelled) setGraphqlEnvReady(true);
+    });
+    Promise.all([
+      envLoaded,
+      initMasterView({
           appName: 'MF Project Tracker',
           appVersion: '1.2.0',
           environment: __DEV__ ? 'development' : 'production',
@@ -215,81 +235,89 @@ export default function RootLayout() {
             console.log('Locale Changed:', locale);
           },
         }),
-      ]).then(() => {
+    ])
+      .then(() => {
+        if (cancelled) return;
         // MasterView initialized, app is ready for splash screen
         setAppReady(true);
         SplashScreen.hideAsync();
-      }).catch((error) => {
+      })
+      .catch((error) => {
         console.error('Failed to initialize MasterView:', error);
+        if (cancelled) return;
         // Still proceed with app loading
         setAppReady(true);
         SplashScreen.hideAsync();
       });
-    }
+    return () => {
+      cancelled = true;
+    };
   }, [loaded, setAppReady]);
 
-  if (!loaded || !isAppReady) {
+  if (!loaded) {
     return null;
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ErrorBoundary>
-        <LocaleProvider>
-          <MasterViewThemeProvider>
-            <QueryClientProvider client={queryClient}>
-              <SafeAreaProvider>
-              <AppProviders />
-              <NavigationWrapper>
-                  <Stack 
-                    screenOptions={{ headerShown: false }}
-                  >
-                    <Stack.Screen name="splash" />
-                    <Stack.Screen name="onboarding" />
-                    <Stack.Screen name="settings" />
-                    <Stack.Screen name="profile" />
-                    <Stack.Screen
-                      name="organization/[id]"
-                      options={{ headerShown: false }}
-                      dangerouslySingular={organizationScreenSingularId}
-                    />
-                    <Stack.Screen name="organization/[id]/projects" options={{ headerShown: false }} />
-                    <Stack.Screen
-                      name="organization/[id]/project/[projectId]"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen name="notifications" />
-                    <Stack.Screen name="admin-notifications" />
-                    <Stack.Screen name="admin-mail-management" />
-                    <Stack.Screen name="admin-otp-mail" />
-                    <Stack.Screen name="forgot-password" />
-                    <Stack.Screen name="admin-sessions" />
-                    <Stack.Screen name="admin-user-management" />
-                    <Stack.Screen name="admin-version" />
-                    <Stack.Screen name="admin-feedback" />
-                    <Stack.Screen name="admin-legal" />
-                    <Stack.Screen name="help-faq" />
-                    <Stack.Screen name="privacy-policy" />
-                    <Stack.Screen name="feedback" />
-                    <Stack.Screen
-                      name="feedback/[id]"
-                      options={{ headerShown: false }}
-                      dangerouslySingular={({ params }) => (params as { id?: string })?.id}
-                    />
-                    <Stack.Screen name="mf-go-auth" />
-                    <Stack.Screen name="(tabs)" />
-                    <Stack.Screen name="+not-found" />
-                  </Stack>
-                  <StatusBar style="auto" />
-                  <SnackbarQueue />
-                  <ToastContainer />
-
-                </NavigationWrapper>
-              </SafeAreaProvider>
-            </QueryClientProvider>
-          </MasterViewThemeProvider>
-        </LocaleProvider>
-      </ErrorBoundary>
-    </GestureHandlerRootView>
+    <>
+      {graphqlEnvReady ? <MfGoGraphQLAuthBootstrap /> : null}
+      {isAppReady ? (
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <ErrorBoundary>
+            <LocaleProvider>
+              <MasterViewThemeProvider>
+                <QueryClientProvider client={queryClient}>
+                  <SafeAreaProvider>
+                    <AppProviders />
+                    <NavigationWrapper>
+                      <Stack screenOptions={{ headerShown: false }}>
+                        <Stack.Screen name="splash" />
+                        <Stack.Screen name="onboarding" />
+                        <Stack.Screen name="settings" />
+                        <Stack.Screen name="profile" />
+                        <Stack.Screen
+                          name="organization/[id]"
+                          options={{ headerShown: false }}
+                          dangerouslySingular={organizationScreenSingularId}
+                        />
+                        <Stack.Screen name="organization/[id]/projects" options={{ headerShown: false }} />
+                        <Stack.Screen
+                          name="organization/[id]/project/[projectId]"
+                          options={{ headerShown: false }}
+                        />
+                        <Stack.Screen name="notifications" />
+                        <Stack.Screen name="admin-notifications" />
+                        <Stack.Screen name="admin-mail-management" />
+                        <Stack.Screen name="admin-otp-mail" />
+                        <Stack.Screen name="forgot-password" />
+                        <Stack.Screen name="admin-sessions" />
+                        <Stack.Screen name="admin-user-management" />
+                        <Stack.Screen name="admin-version" />
+                        <Stack.Screen name="admin-feedback" />
+                        <Stack.Screen name="admin-legal" />
+                        <Stack.Screen name="help-faq" />
+                        <Stack.Screen name="privacy-policy" />
+                        <Stack.Screen name="feedback" />
+                        <Stack.Screen
+                          name="feedback/[id]"
+                          options={{ headerShown: false }}
+                          dangerouslySingular={({ params }) => (params as { id?: string })?.id}
+                        />
+                        <Stack.Screen name="mf-go-auth" />
+                        <Stack.Screen name="(tabs)" />
+                        <Stack.Screen name="+not-found" />
+                      </Stack>
+                      <StatusBar style="auto" />
+                      <SnackbarQueue />
+                      <ToastContainer />
+                    </NavigationWrapper>
+                  </SafeAreaProvider>
+                </QueryClientProvider>
+              </MasterViewThemeProvider>
+            </LocaleProvider>
+          </ErrorBoundary>
+        </GestureHandlerRootView>
+      ) : null}
+    </>
   );
 }

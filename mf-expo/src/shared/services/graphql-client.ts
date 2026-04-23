@@ -6,7 +6,7 @@ import { logger } from './logger';
 /** Called when server returns UNAUTHORIZED/UNAUTHENTICATED (e.g. expired token). May be async. */
 let onAuthError: (() => void | Promise<void>) | null = null;
 
-/** Register handler for auth errors. Call from app init (e.g. useMfGoAuthSync). */
+/** Register handler for auth errors. Call from app init (e.g. useMfGoAuthGraphQLBinding / useMfGoAuthSync). */
 export function setGraphQLAuthErrorHandler(handler: (() => void | Promise<void>) | null): void {
   onAuthError = handler;
 }

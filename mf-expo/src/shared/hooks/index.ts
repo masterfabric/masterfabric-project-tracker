@@ -15,7 +15,11 @@ export { useColorScheme } from './useColorScheme';
 export { useAppConfig } from './use-app-config';
 export { useDeviceRegistration } from './use-device-registration';
 export { useMfGoAuth } from './use-mf-go-auth';
-export { useMfGoAuthSync } from './use-mf-go-auth-sync';
+export {
+  useMfGoAuthGraphQLBinding,
+  useMfGoAuthLifecycle,
+  useMfGoAuthSync,
+} from './use-mf-go-auth-sync';
 
 // Device Information Hooks
 export {
