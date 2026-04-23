@@ -18,6 +18,7 @@ import type { AuthPayload } from './mf-go-api';
 import {
   extractGraphQLExtensionsCodes,
   isDefinitiveRefreshSessionError,
+  isTokenInvalidRefreshError,
   isTransientGraphQLOrNetworkError,
 } from './graphql-client';
 import { logger } from './logger';
@@ -131,8 +132,11 @@ async function executeAuthRefresh(): Promise<AuthPayload | null> {
   }
 
   logger.warn('[AuthRefresh] Refresh failed, logging out', { error: lastError });
+  const logoutMessage = isTokenInvalidRefreshError(lastError)
+    ? t('errors.sessionReplaced')
+    : t('errors.sessionExpired');
   snackbarService.show({
-    message: t('errors.sessionExpired'),
+    message: logoutMessage,
     type: 'error',
     duration: 5000,
   });

@@ -401,6 +401,7 @@
     "connectionLost": "Bağlantı koptu. Lütfen tekrar deneyin.",
     "localBackendLoopbackOnDevice": "Bu cihazdan localhost’a erişilemez. local.env içinde EXPO_PUBLIC_DEV_GRAPHQL_URL olarak bilgisayarınızın yerel ağ IP’sini yazın veya Backend Ortamı → Özel URL kullanın (örn. 192.168.x.x:8080/graphql), Metro’yu yeniden başlatıp tekrar deneyin.",
     "sessionExpired": "Oturumunuz sona erdi. Lütfen tekrar giriş yapın.",
+    "sessionReplaced": "Bu giriş başka bir cihaz, tarayıcı veya araç tarafından yenilendi; oturum geçersiz kılındı. Lütfen tekrar giriş yapın.",
     "tryAgain": "Tekrar Dene",
     "unknown": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
     "notFound": "İstenen kaynak bulunamadı.",

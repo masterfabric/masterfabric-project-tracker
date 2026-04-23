@@ -86,14 +86,20 @@ export function extractGraphQLExtensionsCodes(error: unknown): string[] {
     .filter(Boolean);
 }
 
-/** Definitive refresh failures — do not retry; session is invalid or disabled. */
-export function isDefinitiveRefreshSessionError(error: unknown): boolean {
+/** Refresh failed because the refresh token was rotated or invalidated (other device, curl, etc.). */
+export function isTokenInvalidRefreshError(error: unknown): boolean {
   const codes = extractGraphQLExtensionsCodes(error);
   if (codes.includes('TOKEN_INVALID')) return true;
+  const msg = error instanceof Error ? error.message : String(error);
+  return /token is invalid|TOKEN_INVALID/i.test(msg);
+}
+
+/** Definitive refresh failures — do not retry; session is invalid or disabled. */
+export function isDefinitiveRefreshSessionError(error: unknown): boolean {
+  if (isTokenInvalidRefreshError(error)) return true;
+  const codes = extractGraphQLExtensionsCodes(error);
   if (codes.includes('ACCOUNT_DISABLED')) return true;
   if (codes.includes('USER_NOT_FOUND')) return true;
-  const msg = error instanceof Error ? error.message : String(error);
-  if (/token is invalid|TOKEN_INVALID/i.test(msg)) return true;
   return false;
 }
 

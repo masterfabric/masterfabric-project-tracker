@@ -443,6 +443,7 @@
     "connectionLost": "Connection lost. Please try again.",
     "localBackendLoopbackOnDevice": "Can't reach localhost from this device. Put your computer's LAN IP in local.env (EXPO_PUBLIC_DEV_GRAPHQL_URL) or use Backend Environment → Custom URL (e.g. 192.168.x.x:8080/graphql), restart Metro, then try again.",
     "sessionExpired": "Session expired. Please sign in again.",
+    "sessionReplaced": "This sign-in was replaced (another device, browser, or tool used your refresh). Please sign in again.",
     "tryAgain": "Try Again",
     "unknown": "Something went wrong. Please try again.",
     "notFound": "The requested resource was not found.",

@@ -17,7 +17,7 @@ const AUTH_ERROR_CODES: Record<string, string> = {
   EMAIL_TAKEN: 'errors.auth.emailTaken',
   ACCOUNT_DISABLED: 'errors.auth.accountDisabled',
   TOKEN_EXPIRED: 'errors.sessionExpired',
-  TOKEN_INVALID: 'errors.sessionExpired',
+  TOKEN_INVALID: 'errors.sessionReplaced',
   SESSION_STORE_UNAVAILABLE: 'errors.auth.sessionStoreUnavailable',
   OTP_UNAVAILABLE: 'errors.auth.sessionStoreUnavailable',
   OTP_RATE_LIMITED: 'errors.otp.rateLimited',
@@ -84,6 +84,9 @@ function inferAuthErrorFromMessage(msg: string): string | null {
   }
   if (lower.includes('inactive') || lower.includes('suspended') || lower.includes('disabled')) {
     return 'errors.auth.accountDisabled';
+  }
+  if (/token is invalid|TOKEN_INVALID/i.test(msg)) {
+    return 'errors.sessionReplaced';
   }
   return null;
 }
