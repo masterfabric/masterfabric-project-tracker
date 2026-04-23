@@ -123,6 +123,8 @@ flowchart LR
     D --> F[refreshTokens mutation]
 ```
 
+**Refresh rotation:** Each `refreshTokens` success **invalidates** the previous opaque refresh. Testing the same user with **Postman/curl** and the **app** at once (without re-login) will leave one client on a **dead** refresh and typically `TOKEN_INVALID` on the next refresh. Use **different test accounts** for API vs. device, or **sign in again** after switching clients. See **[mf-go/docs/REFRESH_TOKEN_TESTING.md](mf-go/docs/REFRESH_TOKEN_TESTING.md)** and the **Refresh token rotation** section in [mf-go/README.md](mf-go/README.md).
+
 ---
 
 ## Projects
@@ -323,6 +325,7 @@ This repo does not include GitHub Actions workflows. Run checks locally (or wire
 - [mf-expo README](mf-expo/README.md) — app structure, env, scripts
 - [mf-go README](mf-go/README.md) — GraphQL reference, Postman, Makefile, **OTP delivery**, deployment
 - [mf-go/docs/SECURITY.md](mf-go/docs/SECURITY.md) — production checklist, GraphQL hardening, OTP channels
+- [mf-go/docs/REFRESH_TOKEN_TESTING.md](mf-go/docs/REFRESH_TOKEN_TESTING.md) — refresh rotation; parallel API + device testing
 - [mf-go/docs/OTP_CONFIGURATION.md](mf-go/docs/OTP_CONFIGURATION.md) — enable/disable OTP delivery, any SMTP provider, per-user `otp_enabled`
 - [.cursor/AGENTS.md](.cursor/AGENTS.md) — AI agent conventions
 - [infra/mf-go-container-app.bicep](infra/mf-go-container-app.bicep) — Azure Container Apps template (Postgres, **Redis**, JWT, ACR)

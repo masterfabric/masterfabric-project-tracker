@@ -20,6 +20,8 @@ Notable changes to the **masterfabric-expo-base** monorepo are recorded here. St
 
 ### Added
 
+- **docs (mf-go):** [**REFRESH_TOKEN_TESTING.md**](mf-go/docs/REFRESH_TOKEN_TESTING.md) runbook plus **Refresh token rotation** notes in [mf-go/README.md](mf-go/README.md) and the monorepo [README](README.md) — contributors are warned that each successful `refreshTokens` consumes the previous refresh, so **parallel** curl/Postman and **mobile** testing on the **same user** invalidates the other client until re-login. (**GFG-85**)
+
 - **mf-go:** **Todo subtasks (GFG-117)** — migration **`024_user_and_project_todo_subtasks`**, tables **`user_todo_subtasks`** and **`organization_project_todo_subtasks`** (single level, up to 50 per parent; cascade when parent deleted). GraphQL: **`UserTodo.subtasks`**, **`UserTodoSubtask`**, **`createUserTodoSubtask`** / **`updateUserTodoSubtask`** / **`deleteUserTodoSubtask`**; **`OrganizationProjectTodo.subtasks`**, **`OrganizationProjectTodoSubtask`**, **`createOrganizationProjectTodoSubtask`** / **`updateOrganizationProjectTodoSubtask`** / **`deleteOrganizationProjectTodoSubtask`**. Access: same as parent **user todo** (creator / assignee / org member visibility) and **project todo** (**ensureProjectViewer** for list, mutations for editors). Postman **Todos** + **Organizations** requests; env **`userTodoSubtaskId`**, **`organizationProjectTodoId`**, **`organizationProjectTodoSubtaskId`**.
 
 - **mf-expo:** **Subtasks** on **home user todos** (edit sheet: add, complete, delete) and **organization project todos** (indented under each task). **`myTodos`** / **`organizationProjectTodos`** query **`subtasks`** with fallback when the server schema is older (`isSubtasksSchemaMismatchError`). EN + TR **`home.todos.subtask*`**.

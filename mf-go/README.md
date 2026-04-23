@@ -363,6 +363,14 @@ mutation RefreshTokens($input: RefreshInput!) {
 { "input": { "userID": "<uuid>", "refreshToken": "<token>" } }
 ```
 
+#### Refresh token rotation (API + device testing)
+
+Each successful `refreshTokens` call **consumes** the presented refresh and returns a **new** refresh. The previous refresh cannot be used again. That is by design (rotation in Redis; see [Architecture — Auth flow](#auth-flow)).
+
+**Parallel testing gotcha:** If you hit the API with **curl, Postman, or Newman** using the same user the **mobile app** is signed into, whichever client refreshes **first** invalidates the other’s stored refresh. The other client will see `TOKEN_INVALID` on its next refresh until the user **logs in again** (or you stop sharing one user across tools).
+
+Mitigations: use **different test accounts** for API vs. device, or **re-login** on one side after testing the other. See **[docs/REFRESH_TOKEN_TESTING.md](docs/REFRESH_TOKEN_TESTING.md)** for a short runbook.
+
 #### Logout
 
 ```graphql
@@ -852,6 +860,8 @@ Collection scripts handle all token lifecycle automatically:
 - **Re-Login** — restores tokens so subsequent folders run without manual steps
 - **Admin List Users** — saves the first returned user UUID to `adminTargetUserId` for downstream admin requests
 
+**Same user, mobile + Postman/curl:** Do not rely on one account for both at the same time. A refresh in the collection **replaces** the environment’s `refreshToken`; the app (or another client) may still hold the **old** refresh, which the server will reject. Use separate test users, or re-login on one side after testing the other. See **[docs/REFRESH_TOKEN_TESTING.md](docs/REFRESH_TOKEN_TESTING.md)**.
+
 ### Environment variables
 
 | Variable             | Description                                                        |
@@ -945,7 +955,7 @@ Infrastructure (Postgres, Redis, RabbitMQ, JWT)
 ### Auth flow
 
 - Access token: JWT, 15-minute TTL
-- Refresh token: opaque token stored in Redis with 7-day TTL
+- Refresh token: opaque token stored in Redis with 7-day TTL; each successful `refreshTokens` **rotates** the refresh (the previous one is **consumed**; see [Refresh token rotation](#refresh-token-rotation-api--device-testing) and [docs/REFRESH_TOKEN_TESTING.md](docs/REFRESH_TOKEN_TESTING.md))
 - Logout: access token blacklisted in Redis; refresh token deleted
 
 ### Event bus
