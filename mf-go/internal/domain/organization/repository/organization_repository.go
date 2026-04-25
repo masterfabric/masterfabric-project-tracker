@@ -82,4 +82,13 @@ type OrganizationRepository interface {
 	CreateOrganizationProjectPurchase(ctx context.Context, p *model.OrganizationProjectPurchase) error
 	UpdateOrganizationProjectPurchase(ctx context.Context, p *model.OrganizationProjectPurchase) error
 	DeleteOrganizationProjectPurchase(ctx context.Context, id uuid.UUID) error
+
+	// GFG-174: org owner dashboard (bounded aggregate queries).
+	GetOwnerTodoDashboardStats(
+		ctx context.Context,
+		orgID uuid.UUID,
+		projectFilter []uuid.UUID, // nil or empty = all org projects; General user todos are always in scope
+		includeSubtasks bool,
+		periodStart, periodEnd, prevStart, prevEnd time.Time,
+	) (*model.OwnerTodoDashboardStats, error)
 }

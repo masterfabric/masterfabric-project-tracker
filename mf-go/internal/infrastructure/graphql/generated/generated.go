@@ -389,6 +389,43 @@ type ComplexityRoot struct {
 		UpdatedAt      func(childComplexity int) int
 	}
 
+	OrganizationOwnerAssigneeSlice struct {
+		Nickname  func(childComplexity int) int
+		OpenCount func(childComplexity int) int
+		UserID    func(childComplexity int) int
+	}
+
+	OrganizationOwnerDashboardDayBucket struct {
+		CompletedCount func(childComplexity int) int
+		Day            func(childComplexity int) int
+	}
+
+	OrganizationOwnerProjectDoneInPeriod struct {
+		Count       func(childComplexity int) int
+		IsGeneral   func(childComplexity int) int
+		ProjectID   func(childComplexity int) int
+		ProjectName func(childComplexity int) int
+	}
+
+	OrganizationOwnerTodoDashboard struct {
+		CompletedInPreviousPeriod func(childComplexity int) int
+		CompletedInSelectedPeriod func(childComplexity int) int
+		DailySeries               func(childComplexity int) int
+		DoneCount                 func(childComplexity int) int
+		DoneInPeriodByProject     func(childComplexity int) int
+		DonutDoneCount            func(childComplexity int) int
+		DonutOpenCount            func(childComplexity int) int
+		IncludeSubtasks           func(childComplexity int) int
+		OpenByAssignee            func(childComplexity int) int
+		OpenCount                 func(childComplexity int) int
+		OrganizationID            func(childComplexity int) int
+		Period                    func(childComplexity int) int
+		PeriodEnd                 func(childComplexity int) int
+		PeriodStart               func(childComplexity int) int
+		PreviousPeriodEnd         func(childComplexity int) int
+		PreviousPeriodStart       func(childComplexity int) int
+	}
+
 	OrganizationProject struct {
 		CreatedAt       func(childComplexity int) int
 		CreatedByUserID func(childComplexity int) int
@@ -459,43 +496,44 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AddressesByUserID            func(childComplexity int, userID uuid.UUID) int
-		AdminAppSettings             func(childComplexity int) int
-		AdminFeedbackThreads         func(childComplexity int, limit *int) int
-		AdminMailSMTPSettings        func(childComplexity int) int
-		AdminNotifications           func(childComplexity int, limit *int) int
-		AdminPendingOTPs             func(childComplexity int, limit *int, offset *int) int
-		AdminSessionStats            func(childComplexity int) int
-		AdminUser                    func(childComplexity int, id uuid.UUID) int
-		AdminUserDeletionImpact      func(childComplexity int, id uuid.UUID) int
-		AdminUserOTPHistory          func(childComplexity int, userID uuid.UUID, limit *int, offset *int) int
-		AdminUserOwnedTodos          func(childComplexity int, userID uuid.UUID) int
-		AdminUserSessions            func(childComplexity int, userID *uuid.UUID, limit *int) int
-		AdminUsers                   func(childComplexity int, page *int, pageSize *int) int
-		AppSettings                  func(childComplexity int) int
-		Me                           func(childComplexity int) int
-		MyAccountDeletionImpact      func(childComplexity int) int
-		MyAddresses                  func(childComplexity int) int
-		MyDevices                    func(childComplexity int) int
-		MyFeedbackThreads            func(childComplexity int) int
-		MyOrganizations              func(childComplexity int) int
-		MyPendingInvitations         func(childComplexity int) int
-		MySettings                   func(childComplexity int) int
-		MyTodos                      func(childComplexity int) int
-		MyUserMessages               func(childComplexity int, limit *int) int
-		NicknameAvailable            func(childComplexity int, nickname string) int
-		Notifications                func(childComplexity int, language *string, limit *int) int
-		Organization                 func(childComplexity int, organizationID uuid.UUID) int
-		OrganizationInvitations      func(childComplexity int, orgID uuid.UUID) int
-		OrganizationMembers          func(childComplexity int, orgID uuid.UUID) int
-		OrganizationMessages         func(childComplexity int, organizationID uuid.UUID, limit *int, before *time.Time) int
-		OrganizationNews             func(childComplexity int, organizationID uuid.UUID, limit *int, before *time.Time) int
-		OrganizationProject          func(childComplexity int, projectID uuid.UUID) int
-		OrganizationProjectMembers   func(childComplexity int, projectID uuid.UUID) int
-		OrganizationProjectPurchases func(childComplexity int, projectID uuid.UUID) int
-		OrganizationProjectTodos     func(childComplexity int, projectID uuid.UUID) int
-		OrganizationProjects         func(childComplexity int, organizationID uuid.UUID) int
-		ProductRelease               func(childComplexity int) int
+		AddressesByUserID              func(childComplexity int, userID uuid.UUID) int
+		AdminAppSettings               func(childComplexity int) int
+		AdminFeedbackThreads           func(childComplexity int, limit *int) int
+		AdminMailSMTPSettings          func(childComplexity int) int
+		AdminNotifications             func(childComplexity int, limit *int) int
+		AdminPendingOTPs               func(childComplexity int, limit *int, offset *int) int
+		AdminSessionStats              func(childComplexity int) int
+		AdminUser                      func(childComplexity int, id uuid.UUID) int
+		AdminUserDeletionImpact        func(childComplexity int, id uuid.UUID) int
+		AdminUserOTPHistory            func(childComplexity int, userID uuid.UUID, limit *int, offset *int) int
+		AdminUserOwnedTodos            func(childComplexity int, userID uuid.UUID) int
+		AdminUserSessions              func(childComplexity int, userID *uuid.UUID, limit *int) int
+		AdminUsers                     func(childComplexity int, page *int, pageSize *int) int
+		AppSettings                    func(childComplexity int) int
+		Me                             func(childComplexity int) int
+		MyAccountDeletionImpact        func(childComplexity int) int
+		MyAddresses                    func(childComplexity int) int
+		MyDevices                      func(childComplexity int) int
+		MyFeedbackThreads              func(childComplexity int) int
+		MyOrganizations                func(childComplexity int) int
+		MyPendingInvitations           func(childComplexity int) int
+		MySettings                     func(childComplexity int) int
+		MyTodos                        func(childComplexity int) int
+		MyUserMessages                 func(childComplexity int, limit *int) int
+		NicknameAvailable              func(childComplexity int, nickname string) int
+		Notifications                  func(childComplexity int, language *string, limit *int) int
+		Organization                   func(childComplexity int, organizationID uuid.UUID) int
+		OrganizationInvitations        func(childComplexity int, orgID uuid.UUID) int
+		OrganizationMembers            func(childComplexity int, orgID uuid.UUID) int
+		OrganizationMessages           func(childComplexity int, organizationID uuid.UUID, limit *int, before *time.Time) int
+		OrganizationNews               func(childComplexity int, organizationID uuid.UUID, limit *int, before *time.Time) int
+		OrganizationOwnerTodoDashboard func(childComplexity int, input model.OrganizationOwnerTodoDashboardInput) int
+		OrganizationProject            func(childComplexity int, projectID uuid.UUID) int
+		OrganizationProjectMembers     func(childComplexity int, projectID uuid.UUID) int
+		OrganizationProjectPurchases   func(childComplexity int, projectID uuid.UUID) int
+		OrganizationProjectTodos       func(childComplexity int, projectID uuid.UUID) int
+		OrganizationProjects           func(childComplexity int, organizationID uuid.UUID) int
+		ProductRelease                 func(childComplexity int) int
 	}
 
 	Subscription struct {
@@ -710,6 +748,7 @@ type QueryResolver interface {
 	AdminFeedbackThreads(ctx context.Context, limit *int) ([]*model.AdminFeedbackThread, error)
 	AdminMailSMTPSettings(ctx context.Context) (*model.AdminMailSMTPSettings, error)
 	Notifications(ctx context.Context, language *string, limit *int) ([]*model.NotificationPayload, error)
+	OrganizationOwnerTodoDashboard(ctx context.Context, input model.OrganizationOwnerTodoDashboardInput) (*model.OrganizationOwnerTodoDashboard, error)
 	OrganizationProjects(ctx context.Context, organizationID uuid.UUID) ([]*model.OrganizationProject, error)
 	OrganizationProject(ctx context.Context, projectID uuid.UUID) (*model.OrganizationProject, error)
 	OrganizationProjectMembers(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectMember, error)
@@ -2926,6 +2965,181 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.OrganizationNews.UpdatedAt(childComplexity), true
 
+	case "OrganizationOwnerAssigneeSlice.nickname":
+		if e.complexity.OrganizationOwnerAssigneeSlice.Nickname == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerAssigneeSlice.Nickname(childComplexity), true
+
+	case "OrganizationOwnerAssigneeSlice.openCount":
+		if e.complexity.OrganizationOwnerAssigneeSlice.OpenCount == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerAssigneeSlice.OpenCount(childComplexity), true
+
+	case "OrganizationOwnerAssigneeSlice.userId":
+		if e.complexity.OrganizationOwnerAssigneeSlice.UserID == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerAssigneeSlice.UserID(childComplexity), true
+
+	case "OrganizationOwnerDashboardDayBucket.completedCount":
+		if e.complexity.OrganizationOwnerDashboardDayBucket.CompletedCount == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerDashboardDayBucket.CompletedCount(childComplexity), true
+
+	case "OrganizationOwnerDashboardDayBucket.day":
+		if e.complexity.OrganizationOwnerDashboardDayBucket.Day == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerDashboardDayBucket.Day(childComplexity), true
+
+	case "OrganizationOwnerProjectDoneInPeriod.count":
+		if e.complexity.OrganizationOwnerProjectDoneInPeriod.Count == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerProjectDoneInPeriod.Count(childComplexity), true
+
+	case "OrganizationOwnerProjectDoneInPeriod.isGeneral":
+		if e.complexity.OrganizationOwnerProjectDoneInPeriod.IsGeneral == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerProjectDoneInPeriod.IsGeneral(childComplexity), true
+
+	case "OrganizationOwnerProjectDoneInPeriod.projectId":
+		if e.complexity.OrganizationOwnerProjectDoneInPeriod.ProjectID == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerProjectDoneInPeriod.ProjectID(childComplexity), true
+
+	case "OrganizationOwnerProjectDoneInPeriod.projectName":
+		if e.complexity.OrganizationOwnerProjectDoneInPeriod.ProjectName == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerProjectDoneInPeriod.ProjectName(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.completedInPreviousPeriod":
+		if e.complexity.OrganizationOwnerTodoDashboard.CompletedInPreviousPeriod == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.CompletedInPreviousPeriod(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.completedInSelectedPeriod":
+		if e.complexity.OrganizationOwnerTodoDashboard.CompletedInSelectedPeriod == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.CompletedInSelectedPeriod(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.dailySeries":
+		if e.complexity.OrganizationOwnerTodoDashboard.DailySeries == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.DailySeries(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.doneCount":
+		if e.complexity.OrganizationOwnerTodoDashboard.DoneCount == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.DoneCount(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.doneInPeriodByProject":
+		if e.complexity.OrganizationOwnerTodoDashboard.DoneInPeriodByProject == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.DoneInPeriodByProject(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.donutDoneCount":
+		if e.complexity.OrganizationOwnerTodoDashboard.DonutDoneCount == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.DonutDoneCount(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.donutOpenCount":
+		if e.complexity.OrganizationOwnerTodoDashboard.DonutOpenCount == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.DonutOpenCount(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.includeSubtasks":
+		if e.complexity.OrganizationOwnerTodoDashboard.IncludeSubtasks == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.IncludeSubtasks(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.openByAssignee":
+		if e.complexity.OrganizationOwnerTodoDashboard.OpenByAssignee == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.OpenByAssignee(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.openCount":
+		if e.complexity.OrganizationOwnerTodoDashboard.OpenCount == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.OpenCount(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.organizationId":
+		if e.complexity.OrganizationOwnerTodoDashboard.OrganizationID == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.OrganizationID(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.period":
+		if e.complexity.OrganizationOwnerTodoDashboard.Period == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.Period(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.periodEnd":
+		if e.complexity.OrganizationOwnerTodoDashboard.PeriodEnd == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.PeriodEnd(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.periodStart":
+		if e.complexity.OrganizationOwnerTodoDashboard.PeriodStart == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.PeriodStart(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.previousPeriodEnd":
+		if e.complexity.OrganizationOwnerTodoDashboard.PreviousPeriodEnd == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.PreviousPeriodEnd(childComplexity), true
+
+	case "OrganizationOwnerTodoDashboard.previousPeriodStart":
+		if e.complexity.OrganizationOwnerTodoDashboard.PreviousPeriodStart == nil {
+			break
+		}
+
+		return e.complexity.OrganizationOwnerTodoDashboard.PreviousPeriodStart(childComplexity), true
+
 	case "OrganizationProject.createdAt":
 		if e.complexity.OrganizationProject.CreatedAt == nil {
 			break
@@ -3568,6 +3782,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.OrganizationNews(childComplexity, args["organizationId"].(uuid.UUID), args["limit"].(*int), args["before"].(*time.Time)), true
+
+	case "Query.organizationOwnerTodoDashboard":
+		if e.complexity.Query.OrganizationOwnerTodoDashboard == nil {
+			break
+		}
+
+		args, err := ec.field_Query_organizationOwnerTodoDashboard_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.OrganizationOwnerTodoDashboard(childComplexity, args["input"].(model.OrganizationOwnerTodoDashboardInput)), true
 
 	case "Query.organizationProject":
 		if e.complexity.Query.OrganizationProject == nil {
@@ -4308,6 +4534,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputLoginInput,
 		ec.unmarshalInputLoginVerifyOTPInput,
 		ec.unmarshalInputLogoutInput,
+		ec.unmarshalInputOrganizationOwnerTodoDashboardInput,
 		ec.unmarshalInputRefreshInput,
 		ec.unmarshalInputRegisterDeviceInput,
 		ec.unmarshalInputRegisterInput,
@@ -4975,6 +5202,82 @@ type NotificationPayload {
   isRead:    Boolean!
   createdAt: Time!
   updatedAt: Time!
+}
+`, BuiltIn: false},
+	{Name: "../schema/organization_owner_todo_dashboard.graphqls", Input: `# GFG-174: Organization owner todo dashboard (read-only aggregates; owner-only).
+#
+# Period: ISO week Mon–Sun UTC, or calendar month UTC. periodOffset: 0 = current, 1 = one step back, etc.
+# Previous period for PoP is the immediately preceding window of the same length.
+
+extend type Query {
+  """Organization owner dashboard: bounded aggregates. Owner-only."""
+  organizationOwnerTodoDashboard(
+    input: OrganizationOwnerTodoDashboardInput!
+  ): OrganizationOwnerTodoDashboard!
+}
+
+input OrganizationOwnerTodoDashboardInput {
+  organizationId: UUID!
+  period: OrganizationOwnerDashboardPeriod!
+  """0 = current week or month, 1 = one period earlier, etc."""
+  periodOffset: Int!
+  """Mode B: include each subtask as its own unit; false = mode A (roots only)."""
+  includeSubtasks: Boolean!
+  """
+  When null or empty, all projects in the organization are included in project-todo parts.
+  General (org user todos without a project) are always included in scope.
+  """
+  projectIds: [UUID!]
+}
+
+enum OrganizationOwnerDashboardPeriod {
+  WEEK
+  MONTH
+}
+
+type OrganizationOwnerTodoDashboard {
+  organizationId: UUID!
+  period: OrganizationOwnerDashboardPeriod!
+  includeSubtasks: Boolean!
+  periodStart: Time!
+  periodEnd: Time!
+  previousPeriodStart: Time!
+  previousPeriodEnd: Time!
+  """All countable units in scope, not in done state (mode A: roots; mode B: roots + subtask lines)."""
+  openCount: Int!
+  """All countable units in scope, done."""
+  doneCount: Int!
+  """Units completed in the selected period (completion proxy: completed status + updated_at in window)."""
+  completedInSelectedPeriod: Int!
+  """Same count rule, previous period window (for client PoP % with ±12% thresholds)."""
+  completedInPreviousPeriod: Int!
+  dailySeries: [OrganizationOwnerDashboardDayBucket!]!
+  """For donut 1: same as openCount / doneCount (explicit for chart)."""
+  donutOpenCount: Int!
+  donutDoneCount: Int!
+  doneInPeriodByProject: [OrganizationOwnerProjectDoneInPeriod!]!
+  """Open (not done) units by assignee; null userId = Unassigned."""
+  openByAssignee: [OrganizationOwnerAssigneeSlice!]!
+}
+
+type OrganizationOwnerDashboardDayBucket {
+  """Start of day UTC (00:00) for the bucket."""
+  day: Time!
+  completedCount: Int!
+}
+
+type OrganizationOwnerProjectDoneInPeriod {
+  """Null when isGeneral: org-scoped user todos (not tied to a project)."""
+  projectId: UUID
+  projectName: String
+  isGeneral: Boolean!
+  count: Int!
+}
+
+type OrganizationOwnerAssigneeSlice {
+  userId: UUID
+  nickname: String
+  openCount: Int!
 }
 `, BuiltIn: false},
 	{Name: "../schema/organization_projects.graphqls", Input: `# Organization projects: per-project roster, todos (GFG-92), and purchase line items (GFG-113).
@@ -9256,6 +9559,38 @@ func (ec *executionContext) field_Query_organizationNews_argsBefore(
 	}
 
 	var zeroVal *time.Time
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_organizationOwnerTodoDashboard_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Query_organizationOwnerTodoDashboard_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_organizationOwnerTodoDashboard_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (model.OrganizationOwnerTodoDashboardInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal model.OrganizationOwnerTodoDashboardInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNOrganizationOwnerTodoDashboardInput2githubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerTodoDashboardInput(ctx, tmp)
+	}
+
+	var zeroVal model.OrganizationOwnerTodoDashboardInput
 	return zeroVal, nil
 }
 
@@ -22670,6 +23005,1118 @@ func (ec *executionContext) fieldContext_OrganizationNews_updatedAt(_ context.Co
 	return fc, nil
 }
 
+func (ec *executionContext) _OrganizationOwnerAssigneeSlice_userId(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerAssigneeSlice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerAssigneeSlice_userId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*uuid.UUID)
+	fc.Result = res
+	return ec.marshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerAssigneeSlice_userId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerAssigneeSlice",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerAssigneeSlice_nickname(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerAssigneeSlice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerAssigneeSlice_nickname(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Nickname, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerAssigneeSlice_nickname(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerAssigneeSlice",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerAssigneeSlice_openCount(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerAssigneeSlice) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerAssigneeSlice_openCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OpenCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerAssigneeSlice_openCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerAssigneeSlice",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerDashboardDayBucket_day(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerDashboardDayBucket) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerDashboardDayBucket_day(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Day, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerDashboardDayBucket_day(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerDashboardDayBucket",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerDashboardDayBucket_completedCount(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerDashboardDayBucket) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerDashboardDayBucket_completedCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CompletedCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerDashboardDayBucket_completedCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerDashboardDayBucket",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerProjectDoneInPeriod_projectId(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerProjectDoneInPeriod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerProjectDoneInPeriod_projectId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ProjectID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*uuid.UUID)
+	fc.Result = res
+	return ec.marshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerProjectDoneInPeriod_projectId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerProjectDoneInPeriod",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerProjectDoneInPeriod_projectName(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerProjectDoneInPeriod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerProjectDoneInPeriod_projectName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ProjectName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerProjectDoneInPeriod_projectName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerProjectDoneInPeriod",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerProjectDoneInPeriod_isGeneral(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerProjectDoneInPeriod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerProjectDoneInPeriod_isGeneral(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsGeneral, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerProjectDoneInPeriod_isGeneral(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerProjectDoneInPeriod",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerProjectDoneInPeriod_count(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerProjectDoneInPeriod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerProjectDoneInPeriod_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Count, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerProjectDoneInPeriod_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerProjectDoneInPeriod",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_organizationId(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_organizationId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OrganizationID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_organizationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_period(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_period(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Period, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.OrganizationOwnerDashboardPeriod)
+	fc.Result = res
+	return ec.marshalNOrganizationOwnerDashboardPeriod2githubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerDashboardPeriod(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_period(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type OrganizationOwnerDashboardPeriod does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_includeSubtasks(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_includeSubtasks(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IncludeSubtasks, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_includeSubtasks(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_periodStart(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_periodStart(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PeriodStart, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_periodStart(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_periodEnd(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_periodEnd(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PeriodEnd, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_periodEnd(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_previousPeriodStart(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_previousPeriodStart(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PreviousPeriodStart, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_previousPeriodStart(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_previousPeriodEnd(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_previousPeriodEnd(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PreviousPeriodEnd, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_previousPeriodEnd(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_openCount(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_openCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OpenCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_openCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_doneCount(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_doneCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DoneCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_doneCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_completedInSelectedPeriod(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_completedInSelectedPeriod(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CompletedInSelectedPeriod, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_completedInSelectedPeriod(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_completedInPreviousPeriod(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_completedInPreviousPeriod(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CompletedInPreviousPeriod, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_completedInPreviousPeriod(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_dailySeries(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_dailySeries(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DailySeries, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.OrganizationOwnerDashboardDayBucket)
+	fc.Result = res
+	return ec.marshalNOrganizationOwnerDashboardDayBucket2ᚕᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerDashboardDayBucketᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_dailySeries(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "day":
+				return ec.fieldContext_OrganizationOwnerDashboardDayBucket_day(ctx, field)
+			case "completedCount":
+				return ec.fieldContext_OrganizationOwnerDashboardDayBucket_completedCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OrganizationOwnerDashboardDayBucket", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_donutOpenCount(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_donutOpenCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DonutOpenCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_donutOpenCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_donutDoneCount(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_donutDoneCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DonutDoneCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_donutDoneCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_doneInPeriodByProject(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_doneInPeriodByProject(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DoneInPeriodByProject, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.OrganizationOwnerProjectDoneInPeriod)
+	fc.Result = res
+	return ec.marshalNOrganizationOwnerProjectDoneInPeriod2ᚕᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerProjectDoneInPeriodᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_doneInPeriodByProject(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "projectId":
+				return ec.fieldContext_OrganizationOwnerProjectDoneInPeriod_projectId(ctx, field)
+			case "projectName":
+				return ec.fieldContext_OrganizationOwnerProjectDoneInPeriod_projectName(ctx, field)
+			case "isGeneral":
+				return ec.fieldContext_OrganizationOwnerProjectDoneInPeriod_isGeneral(ctx, field)
+			case "count":
+				return ec.fieldContext_OrganizationOwnerProjectDoneInPeriod_count(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OrganizationOwnerProjectDoneInPeriod", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard_openByAssignee(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationOwnerTodoDashboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationOwnerTodoDashboard_openByAssignee(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OpenByAssignee, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.OrganizationOwnerAssigneeSlice)
+	fc.Result = res
+	return ec.marshalNOrganizationOwnerAssigneeSlice2ᚕᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerAssigneeSliceᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationOwnerTodoDashboard_openByAssignee(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationOwnerTodoDashboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "userId":
+				return ec.fieldContext_OrganizationOwnerAssigneeSlice_userId(ctx, field)
+			case "nickname":
+				return ec.fieldContext_OrganizationOwnerAssigneeSlice_nickname(ctx, field)
+			case "openCount":
+				return ec.fieldContext_OrganizationOwnerAssigneeSlice_openCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OrganizationOwnerAssigneeSlice", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _OrganizationProject_id(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProject) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_OrganizationProject_id(ctx, field)
 	if err != nil {
@@ -25732,6 +27179,95 @@ func (ec *executionContext) fieldContext_Query_notifications(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_notifications_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_organizationOwnerTodoDashboard(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_organizationOwnerTodoDashboard(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().OrganizationOwnerTodoDashboard(rctx, fc.Args["input"].(model.OrganizationOwnerTodoDashboardInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.OrganizationOwnerTodoDashboard)
+	fc.Result = res
+	return ec.marshalNOrganizationOwnerTodoDashboard2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerTodoDashboard(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_organizationOwnerTodoDashboard(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "organizationId":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_organizationId(ctx, field)
+			case "period":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_period(ctx, field)
+			case "includeSubtasks":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_includeSubtasks(ctx, field)
+			case "periodStart":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_periodStart(ctx, field)
+			case "periodEnd":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_periodEnd(ctx, field)
+			case "previousPeriodStart":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_previousPeriodStart(ctx, field)
+			case "previousPeriodEnd":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_previousPeriodEnd(ctx, field)
+			case "openCount":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_openCount(ctx, field)
+			case "doneCount":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_doneCount(ctx, field)
+			case "completedInSelectedPeriod":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_completedInSelectedPeriod(ctx, field)
+			case "completedInPreviousPeriod":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_completedInPreviousPeriod(ctx, field)
+			case "dailySeries":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_dailySeries(ctx, field)
+			case "donutOpenCount":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_donutOpenCount(ctx, field)
+			case "donutDoneCount":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_donutDoneCount(ctx, field)
+			case "doneInPeriodByProject":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_doneInPeriodByProject(ctx, field)
+			case "openByAssignee":
+				return ec.fieldContext_OrganizationOwnerTodoDashboard_openByAssignee(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OrganizationOwnerTodoDashboard", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_organizationOwnerTodoDashboard_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -34496,6 +36032,61 @@ func (ec *executionContext) unmarshalInputLogoutInput(ctx context.Context, obj i
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputOrganizationOwnerTodoDashboardInput(ctx context.Context, obj interface{}) (model.OrganizationOwnerTodoDashboardInput, error) {
+	var it model.OrganizationOwnerTodoDashboardInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"organizationId", "period", "periodOffset", "includeSubtasks", "projectIds"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "organizationId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("organizationId"))
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OrganizationID = data
+		case "period":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("period"))
+			data, err := ec.unmarshalNOrganizationOwnerDashboardPeriod2githubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerDashboardPeriod(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Period = data
+		case "periodOffset":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("periodOffset"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PeriodOffset = data
+		case "includeSubtasks":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("includeSubtasks"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IncludeSubtasks = data
+		case "projectIds":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("projectIds"))
+			data, err := ec.unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProjectIds = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputRefreshInput(ctx context.Context, obj interface{}) (model.RefreshInput, error) {
 	var it model.RefreshInput
 	asMap := map[string]interface{}{}
@@ -37970,6 +39561,255 @@ func (ec *executionContext) _OrganizationNews(ctx context.Context, sel ast.Selec
 	return out
 }
 
+var organizationOwnerAssigneeSliceImplementors = []string{"OrganizationOwnerAssigneeSlice"}
+
+func (ec *executionContext) _OrganizationOwnerAssigneeSlice(ctx context.Context, sel ast.SelectionSet, obj *model.OrganizationOwnerAssigneeSlice) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, organizationOwnerAssigneeSliceImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("OrganizationOwnerAssigneeSlice")
+		case "userId":
+			out.Values[i] = ec._OrganizationOwnerAssigneeSlice_userId(ctx, field, obj)
+		case "nickname":
+			out.Values[i] = ec._OrganizationOwnerAssigneeSlice_nickname(ctx, field, obj)
+		case "openCount":
+			out.Values[i] = ec._OrganizationOwnerAssigneeSlice_openCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var organizationOwnerDashboardDayBucketImplementors = []string{"OrganizationOwnerDashboardDayBucket"}
+
+func (ec *executionContext) _OrganizationOwnerDashboardDayBucket(ctx context.Context, sel ast.SelectionSet, obj *model.OrganizationOwnerDashboardDayBucket) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, organizationOwnerDashboardDayBucketImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("OrganizationOwnerDashboardDayBucket")
+		case "day":
+			out.Values[i] = ec._OrganizationOwnerDashboardDayBucket_day(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "completedCount":
+			out.Values[i] = ec._OrganizationOwnerDashboardDayBucket_completedCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var organizationOwnerProjectDoneInPeriodImplementors = []string{"OrganizationOwnerProjectDoneInPeriod"}
+
+func (ec *executionContext) _OrganizationOwnerProjectDoneInPeriod(ctx context.Context, sel ast.SelectionSet, obj *model.OrganizationOwnerProjectDoneInPeriod) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, organizationOwnerProjectDoneInPeriodImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("OrganizationOwnerProjectDoneInPeriod")
+		case "projectId":
+			out.Values[i] = ec._OrganizationOwnerProjectDoneInPeriod_projectId(ctx, field, obj)
+		case "projectName":
+			out.Values[i] = ec._OrganizationOwnerProjectDoneInPeriod_projectName(ctx, field, obj)
+		case "isGeneral":
+			out.Values[i] = ec._OrganizationOwnerProjectDoneInPeriod_isGeneral(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "count":
+			out.Values[i] = ec._OrganizationOwnerProjectDoneInPeriod_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var organizationOwnerTodoDashboardImplementors = []string{"OrganizationOwnerTodoDashboard"}
+
+func (ec *executionContext) _OrganizationOwnerTodoDashboard(ctx context.Context, sel ast.SelectionSet, obj *model.OrganizationOwnerTodoDashboard) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, organizationOwnerTodoDashboardImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("OrganizationOwnerTodoDashboard")
+		case "organizationId":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_organizationId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "period":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_period(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "includeSubtasks":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_includeSubtasks(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "periodStart":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_periodStart(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "periodEnd":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_periodEnd(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "previousPeriodStart":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_previousPeriodStart(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "previousPeriodEnd":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_previousPeriodEnd(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "openCount":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_openCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "doneCount":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_doneCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "completedInSelectedPeriod":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_completedInSelectedPeriod(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "completedInPreviousPeriod":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_completedInPreviousPeriod(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "dailySeries":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_dailySeries(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "donutOpenCount":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_donutOpenCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "donutDoneCount":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_donutDoneCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "doneInPeriodByProject":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_doneInPeriodByProject(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "openByAssignee":
+			out.Values[i] = ec._OrganizationOwnerTodoDashboard_openByAssignee(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var organizationProjectImplementors = []string{"OrganizationProject"}
 
 func (ec *executionContext) _OrganizationProject(ctx context.Context, sel ast.SelectionSet, obj *model.OrganizationProject) graphql.Marshaler {
@@ -38760,6 +40600,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_notifications(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "organizationOwnerTodoDashboard":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_organizationOwnerTodoDashboard(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -41657,6 +43519,197 @@ func (ec *executionContext) marshalNOrganizationNews2ᚖgithubᚗcomᚋmasterfab
 	return ec._OrganizationNews(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNOrganizationOwnerAssigneeSlice2ᚕᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerAssigneeSliceᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.OrganizationOwnerAssigneeSlice) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNOrganizationOwnerAssigneeSlice2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerAssigneeSlice(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNOrganizationOwnerAssigneeSlice2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerAssigneeSlice(ctx context.Context, sel ast.SelectionSet, v *model.OrganizationOwnerAssigneeSlice) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._OrganizationOwnerAssigneeSlice(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNOrganizationOwnerDashboardDayBucket2ᚕᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerDashboardDayBucketᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.OrganizationOwnerDashboardDayBucket) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNOrganizationOwnerDashboardDayBucket2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerDashboardDayBucket(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNOrganizationOwnerDashboardDayBucket2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerDashboardDayBucket(ctx context.Context, sel ast.SelectionSet, v *model.OrganizationOwnerDashboardDayBucket) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._OrganizationOwnerDashboardDayBucket(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNOrganizationOwnerDashboardPeriod2githubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerDashboardPeriod(ctx context.Context, v interface{}) (model.OrganizationOwnerDashboardPeriod, error) {
+	var res model.OrganizationOwnerDashboardPeriod
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNOrganizationOwnerDashboardPeriod2githubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerDashboardPeriod(ctx context.Context, sel ast.SelectionSet, v model.OrganizationOwnerDashboardPeriod) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) marshalNOrganizationOwnerProjectDoneInPeriod2ᚕᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerProjectDoneInPeriodᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.OrganizationOwnerProjectDoneInPeriod) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNOrganizationOwnerProjectDoneInPeriod2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerProjectDoneInPeriod(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNOrganizationOwnerProjectDoneInPeriod2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerProjectDoneInPeriod(ctx context.Context, sel ast.SelectionSet, v *model.OrganizationOwnerProjectDoneInPeriod) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._OrganizationOwnerProjectDoneInPeriod(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNOrganizationOwnerTodoDashboard2githubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerTodoDashboard(ctx context.Context, sel ast.SelectionSet, v model.OrganizationOwnerTodoDashboard) graphql.Marshaler {
+	return ec._OrganizationOwnerTodoDashboard(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNOrganizationOwnerTodoDashboard2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerTodoDashboard(ctx context.Context, sel ast.SelectionSet, v *model.OrganizationOwnerTodoDashboard) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._OrganizationOwnerTodoDashboard(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNOrganizationOwnerTodoDashboardInput2githubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationOwnerTodoDashboardInput(ctx context.Context, v interface{}) (model.OrganizationOwnerTodoDashboardInput, error) {
+	res, err := ec.unmarshalInputOrganizationOwnerTodoDashboardInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNOrganizationProject2githubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProject(ctx context.Context, sel ast.SelectionSet, v model.OrganizationProject) graphql.Marshaler {
 	return ec._OrganizationProject(ctx, sel, &v)
 }
@@ -42975,6 +45028,44 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 	}
 	res := graphql.MarshalTime(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx context.Context, v interface{}) ([]uuid.UUID, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]uuid.UUID, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx context.Context, sel ast.SelectionSet, v []uuid.UUID) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v interface{}) (*uuid.UUID, error) {

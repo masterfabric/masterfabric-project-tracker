@@ -4324,6 +4324,46 @@
           }
         },
         {
+          "name": "Organization Owner Todo Dashboard (GFG-174)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const oid = pm.environment.get('organizationId');",
+                  "if (!oid) throw new Error('Set organizationId (e.g. from My Organizations).');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('No GraphQL errors', () => pm.expect(pm.response.json().errors).to.be.undefined);",
+                  "pm.test('has dashboard', () => pm.expect(pm.response.json().data?.organizationOwnerTodoDashboard?.openCount).to.be.a('number'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"}
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query OrganizationOwnerTodoDashboard($input: OrganizationOwnerTodoDashboardInput!) { organizationOwnerTodoDashboard(input: $input) { organizationId period includeSubtasks periodStart periodEnd previousPeriodStart previousPeriodEnd openCount doneCount completedInSelectedPeriod completedInPreviousPeriod dailySeries { day completedCount } donutOpenCount donutDoneCount doneInPeriodByProject { projectId projectName isGeneral count } openByAssignee { userId nickname openCount } } }",
+                "variables": "{\"input\": {\"organizationId\": \"{{organizationId}}\", \"period\": \"WEEK\", \"periodOffset\": 0, \"includeSubtasks\": false, \"projectIds\": []}}"
+              }
+            },
+            "url": {"raw": "{{graphqlEndpoint}}", "host": ["{{graphqlEndpoint}}"]}
+          }
+        },
+        {
           "name": "Invite to Organization",
           "event": [
             {

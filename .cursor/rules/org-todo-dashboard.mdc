@@ -1,0 +1,64 @@
+---
+description: Organization owner todo dashboard (GFG-173) — mf-go aggregates + mf-expo UI; triage spec and acceptance
+globs: mf-go/**/*.go,mf-expo/src/**/*.ts,mf-expo/src/**/*.tsx,mf-expo/app/**/*.tsx
+alwaysApply: false
+---
+
+# Organization owner todo dashboard (GFG-173)
+
+## Audience and access
+
+- **Only the organization owner** may open this dashboard and its API. Enforce the same in **mf-go** (resolver / use case) and **mf-expo** (hide entry points for non-owners; route guard if needed).
+
+## Data model (current mf-go)
+
+- **General org todos** = `UserTodo` with `organizationID` set, **no** project: home “Genel” / org-scoped list.
+- **Project todos** = `OrganizationProjectTodo` + optional `organization_project_todo_subtasks` (`completed` on subtasks is independent of parent `status`).
+- **Status semantics**
+  - `UserTodo`: `completed` **Boolean** (open = not completed, done = completed).
+  - `OrganizationProjectTodo`: GraphQL / DB `status` **OPEN** | **DONE** (map to not-done vs done in dashboards).
+
+## Counting modes (subtasks checkbox — default **off**)
+
+- **A (checkbox off, default):** count **root** todos only. For project todos, parent **OPEN** counts as not done even if some subtasks are done.
+- **B (checkbox on):** count **root + each subtask** as separate units (user todo subtasks + org project todo subtasks as applicable). Example: parent OPEN, 5 subtasks, 4 done → report **4 done, 1 not done** (plus parent open as its own row if the product spec treats parent as a unit—**here: parent is one not-done root** and subtasks are 4+1 line items, matching stakeholder direction).
+
+## Time and comparison
+
+- **Week:** **ISO-8601** week, **Monday–Sunday**, boundaries in **UTC** (align with `timestamptz` in Postgres / mf-go).
+- **Month:** **Calendar month** in **UTC** (first instant of month 1 → last instant of month N).
+- **Navigation:** **Previous week** / **Previous month** (and implied current) — same-length comparison window: **this period vs immediately preceding period of the same type**.
+- **Period-over-period %:** use **completed todo counts** (or countable units in mode B); show **green** if ≥ **+12%** vs previous period, **red** if ≤ **−12%**, neutral otherwise (tunable constant). **Do not** add heavy percent math on the backend beyond one delta; keep aggregates bounded.
+
+## GFG-172 (multi-org shared projects)
+
+- Until GFG-172 ships, **attribute every aggregate to the org context selected by the owner** (single-org truth). A project belongs to one org in the current schema. When GFG-172 lands, re-validate: shared projects may appear in more than one org’s dashboard with explicit rules — track in GFG-172, not in GFG-173 v1.
+
+## API (mf-go) — architecture
+
+- New **read-only** use cases + resolvers: bounded queries (one dashboard payload or small parallel queries is acceptable; follow `mf-go-patterns.mdc`).
+- **Performance:** prefer **pre-aggregated / snapshot tables** or **nightly+intraday** rollups for hot paths if load is high; else indexed range queries on `updated_at` / completion time with strict limits. **No** unbounded table scans. Document the chosen approach in the PR and Postman.
+- Expose: period toggle (week|month + offset or explicit period id), `includeSubtasks` boolean, `organizationId`, `projectIds` (null = all org projects, or multi-select as allowed list), aggregates for: totals open/done, **previous-period comparison**, time series for chart (downsampled **daily** buckets for the selected week or month, max points capped), **donut 1** open vs done, **donut 2** done-in-period by project (and **“General”** org bucket for `UserTodo` with org, no project), **donut 3** assignee distribution including **Unassigned** slice.
+- All timestamps in API responses: **UTC RFC3339**.
+
+## UI (mf-expo)
+
+- **Theme:** **masterfabric-expo-core** tokens only; no ad-hoc Coinbase or third visual system.
+- **Entry:** (1) **Profile** and (2) **Home** — a **rectangular nav card** (“Gösterge paneli” / i18n) that **does not** need real metrics (mock / static “sparkline” **allowed**); **tap opens** the real dashboard screen.
+- **Dashboard screen (required real data):** top **week | month** control + **prev period**; **horizontal carousel** of **three** slides: (1) open vs done donut, (2) **done in period** by project (General + org projects), (3) assignee distribution (include Unassigned). Below: org / project **multi-filters** (org owner scope), subtask **toggle** (default off, persist optional in AsyncStorage if already used in app). **Pull-to-refresh**; no background polling in v1.
+- **Empty states (9.35):** when “all” / filters yield no data, show a **soft** placeholder with **icon** + **EN + TR** copy (per `mf-expo-ship-checklist.mdc` for user-visible strings).
+
+## Out of scope (v1)
+
+- Accounting/financial dashboard.
+- Accessibility-specific chart alternatives (not required for v1 per triage).
+- Real sparkline on home card (nav-only).
+
+## Ship
+
+- **mf-go:** extend Postman (single collection + env), `make generate-all`, `CHANGELOG` under root `CHANGELOG.md` with **`mf-go:`** lines.
+- **mf-expo:** `en.json` + `tr.json`, `CHANGELOG` **`mf-expo:`** lines.
+
+## Linear
+
+- Parent **GFG-173**; work split into child issues (backend / full dashboard UI / entry+card) — do not over-split.

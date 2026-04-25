@@ -17,3 +17,5 @@ mf-go Postman: `mf-go/postman/masterfabric.collection.json` + `masterfabric.envi
 mf-expo ship checklist: i18n (EN + TR), GraphQL usage in `mf-go-api.ts`, UX notes — `.cursor/rules/mf-expo-ship-checklist.mdc`.
 
 PR conventions (description, verify steps, cross-project): `.cursor/rules/pr-reviews.mdc`.
+
+Organization **owner** todo dashboard (Linear **GFG-173**, children **GFG-174–176**): `.cursor/rules/org-todo-dashboard.mdc`.

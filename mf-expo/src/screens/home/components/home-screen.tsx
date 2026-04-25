@@ -63,6 +63,7 @@ import { TodosSection } from './sections/todos-section';
 import { TodoSheet } from './todo-sheet';
 import { OrganizationNewsSection } from './sections/organization-news-section';
 import { WelcomeSection } from './sections/welcome-section';
+import { OwnerDashboardEntryCard } from '@/src/screens/organization';
 
 function HomeScreenContent() {
   const colors = useThemeColors();
@@ -337,6 +338,13 @@ function HomeScreenContent() {
               profile={profile}
               organizations={isMfGoAuthenticated ? organizations : []}
             />
+            {isMfGoAuthenticated && organizations.length > 0 && (
+              <OwnerDashboardEntryCard
+                userId={user?.id}
+                organizations={organizations}
+                bleedFromParent={20}
+              />
+            )}
             {!isMfGoAuthenticated && <AuthBanner />}
             <TodosSection
               todos={todos}

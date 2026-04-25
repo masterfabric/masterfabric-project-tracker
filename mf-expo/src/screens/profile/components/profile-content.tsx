@@ -1,4 +1,5 @@
 import { t } from '@/src/shared/i18n';
+import { OwnerDashboardEntryCard } from '@/src/screens/organization';
 import { SOFT_CARD_RADIUS, cardShadowStyle } from '@/src/shared/ui/screen-card-styles';
 import { useAppStore } from '@/src/shared/store';
 import type {
@@ -212,6 +213,7 @@ export function ProfileContent({
         { paddingTop: 14 },
       ]}
     >
+      <OwnerDashboardEntryCard userId={user.id} organizations={organizations} bleedFromParent={20} />
       <View
         style={[
           { borderRadius: SOFT_CARD_RADIUS, overflow: 'hidden', marginBottom: 22 },

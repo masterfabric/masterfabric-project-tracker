@@ -308,6 +308,7 @@ func main() {
 		CreateOrganizationProjectPurchaseUC:  organizationUC.NewCreateOrganizationProjectPurchaseUseCase(organizationRepo),
 		UpdateOrganizationProjectPurchaseUC:  organizationUC.NewUpdateOrganizationProjectPurchaseUseCase(organizationRepo),
 		DeleteOrganizationProjectPurchaseUC:  organizationUC.NewDeleteOrganizationProjectPurchaseUseCase(organizationRepo),
+		OwnerTodoDashboardUC:               organizationUC.NewOwnerTodoDashboardUseCase(organizationRepo),
 
 		ListNotificationsUC:          notificationUC.NewListNotificationsUseCase(notificationRepo),
 		MarkNotificationReadUC:       notificationUC.NewMarkNotificationReadUseCase(notificationRepo),

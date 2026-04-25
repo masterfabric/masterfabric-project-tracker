@@ -476,6 +476,63 @@ type OrganizationNews struct {
 	UpdatedAt      time.Time `json:"updatedAt"`
 }
 
+type OrganizationOwnerAssigneeSlice struct {
+	UserID    *uuid.UUID `json:"userId,omitempty"`
+	Nickname  *string    `json:"nickname,omitempty"`
+	OpenCount int        `json:"openCount"`
+}
+
+type OrganizationOwnerDashboardDayBucket struct {
+	// Start of day UTC (00:00) for the bucket.
+	Day            time.Time `json:"day"`
+	CompletedCount int       `json:"completedCount"`
+}
+
+type OrganizationOwnerProjectDoneInPeriod struct {
+	// Null when isGeneral: org-scoped user todos (not tied to a project).
+	ProjectID   *uuid.UUID `json:"projectId,omitempty"`
+	ProjectName *string    `json:"projectName,omitempty"`
+	IsGeneral   bool       `json:"isGeneral"`
+	Count       int        `json:"count"`
+}
+
+type OrganizationOwnerTodoDashboard struct {
+	OrganizationID      uuid.UUID                        `json:"organizationId"`
+	Period              OrganizationOwnerDashboardPeriod `json:"period"`
+	IncludeSubtasks     bool                             `json:"includeSubtasks"`
+	PeriodStart         time.Time                        `json:"periodStart"`
+	PeriodEnd           time.Time                        `json:"periodEnd"`
+	PreviousPeriodStart time.Time                        `json:"previousPeriodStart"`
+	PreviousPeriodEnd   time.Time                        `json:"previousPeriodEnd"`
+	// All countable units in scope, not in done state (mode A: roots; mode B: roots + subtask lines).
+	OpenCount int `json:"openCount"`
+	// All countable units in scope, done.
+	DoneCount int `json:"doneCount"`
+	// Units completed in the selected period (completion proxy: completed status + updated_at in window).
+	CompletedInSelectedPeriod int `json:"completedInSelectedPeriod"`
+	// Same count rule, previous period window (for client PoP % with ±12% thresholds).
+	CompletedInPreviousPeriod int                                    `json:"completedInPreviousPeriod"`
+	DailySeries               []*OrganizationOwnerDashboardDayBucket `json:"dailySeries"`
+	// For donut 1: same as openCount / doneCount (explicit for chart).
+	DonutOpenCount        int                                     `json:"donutOpenCount"`
+	DonutDoneCount        int                                     `json:"donutDoneCount"`
+	DoneInPeriodByProject []*OrganizationOwnerProjectDoneInPeriod `json:"doneInPeriodByProject"`
+	// Open (not done) units by assignee; null userId = Unassigned.
+	OpenByAssignee []*OrganizationOwnerAssigneeSlice `json:"openByAssignee"`
+}
+
+type OrganizationOwnerTodoDashboardInput struct {
+	OrganizationID uuid.UUID                        `json:"organizationId"`
+	Period         OrganizationOwnerDashboardPeriod `json:"period"`
+	// 0 = current week or month, 1 = one period earlier, etc.
+	PeriodOffset int `json:"periodOffset"`
+	// Mode B: include each subtask as its own unit; false = mode A (roots only).
+	IncludeSubtasks bool `json:"includeSubtasks"`
+	// When null or empty, all projects in the organization are included in project-todo parts.
+	// General (org user todos without a project) are always included in scope.
+	ProjectIds []uuid.UUID `json:"projectIds,omitempty"`
+}
+
 type OrganizationProject struct {
 	ID              uuid.UUID `json:"id"`
 	OrganizationID  uuid.UUID `json:"organizationId"`
@@ -1215,6 +1272,47 @@ func (e *OrganizationMembershipStatus) UnmarshalGQL(v interface{}) error {
 }
 
 func (e OrganizationMembershipStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type OrganizationOwnerDashboardPeriod string
+
+const (
+	OrganizationOwnerDashboardPeriodWeek  OrganizationOwnerDashboardPeriod = "WEEK"
+	OrganizationOwnerDashboardPeriodMonth OrganizationOwnerDashboardPeriod = "MONTH"
+)
+
+var AllOrganizationOwnerDashboardPeriod = []OrganizationOwnerDashboardPeriod{
+	OrganizationOwnerDashboardPeriodWeek,
+	OrganizationOwnerDashboardPeriodMonth,
+}
+
+func (e OrganizationOwnerDashboardPeriod) IsValid() bool {
+	switch e {
+	case OrganizationOwnerDashboardPeriodWeek, OrganizationOwnerDashboardPeriodMonth:
+		return true
+	}
+	return false
+}
+
+func (e OrganizationOwnerDashboardPeriod) String() string {
+	return string(e)
+}
+
+func (e *OrganizationOwnerDashboardPeriod) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = OrganizationOwnerDashboardPeriod(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid OrganizationOwnerDashboardPeriod", str)
+	}
+	return nil
+}
+
+func (e OrganizationOwnerDashboardPeriod) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

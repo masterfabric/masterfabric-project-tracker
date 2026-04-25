@@ -1,0 +1,75 @@
+# GFG-174: Organization owner todo dashboard (read-only aggregates; owner-only).
+#
+# Period: ISO week Mon–Sun UTC, or calendar month UTC. periodOffset: 0 = current, 1 = one step back, etc.
+# Previous period for PoP is the immediately preceding window of the same length.
+
+extend type Query {
+  """Organization owner dashboard: bounded aggregates. Owner-only."""
+  organizationOwnerTodoDashboard(
+    input: OrganizationOwnerTodoDashboardInput!
+  ): OrganizationOwnerTodoDashboard!
+}
+
+input OrganizationOwnerTodoDashboardInput {
+  organizationId: UUID!
+  period: OrganizationOwnerDashboardPeriod!
+  """0 = current week or month, 1 = one period earlier, etc."""
+  periodOffset: Int!
+  """Mode B: include each subtask as its own unit; false = mode A (roots only)."""
+  includeSubtasks: Boolean!
+  """
+  When null or empty, all projects in the organization are included in project-todo parts.
+  General (org user todos without a project) are always included in scope.
+  """
+  projectIds: [UUID!]
+}
+
+enum OrganizationOwnerDashboardPeriod {
+  WEEK
+  MONTH
+}
+
+type OrganizationOwnerTodoDashboard {
+  organizationId: UUID!
+  period: OrganizationOwnerDashboardPeriod!
+  includeSubtasks: Boolean!
+  periodStart: Time!
+  periodEnd: Time!
+  previousPeriodStart: Time!
+  previousPeriodEnd: Time!
+  """All countable units in scope, not in done state (mode A: roots; mode B: roots + subtask lines)."""
+  openCount: Int!
+  """All countable units in scope, done."""
+  doneCount: Int!
+  """Units completed in the selected period (completion proxy: completed status + updated_at in window)."""
+  completedInSelectedPeriod: Int!
+  """Same count rule, previous period window (for client PoP % with ±12% thresholds)."""
+  completedInPreviousPeriod: Int!
+  dailySeries: [OrganizationOwnerDashboardDayBucket!]!
+  """For donut 1: same as openCount / doneCount (explicit for chart)."""
+  donutOpenCount: Int!
+  donutDoneCount: Int!
+  doneInPeriodByProject: [OrganizationOwnerProjectDoneInPeriod!]!
+  """Open (not done) units by assignee; null userId = Unassigned."""
+  openByAssignee: [OrganizationOwnerAssigneeSlice!]!
+}
+
+type OrganizationOwnerDashboardDayBucket {
+  """Start of day UTC (00:00) for the bucket."""
+  day: Time!
+  completedCount: Int!
+}
+
+type OrganizationOwnerProjectDoneInPeriod {
+  """Null when isGeneral: org-scoped user todos (not tied to a project)."""
+  projectId: UUID
+  projectName: String
+  isGeneral: Boolean!
+  count: Int!
+}
+
+type OrganizationOwnerAssigneeSlice {
+  userId: UUID
+  nickname: String
+  openCount: Int!
+}

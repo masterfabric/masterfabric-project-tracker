@@ -112,6 +112,8 @@ type Resolver struct {
 	CreateOrganizationProjectPurchaseUC  *organizationUC.CreateOrganizationProjectPurchaseUseCase
 	UpdateOrganizationProjectPurchaseUC  *organizationUC.UpdateOrganizationProjectPurchaseUseCase
 	DeleteOrganizationProjectPurchaseUC  *organizationUC.DeleteOrganizationProjectPurchaseUseCase
+	// GFG-174
+	OwnerTodoDashboardUC *organizationUC.OwnerTodoDashboardUseCase
 	// Notification
 	ListNotificationsUC          *notificationUC.ListNotificationsUseCase
 	MarkNotificationReadUC       *notificationUC.MarkNotificationReadUseCase

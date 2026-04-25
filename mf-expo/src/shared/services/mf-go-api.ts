@@ -865,6 +865,44 @@ export interface OrganizationProjectPayload {
   updatedAt: string;
 }
 
+/** GFG-174 organization owner dashboard payload. */
+export interface OrganizationOwnerDashboardDayBucketPayload {
+  day: string;
+  completedCount: number;
+}
+
+export interface OrganizationOwnerProjectDoneInPeriodPayload {
+  projectId: string | null;
+  projectName: string | null;
+  isGeneral: boolean;
+  count: number;
+}
+
+export interface OrganizationOwnerAssigneeSlicePayload {
+  userId: string | null;
+  nickname: string | null;
+  openCount: number;
+}
+
+export interface OrganizationOwnerTodoDashboardPayload {
+  organizationId: string;
+  period: 'WEEK' | 'MONTH';
+  includeSubtasks: boolean;
+  periodStart: string;
+  periodEnd: string;
+  previousPeriodStart: string;
+  previousPeriodEnd: string;
+  openCount: number;
+  doneCount: number;
+  completedInSelectedPeriod: number;
+  completedInPreviousPeriod: number;
+  dailySeries: OrganizationOwnerDashboardDayBucketPayload[];
+  donutOpenCount: number;
+  donutDoneCount: number;
+  doneInPeriodByProject: OrganizationOwnerProjectDoneInPeriodPayload[];
+  openByAssignee: OrganizationOwnerAssigneeSlicePayload[];
+}
+
 export interface OrganizationProjectMemberPayload {
   id: string;
   projectId: string;
@@ -1252,6 +1290,29 @@ const DELETE_ORGANIZATION_PROJECT_PURCHASE = /* GraphQL */ `
   }
 `;
 
+const ORGANIZATION_OWNER_TODO_DASHBOARD = /* GraphQL */ `
+  query OrganizationOwnerTodoDashboard($input: OrganizationOwnerTodoDashboardInput!) {
+    organizationOwnerTodoDashboard(input: $input) {
+      organizationId
+      period
+      includeSubtasks
+      periodStart
+      periodEnd
+      previousPeriodStart
+      previousPeriodEnd
+      openCount
+      doneCount
+      completedInSelectedPeriod
+      completedInPreviousPeriod
+      dailySeries { day completedCount }
+      donutOpenCount
+      donutDoneCount
+      doneInPeriodByProject { projectId projectName isGeneral count }
+      openByAssignee { userId nickname openCount }
+    }
+  }
+`;
+
 /** graphql-ws subscription document (pass `organizationId` as variable). */
 export const ORGANIZATION_MESSAGE_CREATED_SUBSCRIPTION = /* GraphQL */ `
   subscription OrganizationMessageCreated($organizationId: UUID!) {
@@ -1271,6 +1332,26 @@ export const mfGoOrganizations = {
     graphqlRequest<{ organization: OrganizationPayload }>(ORGANIZATION, { organizationId }).then(
       (r) => r.organization
     ),
+
+  organizationOwnerTodoDashboard: (input: {
+    organizationId: string;
+    period: 'WEEK' | 'MONTH';
+    periodOffset: number;
+    includeSubtasks: boolean;
+    projectIds?: string[] | null;
+  }) =>
+    graphqlRequest<{ organizationOwnerTodoDashboard: OrganizationOwnerTodoDashboardPayload }>(
+      ORGANIZATION_OWNER_TODO_DASHBOARD,
+      {
+        input: {
+          organizationId: input.organizationId,
+          period: input.period,
+          periodOffset: input.periodOffset,
+          includeSubtasks: input.includeSubtasks,
+          projectIds: input.projectIds?.length ? input.projectIds : undefined,
+        },
+      }
+    ).then((r) => r.organizationOwnerTodoDashboard),
 
   myPendingInvitations: () =>
     graphqlRequest<{ myPendingInvitations: OrganizationInvitationPayload[] }>(

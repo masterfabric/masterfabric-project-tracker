@@ -1,8 +1,13 @@
 # Changelog
 
-Notable changes to the **masterfabric-expo-base** monorepo are recorded here. Style: open-source friendly sections with **version**, **date**, and **author** per release. The mobile app can show the same Markdown via mf-go `productRelease` (admins publish from **Settings → Admin → Version & changelog**).
+Notable changes to the **masterfabric-expo-base** (MasterFabric / **Project Tracker**) monorepo are recorded here. Style: open-source friendly sections with **version**, **date**, and **author** per release. The mobile app can show the same Markdown via mf-go `productRelease` (admins publish from **Settings → Admin → Version & changelog**).
 
 ## [Unreleased]
+
+### Added
+
+- **mf-go:** **GFG-174** — **Organization owner todo dashboard (read API)** — GraphQL **`organizationOwnerTodoDashboard`** (input: **`organizationId`**, **`WEEK` \| `MONTH`**, **`periodOffset`**, **`includeSubtasks`**, optional **`projectIds`**). **Owner-only**; returns open/donut counts, **completed in selected + previous** period, **daily** UTC series, **done-in-period by project** (plus **General** for org `UserTodo`), **open by assignee** (incl. unassigned). Postman: **Organization Owner Todo Dashboard (GFG-174)**.
+- **mf-expo:** **GFG-175** / **GFG-176** — **Organization owner dashboard** screen (route **`/organization/[id]/owner-dashboard`**) with week/month, previous period, subtasks toggle, project multi-filter, 3-slide carousel, pull-to-refresh, and **GFG-176** **Home** + **Profile** entry card (decorative sparkline, owner-only). EN + TR **`orgOwnerDashboard.*`**. Spec: `.cursor/rules/org-todo-dashboard.mdc` (**GFG-173**).
 
 ### Fixed
 
