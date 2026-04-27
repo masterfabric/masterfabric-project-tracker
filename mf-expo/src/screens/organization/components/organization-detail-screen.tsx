@@ -28,6 +28,7 @@ import { getThemeColors, Sizing, useTheme } from 'masterfabric-expo-core';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Clipboard,
   Image,
   Linking,
   Modal,
@@ -52,6 +53,14 @@ import { OrganizationInvitationActionsSheet } from './organization-invitation-ac
 import { LeaveOrganizationConfirmSheet, OwnerCannotLeaveSheet } from './leave-organization-sheets';
 import { orgDetailLayoutStyles as layout } from './organization-detail-layout.styles';
 import { OrganizationMemberManageSheet } from './organization-member-manage-sheet';
+import { snackbarService } from '@/src/shared/services/snackbar-service';
+
+/** Single-line org ID card: first 3 characters, then masked tail (UUID-style grouping). */
+function formatObscuredOrganizationIdCard(id: string): string {
+  const s = id.trim();
+  if (s.length < 3) return s;
+  return `${s.slice(0, 3)}-***-************`;
+}
 
 /** Minimum time the loading skeleton stays visible so fast networks still show it (ms). */
 const MIN_ORG_DETAIL_SKELETON_MS = 450;
@@ -426,6 +435,15 @@ export function OrganizationDetailScreen({ organizationId }: OrganizationDetailS
     router.push(`/organization/${organizationId}/projects` as never);
   }, [organizationId]);
 
+  const copyOrganizationIdToClipboard = useCallback(() => {
+    try {
+      Clipboard.setString(organizationId);
+      snackbarService.success(t('profile.organizations.detail.organizationIdCopied'), 2200);
+    } catch {
+      snackbarService.error(t('profile.organizations.detail.organizationIdCopyFailed'), 2800);
+    }
+  }, [organizationId, t]);
+
   const sectionHeaderColor = isDark ? '#8E8E93' : '#6D6D72';
   const rowBg = isDark ? '#1C1C1E' : '#FFFFFF';
 
@@ -568,15 +586,45 @@ export function OrganizationDetailScreen({ organizationId }: OrganizationDetailS
                     </Text>
                   </View>
                 ) : null}
-                {!organization.description?.trim() &&
-                !organization.websiteURL?.trim() &&
-                !organization.contactEmail?.trim() ? (
-                  <View style={layout.row}>
-                    <Text style={[layout.emptyRowText, { color: colors.labelText }]}>
-                      —
-                    </Text>
-                  </View>
-                ) : null}
+                <Pressable
+                  onPress={copyOrganizationIdToClipboard}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('profile.organizations.detail.organizationIdCopyA11y')}
+                  accessibilityHint={t('profile.organizations.detail.organizationIdTapHint')}
+                  style={({ pressed }) => [
+                    layout.cardRow,
+                    {
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 12,
+                      opacity: pressed ? 0.75 : 1,
+                      borderTopWidth:
+                        organization.description?.trim() ||
+                        organization.websiteURL?.trim() ||
+                        organization.contactEmail?.trim()
+                          ? StyleSheet.hairlineWidth
+                          : 0,
+                      borderTopColor: isDark ? '#38383A' : '#C6C6C8',
+                    },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      fontSize: 15,
+                      fontWeight: '600',
+                      letterSpacing: 0.4,
+                      color: colors.bodyText,
+                      fontVariant: ['tabular-nums'],
+                    }}
+                    numberOfLines={1}
+                    selectable={false}
+                  >
+                    {formatObscuredOrganizationIdCard(organization.id)}
+                  </Text>
+                  <Ionicons name="copy-outline" size={22} color={colors.tint} style={{ flexShrink: 0 }} />
+                </Pressable>
               </View>
 
               {isAdminOrOwner ? (
