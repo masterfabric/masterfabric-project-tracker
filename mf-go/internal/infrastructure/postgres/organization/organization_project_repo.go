@@ -18,15 +18,46 @@ const (
 
 	sqlListOrgProjectsByOrg = `
 		SELECT id, organization_id, name, description, created_by_user_id, created_at, updated_at
-		FROM organization_projects WHERE organization_id = $1
-		ORDER BY created_at DESC`
+		FROM (
+			SELECT id, organization_id, name, description, created_by_user_id, created_at, updated_at
+			FROM organization_projects WHERE organization_id = $1
+			UNION
+			SELECT p.id, p.organization_id, p.name, p.description, p.created_by_user_id, p.created_at, p.updated_at
+			FROM organization_projects p
+			INNER JOIN organization_project_org_participations pop
+				ON pop.project_id = p.id
+				AND pop.participant_organization_id = $1
+				AND pop.status = 'accepted'
+		) u
+		ORDER BY u.created_at DESC`
 
 	sqlListOrgProjectsForMember = `
-		SELECT p.id, p.organization_id, p.name, p.description, p.created_by_user_id, p.created_at, p.updated_at
-		FROM organization_projects p
-		INNER JOIN organization_project_members m ON m.project_id = p.id AND m.user_id = $2
-		WHERE p.organization_id = $1
-		ORDER BY p.created_at DESC`
+		SELECT id, organization_id, name, description, created_by_user_id, created_at, updated_at
+		FROM (
+			SELECT p.id, p.organization_id, p.name, p.description, p.created_by_user_id, p.created_at, p.updated_at
+			FROM organization_projects p
+			INNER JOIN organization_project_members m ON m.project_id = p.id AND m.user_id = $2
+			WHERE p.organization_id = $1
+			UNION
+			SELECT p.id, p.organization_id, p.name, p.description, p.created_by_user_id, p.created_at, p.updated_at
+			FROM organization_projects p
+			INNER JOIN organization_project_org_participations pop
+				ON pop.project_id = p.id
+				AND pop.participant_organization_id = $1
+				AND pop.status = 'accepted'
+		) u
+		ORDER BY u.created_at DESC`
+
+	sqlUserMayViewProjectViaParticipation = `
+		SELECT EXISTS (
+			SELECT 1
+			FROM organization_project_org_participations pop
+			INNER JOIN organization_members om ON om.organization_id = pop.participant_organization_id
+			WHERE pop.project_id = $1
+				AND pop.status = 'accepted'
+				AND om.user_id = $2
+				AND om.membership_status = 'active'
+		)`
 
 	sqlInsertOrgProject = `
 		INSERT INTO organization_projects (id, organization_id, name, description, created_by_user_id, created_at, updated_at)
@@ -126,6 +157,16 @@ const (
 
 	sqlDeleteProjectPurchase = `DELETE FROM organization_project_purchases WHERE id = $1`
 )
+
+// UserMayViewProjectViaAcceptedParticipation reports cross-org read access (GFG-179).
+func (r *OrganizationRepo) UserMayViewProjectViaAcceptedParticipation(ctx context.Context, projectID, userID uuid.UUID) (bool, error) {
+	var ok bool
+	err := r.db.QueryRow(ctx, sqlUserMayViewProjectViaParticipation, projectID, userID).Scan(&ok)
+	if err != nil {
+		return false, fmt.Errorf("organizationRepo.UserMayViewProjectViaAcceptedParticipation: %w", err)
+	}
+	return ok, nil
+}
 
 // GetOrganizationProjectByID returns a project or nil.
 func (r *OrganizationRepo) GetOrganizationProjectByID(ctx context.Context, id uuid.UUID) (*model.OrganizationProject, error) {

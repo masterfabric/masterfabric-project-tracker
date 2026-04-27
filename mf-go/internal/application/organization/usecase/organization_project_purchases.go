@@ -15,11 +15,11 @@ import (
 )
 
 const (
-	maxPurchaseProductNameLen   = 500
-	maxPurchasePurposeLen       = 2000
-	maxPurchaseStatusNoteLen    = 2000
-	maxPurchaseProductLinkLen   = 2048
-	maxPurchaseCurrencyLen      = 8
+	maxPurchaseProductNameLen = 500
+	maxPurchasePurposeLen     = 2000
+	maxPurchaseStatusNoteLen  = 2000
+	maxPurchaseProductLinkLen = 2048
+	maxPurchaseCurrencyLen    = 8
 )
 
 // ListOrganizationProjectPurchasesUseCase lists purchases for a project (same visibility as todos).
@@ -34,7 +34,7 @@ func NewListOrganizationProjectPurchasesUseCase(repo orgRepo.OrganizationReposit
 
 // Execute returns purchases for the project.
 func (uc *ListOrganizationProjectPurchasesUseCase) Execute(ctx context.Context, projectID, callerUserID uuid.UUID) ([]*dto.OrganizationProjectPurchaseResponse, error) {
-	if _, err := ensureProjectViewer(ctx, uc.repo, projectID, callerUserID); err != nil {
+	if _, err := ensureProjectReader(ctx, uc.repo, projectID, callerUserID); err != nil {
 		return nil, err
 	}
 	rows, err := uc.repo.ListOrganizationProjectPurchases(ctx, projectID)

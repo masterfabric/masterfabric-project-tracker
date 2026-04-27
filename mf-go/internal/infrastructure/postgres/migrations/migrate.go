@@ -15,7 +15,7 @@ import (
 )
 
 // latestVersion is the highest migration number (must match highest 00X_*.sql file).
-const latestVersion = 9
+const latestVersion = 25
 
 //go:embed *.sql
 var sqlFiles embed.FS

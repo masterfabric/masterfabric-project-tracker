@@ -60,7 +60,7 @@ func NewGetOrganizationProjectUseCase(repo orgRepo.OrganizationRepository) *GetO
 
 // Execute loads a project by ID.
 func (uc *GetOrganizationProjectUseCase) Execute(ctx context.Context, projectID, callerUserID uuid.UUID) (*dto.OrganizationProjectResponse, error) {
-	p, err := ensureProjectViewer(ctx, uc.repo, projectID, callerUserID)
+	p, err := ensureProjectReader(ctx, uc.repo, projectID, callerUserID)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func NewListOrganizationProjectMembersUseCase(
 
 // Execute returns project members with nicknames.
 func (uc *ListOrganizationProjectMembersUseCase) Execute(ctx context.Context, projectID, callerUserID uuid.UUID) ([]*dto.OrganizationProjectMemberResponse, error) {
-	if _, err := ensureProjectViewer(ctx, uc.repo, projectID, callerUserID); err != nil {
+	if _, err := ensureProjectReader(ctx, uc.repo, projectID, callerUserID); err != nil {
 		return nil, err
 	}
 	members, err := uc.repo.ListOrganizationProjectMembers(ctx, projectID)
@@ -119,7 +119,7 @@ func NewListOrganizationProjectTodosUseCase(repo orgRepo.OrganizationRepository)
 
 // Execute returns todos (newest first from repo).
 func (uc *ListOrganizationProjectTodosUseCase) Execute(ctx context.Context, projectID, callerUserID uuid.UUID) ([]*dto.OrganizationProjectTodoResponse, error) {
-	if _, err := ensureProjectViewer(ctx, uc.repo, projectID, callerUserID); err != nil {
+	if _, err := ensureProjectReader(ctx, uc.repo, projectID, callerUserID); err != nil {
 		return nil, err
 	}
 	rows, err := uc.repo.ListOrganizationProjectTodos(ctx, projectID)

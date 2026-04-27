@@ -34,8 +34,53 @@ func ensureOrgAdminOrOwner(ctx context.Context, repo orgRepo.OrganizationReposit
 	return nil
 }
 
-// ensureProjectViewer loads the project; caller must be org member and either on the project roster or org admin/owner.
-func ensureProjectViewer(
+// ensureProjectReader loads the project when the caller may read it: host-org path (member + admin or roster)
+// or an active member of a participant organization with an accepted participation link (GFG-172 / GFG-179).
+func ensureProjectReader(
+	ctx context.Context,
+	repo orgRepo.OrganizationRepository,
+	projectID, userID uuid.UUID,
+) (*model.OrganizationProject, error) {
+	p, err := repo.GetOrganizationProjectByID(ctx, projectID)
+	if err != nil {
+		return nil, fmt.Errorf("organizationProject: %w", err)
+	}
+	if p == nil {
+		return nil, fmt.Errorf("organizationProject: project not found")
+	}
+	hostMember, err := repo.IsMember(ctx, p.OrganizationID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("organizationProject: %w", err)
+	}
+	if hostMember {
+		admin, err := repo.IsAdminOrOwner(ctx, p.OrganizationID, userID)
+		if err != nil {
+			return nil, fmt.Errorf("organizationProject: %w", err)
+		}
+		if admin {
+			return p, nil
+		}
+		onProject, err := repo.IsOrganizationProjectMember(ctx, projectID, userID)
+		if err != nil {
+			return nil, fmt.Errorf("organizationProject: %w", err)
+		}
+		if !onProject {
+			return nil, fmt.Errorf("organizationProject: not assigned to this project")
+		}
+		return p, nil
+	}
+	ok, err := repo.UserMayViewProjectViaAcceptedParticipation(ctx, projectID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("organizationProject: %w", err)
+	}
+	if !ok {
+		return nil, fmt.Errorf("organizationProject: not a member of this organization")
+	}
+	return p, nil
+}
+
+// ensureProjectTodoEditor is host org member and org admin/owner or on the project roster (mutations; no cross-org yet).
+func ensureProjectTodoEditor(
 	ctx context.Context,
 	repo orgRepo.OrganizationRepository,
 	projectID, userID uuid.UUID,
@@ -65,13 +110,4 @@ func ensureProjectViewer(
 		return nil, fmt.Errorf("organizationProject: not assigned to this project")
 	}
 	return p, nil
-}
-
-// ensureProjectTodoEditor is org admin/owner or a project roster member.
-func ensureProjectTodoEditor(
-	ctx context.Context,
-	repo orgRepo.OrganizationRepository,
-	projectID, userID uuid.UUID,
-) (*model.OrganizationProject, error) {
-	return ensureProjectViewer(ctx, repo, projectID, userID)
 }

@@ -88,18 +88,28 @@ type OrganizationInvitation struct {
 	CreatedAt      time.Time
 	// OrganizationName and InviterNickname are populated only by ListPendingInvitationsByEmail (invitee UX).
 	OrganizationName string
-	InviterNickname    string
+	InviterNickname  string
 }
+
+// OrganizationProjectOrgParticipationStatus is the invite/link lifecycle for cross-org project sharing (GFG-172 / GFG-179).
+type OrganizationProjectOrgParticipationStatus string
+
+const (
+	OrganizationProjectOrgParticipationPending  OrganizationProjectOrgParticipationStatus = "pending"
+	OrganizationProjectOrgParticipationAccepted OrganizationProjectOrgParticipationStatus = "accepted"
+	OrganizationProjectOrgParticipationDeclined OrganizationProjectOrgParticipationStatus = "declined"
+	OrganizationProjectOrgParticipationRevoked  OrganizationProjectOrgParticipationStatus = "revoked"
+)
 
 // OrganizationProject is a project workspace inside an organization.
 type OrganizationProject struct {
-	ID               uuid.UUID
-	OrganizationID   uuid.UUID
-	Name             string
-	Description      string
-	CreatedByUserID  uuid.UUID
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	ID              uuid.UUID
+	OrganizationID  uuid.UUID
+	Name            string
+	Description     string
+	CreatedByUserID uuid.UUID
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 // OrganizationProjectMember links an org user to a project roster.
@@ -120,15 +130,15 @@ const (
 
 // OrganizationProjectTodo is a lightweight task on a project.
 type OrganizationProjectTodo struct {
-	ID                uuid.UUID
-	ProjectID         uuid.UUID
-	Title             string
-	Status            OrganizationProjectTodoStatus
-	CreatedByUserID   uuid.UUID
-	AssignedToUserID  *uuid.UUID // optional; set when admin/owner delegates
-	DueAt             *time.Time
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
+	ID               uuid.UUID
+	ProjectID        uuid.UUID
+	Title            string
+	Status           OrganizationProjectTodoStatus
+	CreatedByUserID  uuid.UUID
+	AssignedToUserID *uuid.UUID // optional; set when admin/owner delegates
+	DueAt            *time.Time
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 // OrganizationProjectTodoSubtask is a single-level checklist item under a project todo (GFG-117).
@@ -146,9 +156,9 @@ type OrganizationProjectTodoSubtask struct {
 type OrganizationProjectPurchaseStatus string
 
 const (
-	OrganizationProjectPurchaseRequested  OrganizationProjectPurchaseStatus = "requested"
-	OrganizationProjectPurchasePurchased  OrganizationProjectPurchaseStatus = "purchased"
-	OrganizationProjectPurchaseCancelled  OrganizationProjectPurchaseStatus = "cancelled"
+	OrganizationProjectPurchaseRequested OrganizationProjectPurchaseStatus = "requested"
+	OrganizationProjectPurchasePurchased OrganizationProjectPurchaseStatus = "purchased"
+	OrganizationProjectPurchaseCancelled OrganizationProjectPurchaseStatus = "cancelled"
 )
 
 // OrganizationProjectPurchase is a purchase line item on a project (GFG-113).

@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS organization_project_org_audit_events;
+DROP TABLE IF EXISTS organization_project_org_participations;

@@ -33,7 +33,7 @@ func (uc *ListOrganizationProjectTodoSubtasksUseCase) Execute(ctx context.Contex
 	if parent == nil {
 		return nil, domainErr.New("NOT_FOUND", "project todo not found", nil)
 	}
-	if _, err := ensureProjectTodoEditor(ctx, uc.repo, parent.ProjectID, actorUserID); err != nil {
+	if _, err := ensureProjectReader(ctx, uc.repo, parent.ProjectID, actorUserID); err != nil {
 		return nil, err
 	}
 	return uc.repo.ListOrganizationProjectTodoSubtasksByParentID(ctx, projectTodoID)
