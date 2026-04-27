@@ -213,7 +213,7 @@ export function ProfileContent({
         { paddingTop: 14 },
       ]}
     >
-      <OwnerDashboardEntryCard userId={user.id} organizations={organizations} bleedFromParent={20} />
+      <OwnerDashboardEntryCard userId={user.id} organizations={organizations} />
       <View
         style={[
           { borderRadius: SOFT_CARD_RADIUS, overflow: 'hidden', marginBottom: 22 },

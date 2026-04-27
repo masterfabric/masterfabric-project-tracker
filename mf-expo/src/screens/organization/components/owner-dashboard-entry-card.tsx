@@ -138,7 +138,9 @@ export function OwnerDashboardEntryCard({
               style={({ pressed }) => [styles.tapRow, { opacity: pressed ? 0.9 : 1 }]}
             >
               <Ionicons name="stats-chart-outline" size={22} color={colors.tint} />
-              <ThemedText style={[styles.title, { color: colors.text, flex: 1, marginLeft: 10 }]}>
+              <ThemedText
+                style={[styles.title, { color: colors.text, flex: 1, marginLeft: 10 }]}
+              >
                 {t('orgOwnerDashboard.entryTitle')}
               </ThemedText>
               <MockSpark />
@@ -146,7 +148,7 @@ export function OwnerDashboardEntryCard({
             </Pressable>
             <View style={[styles.orgSubRow, { borderTopColor: colors.surfaceBorder }]}>
               <ThemedText
-                style={[styles.orgName, { color: colors.labelText }]}
+                style={[styles.orgName, { color: isDark ? colors.bodyText : colors.labelText }]}
                 numberOfLines={1}
               >
                 {selected.name}
@@ -226,7 +228,6 @@ export function OwnerDashboardEntryCard({
 
 const styles = StyleSheet.create({
   outerBleed: {
-    width: '100%',
     alignSelf: 'stretch',
   },
   card: {
@@ -243,11 +244,12 @@ const styles = StyleSheet.create({
   orgSubRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    /** Match Dashboard title start: row pad 14 + icon 22 + gap 10 = 46. */
+    paddingLeft: 46,
+    paddingRight: 14,
     paddingBottom: 10,
     paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    gap: 8,
   },
   title: { fontSize: 16, fontWeight: '600' },
   orgName: { fontSize: 14, flex: 1, minWidth: 0 },

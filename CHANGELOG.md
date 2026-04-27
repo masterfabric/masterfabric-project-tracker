@@ -2,12 +2,16 @@
 
 Notable changes to the **masterfabric-expo-base** (MasterFabric / **Project Tracker**) monorepo are recorded here. Style: open-source friendly sections with **version**, **date**, and **author** per release. The mobile app can show the same Markdown via mf-go `productRelease` (admins publish from **Settings → Admin → Version & changelog**).
 
+Supplement for **debug identifiers, ingest endpoints, or default dev logins** (not for public logs): **`SECRETCHANGELOG.md`** at repo root — file is **gitignored**; maintain locally or via your team’s private channel.
+
 ## [Unreleased]
 
 ### Added
 
 - **mf-go:** **GFG-174** — **Organization owner todo dashboard (read API)** — GraphQL **`organizationOwnerTodoDashboard`** (input: **`organizationId`**, **`WEEK` \| `MONTH`**, **`periodOffset`**, **`includeSubtasks`**, optional **`projectIds`**). **Owner-only**; returns open/donut counts, **completed in selected + previous** period, **daily** UTC series, **done-in-period by project** (plus **General** for org `UserTodo`), **open by assignee** (incl. unassigned). Postman: **Organization Owner Todo Dashboard (GFG-174)**.
 - **mf-expo:** **GFG-175** / **GFG-176** — **Organization owner dashboard** screen (route **`/organization/[id]/owner-dashboard`**) with week/month, previous period, subtasks toggle, project multi-filter, 3-slide carousel, pull-to-refresh, and **GFG-176** **Home** + **Profile** entry card (decorative sparkline, owner-only). EN + TR **`orgOwnerDashboard.*`**. Spec: `.cursor/rules/org-todo-dashboard.mdc` (**GFG-173**).
+- **mf-expo:** **GFG-177** — **Org owner dashboard** — per-org **AsyncStorage** scope (`period`, `periodOffset`, `includeSubtasks`, `projectFilter`), **layout** split (week/month row, full-width **Previous**, subtasks row, period + **Güncel** / **Current** without crowding), **UTC + projects + subtasks** context line from API, **daily chart** locale **X labels** + peak hint + **all-zero** copy. EN + TR. (**GFG-173**)
+- **mf-expo:** **Org owner dashboard (dark)** — project filter **Done** uses **`activeButton` / `activeButtonText`** (readable contrast; dark `tint` is light off-white and must not be paired with white label text). **Home/Profile** dashboard entry card: org row **aligns** with the title row (icon-width **lead** spacer); org name **bodyText** in dark for readability. (**GFG-177**)
 
 ### Fixed
 
@@ -53,6 +57,10 @@ Notable changes to the **masterfabric-expo-base** (MasterFabric / **Project Trac
 
 ### Changed
 
+- **docs:** Public **`CHANGELOG.md`** no longer embeds **debug session ids**, **Cursor ingest** details, or **pgAdmin dev passwords**; those notes live in repo-root **`SECRETCHANGELOG.md`** (**gitignored** — create/maintain locally). **`CHANGELOG`** intro and affected bullets point to the supplement; **`.gitignore`** lists **`SECRETCHANGELOG.md`**.
+
+- **docs (cursor):** **`.cursor/AGENTS.md`** — **`AGENTS_BASE_VERSION` 1.1.1**; quick start covers **`npm run start-all`** and the two-terminal mf-go / mf-expo flow; GraphQL regeneration documents **`make generate`** then **`make generate-all`**; repo layout uses **`<repo-root>`**. **`.cursor/rules/monorepo-overview.mdc`** and commands **`dev-fullstack`**, **`build`**, **`regenerate-sdk`** updated to match. Removed **`.cursor/commands/repo-scope.md`**. **`pr-reviews`**, **`org-todo-dashboard`**, **`create-service`**, **`create-view`** copy trimmed to prior scope.
+
 - **mf-expo:** **Removed `expo-notifications`** (dependency + `app.json` plugin). Notifications are **OneSignal only**. **Task due-time reminders** no longer use on-device local scheduling; `todo-reminders-service` stays a thin client stub while **mf-go** schedules push; full **background-handling** scope is tracked in Linear **GFG-103** (see **Changed**). Foreground handler / Android channel / permission snackbars for local due alerts removed from active use.
 
 - **Tracking (Linear):** **[GFG-101](https://linear.app/gurkanfikretgunak/issue/GFG-101)** is **Canceled** (original OneSignal-only ticket). Active scope: **[GFG-103](https://linear.app/gurkanfikretgunak/issue/GFG-103)** — mf-go–authoritative reminders plus mobile **background** handling (push + platform-appropriate tasks), per ship checklists.
@@ -92,9 +100,9 @@ Notable changes to the **masterfabric-expo-base** (MasterFabric / **Project Trac
 
 - **mf-expo:** Home header — removed the left **organization circle chip** (initials next to the title); **Project Tracker** + actions only.
 
-- **mf-go:** GraphQL **`mapErr`** uses **`errors.As`** for **`DomainError`** (wrapped `fmt.Errorf` no longer falls through to **`INTERNAL_ERROR`**). PostgreSQL errors map to **`SCHEMA_OUT_OF_DATE`** (`42P01` or relation string heuristic) or **`DATABASE_ERROR`** (other SQLSTATE) instead of **`INTERNAL_ERROR`**. Debug NDJSON (session **`6008d1`**) may append to **`.cursor/debug-6008d1.log`** for org-related unmapped errors and **`pgconn.PgError`** metadata during investigation.
+- **mf-go:** GraphQL **`mapErr`** uses **`errors.As`** for **`DomainError`** (wrapped `fmt.Errorf` no longer falls through to **`INTERNAL_ERROR`**). PostgreSQL errors map to **`SCHEMA_OUT_OF_DATE`** (`42P01` or relation string heuristic) or **`DATABASE_ERROR`** (other SQLSTATE) instead of **`INTERNAL_ERROR`**. Optional debug logging for investigations: see **`SECRETCHANGELOG.md`** (gitignored).
 
-- **mf-expo:** GraphQL **`DATABASE_ERROR`** → **`errors.graphql.databaseError`** (EN + TR). **`graphql-client`** may POST debug payloads to the Cursor ingest endpoint on **`ClientError`** (session **`6008d1`**).
+- **mf-expo:** GraphQL **`DATABASE_ERROR`** → **`errors.graphql.databaseError`** (EN + TR). Client debug telemetry (if enabled): **`SECRETCHANGELOG.md`**.
 
 - **mf-expo:** **Organization → Projects** list no longer shows “organization not found” when `organizationProjects` fails but the org is valid (loads org, members, and projects independently). **Create project** is available from the app bar **+** icon, empty-state button, and FAB (admin/owner). **Home → Add todo** with an organization selected: **Project** chips (**General (my list)** vs org projects) add tasks to **`myTodos`** or **`createOrganizationProjectTodo`**; EN + TR strings.
 
@@ -183,7 +191,7 @@ Notable changes to the **masterfabric-expo-base** (MasterFabric / **Project Trac
 - **mf-go:** **`make docker-infra`** starts **Mailpit** (SMTP **localhost:1025**, **http://localhost:8025**) for local **OTP email**; **`.env.example`**, **OTP_CONFIGURATION.md**, and repo **README** updated.
 - **mf-go:** Refresh tokens are consumed with an atomic **Redis** read-and-delete (**Lua** script; same semantics as **GETDEL**, compatible with Redis **6.0**) so concurrent refresh requests cannot both succeed on the same opaque refresh token. New env **`AUTH_MAX_REFRESH_SESSIONS_PER_USER`** (default **10**, **0** = unlimited) trims oldest refresh sessions when a user exceeds the cap.
 - **mf-expo:** Token refresh uses a **single in-flight** promise so overlapping refresh triggers (launch, 3-minute timer, foreground, GraphQL auth recovery) no longer rotate the same refresh twice and force a logout.
-- **mf-go:** Local Postgres UI is **pgAdmin** (`dpage/pgadmin4`) instead of **pgweb**, still on host **`http://localhost:5001`**. **`deployments/pgadmin/`** (`servers.json`, **`pgpass`**) is mounted by **`deployments/docker-compose.yml`**; **`make docker-infra`** starts **`pgadmin`** instead of **`pgweb`**. Dev login: **`pgadmin-dev@example.com`** / **`masterfabric`**.
+- **mf-go:** Local Postgres UI is **pgAdmin** (`dpage/pgadmin4`) instead of **pgweb**, still on host **`http://localhost:5001`**. **`deployments/pgadmin/`** (`servers.json`, **`pgpass`**) is mounted by **`deployments/docker-compose.yml`**; **`make docker-infra`** starts **`pgadmin`** instead of **`pgweb`**. Dev UI login defaults: **`SECRETCHANGELOG.md`** (gitignored).
 
 ### Added
 

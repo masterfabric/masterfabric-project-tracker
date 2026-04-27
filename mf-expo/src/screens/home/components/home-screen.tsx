@@ -342,7 +342,6 @@ function HomeScreenContent() {
               <OwnerDashboardEntryCard
                 userId={user?.id}
                 organizations={organizations}
-                bleedFromParent={20}
               />
             )}
             {!isMfGoAuthenticated && <AuthBanner />}
