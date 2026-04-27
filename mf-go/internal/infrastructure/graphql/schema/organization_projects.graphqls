@@ -42,6 +42,17 @@ extend type Mutation {
   updateOrganizationProjectPurchase(input: UpdateOrganizationProjectPurchaseInput!): OrganizationProjectPurchase!
   """Delete a purchase line item (project roster member or org admin/owner)."""
   deleteOrganizationProjectPurchase(purchaseId: UUID!): Boolean!
+  """Invite another organization to share this project (host org admin/owner). GFG-179."""
+  createOrganizationProjectOrgInvite(input: CreateOrganizationProjectOrgInviteInput!): OrganizationProjectOrgParticipation!
+  """Accept a pending cross-org project invite (participant org owner only). GFG-179."""
+  acceptOrganizationProjectOrgInvite(projectId: UUID!, participantOrganizationId: UUID!): OrganizationProjectOrgParticipation!
+}
+
+input CreateOrganizationProjectOrgInviteInput {
+  projectId: UUID!
+  participantOrganizationId: UUID!
+  """JSON object string for capability flags (defaults to {})."""
+  capabilitiesJson: String
 }
 
 input CreateOrganizationProjectInput {
@@ -81,6 +92,27 @@ type OrganizationProject {
   createdByUserId: UUID!
   createdAt:       Time!
   updatedAt:       Time!
+}
+
+enum OrganizationProjectOrgParticipationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  REVOKED
+}
+
+type OrganizationProjectOrgParticipation {
+  id: UUID!
+  projectId: UUID!
+  participantOrganizationId: UUID!
+  status: OrganizationProjectOrgParticipationStatus!
+  """JSON object string (capability flags)."""
+  capabilitiesJson: String!
+  invitedByUserId: UUID
+  invitedAt: Time!
+  respondedAt: Time
+  createdAt: Time!
+  updatedAt: Time!
 }
 
 type OrganizationProjectMember {

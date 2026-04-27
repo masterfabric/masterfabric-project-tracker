@@ -653,6 +653,40 @@ func orgProjectMemberRespToModel(resp *organizationDTO.OrganizationProjectMember
 	}
 }
 
+func orgProjectOrgParticipationDomainToModel(m *orgDomainModel.OrganizationProjectOrgParticipation) *model.OrganizationProjectOrgParticipation {
+	if m == nil {
+		return nil
+	}
+	var st model.OrganizationProjectOrgParticipationStatus
+	switch m.Status {
+	case orgDomainModel.OrganizationProjectOrgParticipationAccepted:
+		st = model.OrganizationProjectOrgParticipationStatusAccepted
+	case orgDomainModel.OrganizationProjectOrgParticipationDeclined:
+		st = model.OrganizationProjectOrgParticipationStatusDeclined
+	case orgDomainModel.OrganizationProjectOrgParticipationRevoked:
+		st = model.OrganizationProjectOrgParticipationStatusRevoked
+	default:
+		st = model.OrganizationProjectOrgParticipationStatusPending
+	}
+	caps := string(m.Capabilities)
+	if caps == "" {
+		caps = "{}"
+	}
+	out := &model.OrganizationProjectOrgParticipation{
+		ID:                        m.ID,
+		ProjectID:                 m.ProjectID,
+		ParticipantOrganizationID: m.ParticipantOrganizationID,
+		Status:                    st,
+		CapabilitiesJSON:          caps,
+		InvitedByUserID:           m.InvitedByUserID,
+		InvitedAt:                 m.InvitedAt,
+		RespondedAt:               m.RespondedAt,
+		CreatedAt:                 m.CreatedAt,
+		UpdatedAt:                 m.UpdatedAt,
+	}
+	return out
+}
+
 func orgProjectTodoRespToModel(resp *organizationDTO.OrganizationProjectTodoResponse) *model.OrganizationProjectTodo {
 	id, _ := uuid.Parse(resp.ID)
 	pid, _ := uuid.Parse(resp.ProjectID)

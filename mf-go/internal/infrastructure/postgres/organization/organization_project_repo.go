@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -58,6 +59,42 @@ const (
 				AND om.user_id = $2
 				AND om.membership_status = 'active'
 		)`
+
+	sqlGetOrgProjectParticipation = `
+		SELECT id, project_id, participant_organization_id, status, capabilities, invited_by_user_id, invited_at,
+		       responded_at, leave_clear_partner_attribution_display, created_at, updated_at
+		FROM organization_project_org_participations
+		WHERE project_id = $1 AND participant_organization_id = $2`
+
+	sqlInsertOrgProjectParticipation = `
+		INSERT INTO organization_project_org_participations (
+			id, project_id, participant_organization_id, status, capabilities, invited_by_user_id, invited_at,
+			responded_at, leave_clear_partner_attribution_display, created_at, updated_at
+		) VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, NULL, NULL, $8, $9)`
+
+	sqlUpdateOrgProjectParticipationReinvite = `
+		UPDATE organization_project_org_participations SET
+			status = 'pending',
+			capabilities = $2::jsonb,
+			invited_by_user_id = $3,
+			invited_at = $4,
+			responded_at = NULL,
+			leave_clear_partner_attribution_display = NULL,
+			updated_at = $5
+		WHERE id = $1`
+
+	sqlAcceptOrgProjectParticipation = `
+		UPDATE organization_project_org_participations SET
+			status = 'accepted',
+			responded_at = NOW(),
+			updated_at = NOW()
+		WHERE project_id = $1 AND participant_organization_id = $2 AND status = 'pending'
+		RETURNING id, project_id, participant_organization_id, status, capabilities, invited_by_user_id, invited_at,
+		          responded_at, leave_clear_partner_attribution_display, created_at, updated_at`
+
+	sqlInsertProjectOrgAudit = `
+		INSERT INTO organization_project_org_audit_events (id, project_id, actor_user_id, event_type, metadata, created_at)
+		VALUES ($1, $2, $3, $4, COALESCE($5::jsonb, '{}'::jsonb), $6)`
 
 	sqlInsertOrgProject = `
 		INSERT INTO organization_projects (id, organization_id, name, description, created_by_user_id, created_at, updated_at)
@@ -166,6 +203,96 @@ func (r *OrganizationRepo) UserMayViewProjectViaAcceptedParticipation(ctx contex
 		return false, fmt.Errorf("organizationRepo.UserMayViewProjectViaAcceptedParticipation: %w", err)
 	}
 	return ok, nil
+}
+
+// GetOrganizationProjectOrgParticipation returns a participation row or nil.
+func (r *OrganizationRepo) GetOrganizationProjectOrgParticipation(ctx context.Context, projectID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error) {
+	row := r.db.QueryRow(ctx, sqlGetOrgProjectParticipation, projectID, participantOrganizationID)
+	out, err := scanOrganizationProjectOrgParticipation(row)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("organizationRepo.GetOrganizationProjectOrgParticipation: %w", err)
+	}
+	return out, nil
+}
+
+// InsertOrganizationProjectOrgParticipation inserts a new invite row.
+func (r *OrganizationRepo) InsertOrganizationProjectOrgParticipation(ctx context.Context, row *model.OrganizationProjectOrgParticipation) error {
+	caps := row.Capabilities
+	if len(caps) == 0 {
+		caps = []byte("{}")
+	}
+	invitedBy := pgtype.UUID{Valid: false}
+	if row.InvitedByUserID != nil {
+		invitedBy.Valid = true
+		copy(invitedBy.Bytes[:], row.InvitedByUserID[:])
+	}
+	_, err := r.db.Exec(ctx, sqlInsertOrgProjectParticipation,
+		row.ID, row.ProjectID, row.ParticipantOrganizationID, string(row.Status), caps, invitedBy,
+		row.InvitedAt, row.CreatedAt, row.UpdatedAt,
+	)
+	if err != nil {
+		return fmt.Errorf("organizationRepo.InsertOrganizationProjectOrgParticipation: %w", err)
+	}
+	return nil
+}
+
+// UpdateOrganizationProjectOrgParticipationReinvite resets a declined/revoked row to pending.
+func (r *OrganizationRepo) UpdateOrganizationProjectOrgParticipationReinvite(ctx context.Context, row *model.OrganizationProjectOrgParticipation) error {
+	caps := row.Capabilities
+	if len(caps) == 0 {
+		caps = []byte("{}")
+	}
+	invitedBy := pgtype.UUID{Valid: false}
+	if row.InvitedByUserID != nil {
+		invitedBy.Valid = true
+		copy(invitedBy.Bytes[:], row.InvitedByUserID[:])
+	}
+	res, err := r.db.Exec(ctx, sqlUpdateOrgProjectParticipationReinvite,
+		row.ID, caps, invitedBy, row.InvitedAt, row.UpdatedAt,
+	)
+	if err != nil {
+		return fmt.Errorf("organizationRepo.UpdateOrganizationProjectOrgParticipationReinvite: %w", err)
+	}
+	if res.RowsAffected() == 0 {
+		return fmt.Errorf("organizationRepo.UpdateOrganizationProjectOrgParticipationReinvite: not found")
+	}
+	return nil
+}
+
+// AcceptOrganizationProjectOrgParticipation marks pending as accepted and returns the row.
+func (r *OrganizationRepo) AcceptOrganizationProjectOrgParticipation(ctx context.Context, projectID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error) {
+	row := r.db.QueryRow(ctx, sqlAcceptOrgProjectParticipation, projectID, participantOrganizationID)
+	out, err := scanOrganizationProjectOrgParticipation(row)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("organizationRepo.AcceptOrganizationProjectOrgParticipation: %w", err)
+	}
+	return out, nil
+}
+
+// InsertOrganizationProjectOrgAuditEvent appends an audit row.
+func (r *OrganizationRepo) InsertOrganizationProjectOrgAuditEvent(ctx context.Context, projectID uuid.UUID, actorUserID *uuid.UUID, eventType string, metadataJSON []byte) error {
+	id := uuid.New()
+	now := time.Now().UTC()
+	actor := pgtype.UUID{Valid: false}
+	if actorUserID != nil {
+		actor.Valid = true
+		copy(actor.Bytes[:], actorUserID[:])
+	}
+	meta := metadataJSON
+	if len(meta) == 0 {
+		meta = []byte("{}")
+	}
+	_, err := r.db.Exec(ctx, sqlInsertProjectOrgAudit, id, projectID, actor, eventType, meta, now)
+	if err != nil {
+		return fmt.Errorf("organizationRepo.InsertOrganizationProjectOrgAuditEvent: %w", err)
+	}
+	return nil
 }
 
 // GetOrganizationProjectByID returns a project or nil.
@@ -542,6 +669,34 @@ func (r *OrganizationRepo) DeleteOrganizationProjectPurchase(ctx context.Context
 		return fmt.Errorf("organizationRepo.DeleteOrganizationProjectPurchase: not found")
 	}
 	return nil
+}
+
+func scanOrganizationProjectOrgParticipation(row pgx.Row) (*model.OrganizationProjectOrgParticipation, error) {
+	var m model.OrganizationProjectOrgParticipation
+	var status string
+	var caps []byte
+	var invited pgtype.UUID
+	var responded sql.NullTime
+	var leaveClear sql.NullBool
+	err := row.Scan(
+		&m.ID, &m.ProjectID, &m.ParticipantOrganizationID, &status, &caps, &invited,
+		&m.InvitedAt, &responded, &leaveClear, &m.CreatedAt, &m.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	m.Status = model.OrganizationProjectOrgParticipationStatus(status)
+	m.Capabilities = caps
+	m.InvitedByUserID = uuidPtrFromPgUUID(invited)
+	if responded.Valid {
+		u := responded.Time.UTC()
+		m.RespondedAt = &u
+	}
+	if leaveClear.Valid {
+		b := leaveClear.Bool
+		m.LeaveClearPartnerAttributionDisplay = &b
+	}
+	return &m, nil
 }
 
 func scanOrganizationProject(row pgx.Row) (*model.OrganizationProject, error) {

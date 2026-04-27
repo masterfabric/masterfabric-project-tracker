@@ -239,6 +239,13 @@ type CreateOrganizationProjectInput struct {
 	Description    *string   `json:"description,omitempty"`
 }
 
+type CreateOrganizationProjectOrgInviteInput struct {
+	ProjectID                 uuid.UUID `json:"projectId"`
+	ParticipantOrganizationID uuid.UUID `json:"participantOrganizationId"`
+	// JSON object string for capability flags (defaults to {}).
+	CapabilitiesJSON *string `json:"capabilitiesJson,omitempty"`
+}
+
 type CreateOrganizationProjectPurchaseInput struct {
 	ProjectID   uuid.UUID `json:"projectId"`
 	ProductName string    `json:"productName"`
@@ -549,6 +556,20 @@ type OrganizationProjectMember struct {
 	UserID       uuid.UUID `json:"userId"`
 	UserNickname string    `json:"userNickname"`
 	AddedAt      time.Time `json:"addedAt"`
+}
+
+type OrganizationProjectOrgParticipation struct {
+	ID                        uuid.UUID                                 `json:"id"`
+	ProjectID                 uuid.UUID                                 `json:"projectId"`
+	ParticipantOrganizationID uuid.UUID                                 `json:"participantOrganizationId"`
+	Status                    OrganizationProjectOrgParticipationStatus `json:"status"`
+	// JSON object string (capability flags).
+	CapabilitiesJSON string     `json:"capabilitiesJson"`
+	InvitedByUserID  *uuid.UUID `json:"invitedByUserId,omitempty"`
+	InvitedAt        time.Time  `json:"invitedAt"`
+	RespondedAt      *time.Time `json:"respondedAt,omitempty"`
+	CreatedAt        time.Time  `json:"createdAt"`
+	UpdatedAt        time.Time  `json:"updatedAt"`
 }
 
 type OrganizationProjectPurchase struct {
@@ -1313,6 +1334,51 @@ func (e *OrganizationOwnerDashboardPeriod) UnmarshalGQL(v interface{}) error {
 }
 
 func (e OrganizationOwnerDashboardPeriod) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type OrganizationProjectOrgParticipationStatus string
+
+const (
+	OrganizationProjectOrgParticipationStatusPending  OrganizationProjectOrgParticipationStatus = "PENDING"
+	OrganizationProjectOrgParticipationStatusAccepted OrganizationProjectOrgParticipationStatus = "ACCEPTED"
+	OrganizationProjectOrgParticipationStatusDeclined OrganizationProjectOrgParticipationStatus = "DECLINED"
+	OrganizationProjectOrgParticipationStatusRevoked  OrganizationProjectOrgParticipationStatus = "REVOKED"
+)
+
+var AllOrganizationProjectOrgParticipationStatus = []OrganizationProjectOrgParticipationStatus{
+	OrganizationProjectOrgParticipationStatusPending,
+	OrganizationProjectOrgParticipationStatusAccepted,
+	OrganizationProjectOrgParticipationStatusDeclined,
+	OrganizationProjectOrgParticipationStatusRevoked,
+}
+
+func (e OrganizationProjectOrgParticipationStatus) IsValid() bool {
+	switch e {
+	case OrganizationProjectOrgParticipationStatusPending, OrganizationProjectOrgParticipationStatusAccepted, OrganizationProjectOrgParticipationStatusDeclined, OrganizationProjectOrgParticipationStatusRevoked:
+		return true
+	}
+	return false
+}
+
+func (e OrganizationProjectOrgParticipationStatus) String() string {
+	return string(e)
+}
+
+func (e *OrganizationProjectOrgParticipationStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = OrganizationProjectOrgParticipationStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid OrganizationProjectOrgParticipationStatus", str)
+	}
+	return nil
+}
+
+func (e OrganizationProjectOrgParticipationStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

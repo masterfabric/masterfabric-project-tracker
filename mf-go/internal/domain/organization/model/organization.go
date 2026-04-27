@@ -101,6 +101,21 @@ const (
 	OrganizationProjectOrgParticipationRevoked  OrganizationProjectOrgParticipationStatus = "revoked"
 )
 
+// OrganizationProjectOrgParticipation links a canonical host project to another org (GFG-172 / GFG-179).
+type OrganizationProjectOrgParticipation struct {
+	ID                                  uuid.UUID
+	ProjectID                           uuid.UUID
+	ParticipantOrganizationID           uuid.UUID
+	Status                              OrganizationProjectOrgParticipationStatus
+	Capabilities                        []byte // JSON object; empty means {}
+	InvitedByUserID                     *uuid.UUID
+	InvitedAt                           time.Time
+	RespondedAt                         *time.Time
+	LeaveClearPartnerAttributionDisplay *bool
+	CreatedAt                           time.Time
+	UpdatedAt                           time.Time
+}
+
 // OrganizationProject is a project workspace inside an organization.
 type OrganizationProject struct {
 	ID              uuid.UUID

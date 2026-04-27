@@ -54,6 +54,13 @@ type OrganizationRepository interface {
 	// UserMayViewProjectViaAcceptedParticipation is true when the user is an active member of a participant org
 	// with an accepted link to the project (GFG-172 / GFG-179 cross-org read path).
 	UserMayViewProjectViaAcceptedParticipation(ctx context.Context, projectID, userID uuid.UUID) (bool, error)
+
+	// Organization project cross-org participation (GFG-179).
+	GetOrganizationProjectOrgParticipation(ctx context.Context, projectID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error)
+	InsertOrganizationProjectOrgParticipation(ctx context.Context, row *model.OrganizationProjectOrgParticipation) error
+	UpdateOrganizationProjectOrgParticipationReinvite(ctx context.Context, row *model.OrganizationProjectOrgParticipation) error
+	AcceptOrganizationProjectOrgParticipation(ctx context.Context, projectID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error)
+	InsertOrganizationProjectOrgAuditEvent(ctx context.Context, projectID uuid.UUID, actorUserID *uuid.UUID, eventType string, metadataJSON []byte) error
 	ListOrganizationProjectsByOrgID(ctx context.Context, orgID uuid.UUID) ([]*model.OrganizationProject, error)
 	// ListOrganizationProjectsForOrgMember lists projects the user is on the roster for (within org).
 	ListOrganizationProjectsForOrgMember(ctx context.Context, orgID, userID uuid.UUID) ([]*model.OrganizationProject, error)

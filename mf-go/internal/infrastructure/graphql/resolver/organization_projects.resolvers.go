@@ -251,6 +251,32 @@ func (r *mutationResolver) DeleteOrganizationProjectPurchase(ctx context.Context
 	return true, nil
 }
 
+// CreateOrganizationProjectOrgInvite is the resolver for the createOrganizationProjectOrgInvite field.
+func (r *mutationResolver) CreateOrganizationProjectOrgInvite(ctx context.Context, input model.CreateOrganizationProjectOrgInviteInput) (*model.OrganizationProjectOrgParticipation, error) {
+	userID := middleware.UserIDFromContext(ctx)
+	if userID == uuid.Nil {
+		return nil, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
+	}
+	row, err := r.CreateOrganizationProjectOrgInviteUC.Execute(ctx, input.ProjectID, input.ParticipantOrganizationID, userID, input.CapabilitiesJSON)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	return orgProjectOrgParticipationDomainToModel(row), nil
+}
+
+// AcceptOrganizationProjectOrgInvite is the resolver for the acceptOrganizationProjectOrgInvite field.
+func (r *mutationResolver) AcceptOrganizationProjectOrgInvite(ctx context.Context, projectID uuid.UUID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error) {
+	userID := middleware.UserIDFromContext(ctx)
+	if userID == uuid.Nil {
+		return nil, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
+	}
+	row, err := r.AcceptOrganizationProjectOrgInviteUC.Execute(ctx, projectID, participantOrganizationID, userID)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	return orgProjectOrgParticipationDomainToModel(row), nil
+}
+
 // Subtasks is the resolver for the subtasks field.
 func (r *organizationProjectTodoResolver) Subtasks(ctx context.Context, obj *model.OrganizationProjectTodo) ([]*model.OrganizationProjectTodoSubtask, error) {
 	userID := middleware.UserIDFromContext(ctx)
