@@ -11,6 +11,11 @@ extend type Query {
   organizationProjectTodos(projectId: UUID!): [OrganizationProjectTodo!]!
   """Purchase line items on the project (same visibility as organizationProject)."""
   organizationProjectPurchases(projectId: UUID!): [OrganizationProjectPurchase!]!
+  """
+  Pending cross-org project share invites where this organization is the participant (GFG-179).
+  Organization owner only.
+  """
+  pendingOrganizationProjectOrgInvites(organizationId: UUID!): [OrganizationProjectOrgInvitePendingRow!]!
 }
 
 extend type Mutation {
@@ -113,6 +118,15 @@ type OrganizationProjectOrgParticipation {
   respondedAt: Time
   createdAt: Time!
   updatedAt: Time!
+}
+
+type OrganizationProjectOrgInvitePendingRow {
+  projectId: UUID!
+  projectName: String!
+  hostOrganizationId: UUID!
+  hostOrganizationName: String!
+  invitedAt: Time!
+  capabilitiesJson: String!
 }
 
 type OrganizationProjectMember {

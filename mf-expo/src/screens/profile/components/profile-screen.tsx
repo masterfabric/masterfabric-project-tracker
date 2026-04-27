@@ -18,6 +18,8 @@ export function ProfileScreen() {
   const {
     profile,
     organizations,
+    sharedProjects,
+    sharedProjectsLoading,
     invitations,
     isLoading,
     error,
@@ -38,6 +40,7 @@ export function ProfileScreen() {
     navigateToSettings,
     navigateToResetPassword,
     navigateToOrganization,
+    navigateToSharedProject,
     deleteAccount,
     deletionImpact,
     deletionImpactLoading,
@@ -89,6 +92,8 @@ export function ProfileScreen() {
         <ProfileContent
           profile={profile}
           organizations={organizations}
+          sharedProjects={sharedProjects}
+          sharedProjectsLoading={sharedProjectsLoading}
           invitations={invitations}
           isLoading={isLoading}
           error={error}
@@ -106,6 +111,7 @@ export function ProfileScreen() {
           onSettingsPress={navigateToSettings}
           onResetPasswordPress={navigateToResetPassword}
           onOrganizationPress={navigateToOrganization}
+          onSharedProjectPress={navigateToSharedProject}
           showSetUsernameSheet={showSetUsernameSheet}
           onSetNicknameComplete={setNicknameComplete}
           addresses={addresses}

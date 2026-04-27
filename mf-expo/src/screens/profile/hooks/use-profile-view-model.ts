@@ -11,9 +11,19 @@ import type {
   UserProfile,
   OrganizationPayload,
   OrganizationInvitationPayload,
+  OrganizationProjectPayload,
   UpsertAddressInput,
   MyAccountDeletionImpact,
 } from '@/src/shared/services/mf-go-api';
+
+/** Cross-org project visible under a member org (host `project.organizationId` ≠ listing org). GFG-180. */
+export type ProfileSharedProjectEntry = {
+  contextOrganizationId: string;
+  contextOrganizationName: string;
+  project: OrganizationProjectPayload;
+  /** Host org name when it is also one of the user’s organizations; otherwise null. */
+  hostOrganizationName: string | null;
+};
 import { useAppStore } from '@/src/shared/store';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -43,6 +53,8 @@ export function useProfileViewModel() {
   const [showSetUsernameSheet, setShowSetUsernameSheet] = useState(false);
   const [deletionImpact, setDeletionImpact] = useState<MyAccountDeletionImpact | null>(null);
   const [deletionImpactLoading, setDeletionImpactLoading] = useState(false);
+  const [sharedProjects, setSharedProjects] = useState<ProfileSharedProjectEntry[]>([]);
+  const [sharedProjectsLoading, setSharedProjectsLoading] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
@@ -90,6 +102,7 @@ export function useProfileViewModel() {
 
   const fetchOrganizations = useCallback(async () => {
     if (!user) return;
+    setSharedProjectsLoading(true);
     try {
       const [orgs, invs] = await Promise.all([
         mfGoOrganizations.myOrganizations(),
@@ -98,10 +111,38 @@ export function useProfileViewModel() {
       setOrganizations(orgs);
       setInvitations(invs);
       useAppStore.getState().setShowOrgMessagesTab(orgs.length > 0);
+
+      const nameById = new Map(orgs.map((o) => [o.id, o.name] as const));
+      const rows: ProfileSharedProjectEntry[] = [];
+      if (orgs.length > 0) {
+        const settled = await Promise.allSettled(
+          orgs.map((org) =>
+            mfGoOrganizations.organizationProjects(org.id).then((list) => ({ org, list }))
+          )
+        );
+        for (const s of settled) {
+          if (s.status !== 'fulfilled') continue;
+          const { org, list } = s.value;
+          for (const p of list) {
+            if (p.organizationId !== org.id) {
+              rows.push({
+                contextOrganizationId: org.id,
+                contextOrganizationName: org.name,
+                project: p,
+                hostOrganizationName: nameById.get(p.organizationId) ?? null,
+              });
+            }
+          }
+        }
+      }
+      setSharedProjects(rows);
     } catch {
       setOrganizations([]);
       setInvitations([]);
+      setSharedProjects([]);
       useAppStore.getState().setShowOrgMessagesTab(false);
+    } finally {
+      setSharedProjectsLoading(false);
     }
   }, [user]);
 
@@ -294,6 +335,10 @@ export function useProfileViewModel() {
     router.push(`/organization/${org.id}`);
   }, []);
 
+  const navigateToSharedProject = useCallback((contextOrganizationId: string, projectId: string) => {
+    router.push(`/organization/${contextOrganizationId}/project/${projectId}` as never);
+  }, []);
+
   /** Permanently removes the account on the server, then clears local session (no server logout — user row is gone). */
   const deleteAccount = useCallback(async () => {
     if (!user) return t('profile.addresses.errorNotAuthenticated');
@@ -322,6 +367,8 @@ export function useProfileViewModel() {
     saveAddress,
     deleteAddress,
     organizations,
+    sharedProjects,
+    sharedProjectsLoading,
     invitations,
     isLoading,
     error,
@@ -343,6 +390,7 @@ export function useProfileViewModel() {
     navigateToSettings,
     navigateToResetPassword,
     navigateToOrganization,
+    navigateToSharedProject,
     deleteAccount,
   };
 }

@@ -251,34 +251,53 @@ export function OrganizationProjectsScreen({ organizationId }: OrganizationProje
               </View>
             ) : (
               <View style={{ borderRadius: 12, overflow: 'hidden', backgroundColor: rowBg }}>
-                {projects.map((p, i) => (
-                  <Pressable
-                    key={p.id}
-                    onPress={() => openProject(p.id)}
-                    style={({ pressed }) => [
-                      styles.row,
-                      i < projects.length - 1 && {
-                        borderBottomWidth: StyleSheet.hairlineWidth,
-                        borderBottomColor: isDark ? '#38383A' : '#C6C6C8',
-                      },
-                      { opacity: pressed ? 0.7 : 1 },
-                    ]}
-                  >
-                    <Ionicons name="folder-outline" size={22} color={colors.tint} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.rowText, { color: colors.bodyText }]}>{p.name}</Text>
-                      {p.description?.trim() ? (
-                        <Text
-                          style={{ color: colors.labelText, fontSize: 13, marginTop: 2 }}
-                          numberOfLines={2}
-                        >
-                          {p.description}
-                        </Text>
-                      ) : null}
-                    </View>
-                    <Ionicons name="chevron-forward" size={Sizing.icon.s} color={colors.icon} />
-                  </Pressable>
-                ))}
+                {projects.map((p, i) => {
+                  const isSharedProject = p.organizationId !== organizationId;
+                  return (
+                    <Pressable
+                      key={p.id}
+                      onPress={() => openProject(p.id)}
+                      style={({ pressed }) => [
+                        styles.row,
+                        i < projects.length - 1 && {
+                          borderBottomWidth: StyleSheet.hairlineWidth,
+                          borderBottomColor: isDark ? '#38383A' : '#C6C6C8',
+                        },
+                        { opacity: pressed ? 0.7 : 1 },
+                      ]}
+                    >
+                      <Ionicons name="folder-outline" size={22} color={colors.tint} />
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          <Text style={[styles.rowText, { color: colors.bodyText }]}>{p.name}</Text>
+                          {isSharedProject ? (
+                            <View
+                              style={{
+                                paddingHorizontal: 8,
+                                paddingVertical: 3,
+                                borderRadius: 6,
+                                backgroundColor: isDark ? '#3A3A3C' : '#E8E8ED',
+                              }}
+                            >
+                              <Text style={{ fontSize: 11, fontWeight: '700', color: colors.tint }}>
+                                {t('profile.organizations.projects.sharedProjectBadge')}
+                              </Text>
+                            </View>
+                          ) : null}
+                        </View>
+                        {p.description?.trim() ? (
+                          <Text
+                            style={{ color: colors.labelText, fontSize: 13, marginTop: 2 }}
+                            numberOfLines={2}
+                          >
+                            {p.description}
+                          </Text>
+                        ) : null}
+                      </View>
+                      <Ionicons name="chevron-forward" size={Sizing.icon.s} color={colors.icon} />
+                    </Pressable>
+                  );
+                })}
               </View>
             )}
           </ScrollView>

@@ -865,6 +865,30 @@ export interface OrganizationProjectPayload {
   updatedAt: string;
 }
 
+/** GFG-180 / GFG-179 pending cross-org invite row (participant org owner query). */
+export interface OrganizationProjectOrgInvitePendingRowPayload {
+  projectId: string;
+  projectName: string;
+  hostOrganizationId: string;
+  hostOrganizationName: string;
+  invitedAt: string;
+  capabilitiesJson: string;
+}
+
+/** GFG-179 participation / invite mutation result. */
+export interface OrganizationProjectOrgParticipationPayload {
+  id: string;
+  projectId: string;
+  participantOrganizationId: string;
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'REVOKED';
+  capabilitiesJson: string;
+  invitedByUserId?: string | null;
+  invitedAt: string;
+  respondedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /** GFG-174 organization owner dashboard payload. */
 export interface OrganizationOwnerDashboardDayBucketPayload {
   day: string;
@@ -1290,6 +1314,56 @@ const DELETE_ORGANIZATION_PROJECT_PURCHASE = /* GraphQL */ `
   }
 `;
 
+const PENDING_ORGANIZATION_PROJECT_ORG_INVITES = /* GraphQL */ `
+  query PendingOrganizationProjectOrgInvites($organizationId: UUID!) {
+    pendingOrganizationProjectOrgInvites(organizationId: $organizationId) {
+      projectId
+      projectName
+      hostOrganizationId
+      hostOrganizationName
+      invitedAt
+      capabilitiesJson
+    }
+  }
+`;
+
+const CREATE_ORGANIZATION_PROJECT_ORG_INVITE = /* GraphQL */ `
+  mutation CreateOrganizationProjectOrgInvite($input: CreateOrganizationProjectOrgInviteInput!) {
+    createOrganizationProjectOrgInvite(input: $input) {
+      id
+      projectId
+      participantOrganizationId
+      status
+      capabilitiesJson
+      invitedByUserId
+      invitedAt
+      respondedAt
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const ACCEPT_ORGANIZATION_PROJECT_ORG_INVITE = /* GraphQL */ `
+  mutation AcceptOrganizationProjectOrgInvite($projectId: UUID!, $participantOrganizationId: UUID!) {
+    acceptOrganizationProjectOrgInvite(
+      projectId: $projectId
+      participantOrganizationId: $participantOrganizationId
+    ) {
+      id
+      projectId
+      participantOrganizationId
+      status
+      capabilitiesJson
+      invitedByUserId
+      invitedAt
+      respondedAt
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 const ORGANIZATION_OWNER_TODO_DASHBOARD = /* GraphQL */ `
   query OrganizationOwnerTodoDashboard($input: OrganizationOwnerTodoDashboardInput!) {
     organizationOwnerTodoDashboard(input: $input) {
@@ -1586,6 +1660,35 @@ export const mfGoOrganizations = {
     graphqlRequest<{ deleteOrganizationProject: boolean }>(DELETE_ORGANIZATION_PROJECT, {
       projectId,
     }).then((r) => r.deleteOrganizationProject),
+
+  pendingOrganizationProjectOrgInvites: (organizationId: string) =>
+    graphqlRequest<{
+      pendingOrganizationProjectOrgInvites: OrganizationProjectOrgInvitePendingRowPayload[];
+    }>(PENDING_ORGANIZATION_PROJECT_ORG_INVITES, { organizationId }).then(
+      (r) => r.pendingOrganizationProjectOrgInvites
+    ),
+
+  createOrganizationProjectOrgInvite: (input: {
+    projectId: string;
+    participantOrganizationId: string;
+    capabilitiesJson?: string;
+  }) =>
+    graphqlRequest<{ createOrganizationProjectOrgInvite: OrganizationProjectOrgParticipationPayload }>(
+      CREATE_ORGANIZATION_PROJECT_ORG_INVITE,
+      {
+        input: {
+          projectId: input.projectId,
+          participantOrganizationId: input.participantOrganizationId,
+          capabilitiesJson: input.capabilitiesJson,
+        },
+      }
+    ).then((r) => r.createOrganizationProjectOrgInvite),
+
+  acceptOrganizationProjectOrgInvite: (projectId: string, participantOrganizationId: string) =>
+    graphqlRequest<{ acceptOrganizationProjectOrgInvite: OrganizationProjectOrgParticipationPayload }>(
+      ACCEPT_ORGANIZATION_PROJECT_ORG_INVITE,
+      { projectId, participantOrganizationId }
+    ).then((r) => r.acceptOrganizationProjectOrgInvite),
 
   addOrganizationProjectMember: (projectId: string, userId: string) =>
     graphqlRequest<{ addOrganizationProjectMember: boolean }>(ADD_ORGANIZATION_PROJECT_MEMBER, {

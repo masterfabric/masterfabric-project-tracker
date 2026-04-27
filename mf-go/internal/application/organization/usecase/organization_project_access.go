@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/masterfabric/masterfabric_go_basic/internal/domain/organization/model"
 	orgRepo "github.com/masterfabric/masterfabric_go_basic/internal/domain/organization/repository"
+	domainErr "github.com/masterfabric/masterfabric_go_basic/internal/shared/errors"
 )
 
 func ensureOrgMember(ctx context.Context, repo orgRepo.OrganizationRepository, orgID, userID uuid.UUID) error {
@@ -16,6 +17,20 @@ func ensureOrgMember(ctx context.Context, repo orgRepo.OrganizationRepository, o
 	}
 	if !ok {
 		return fmt.Errorf("organizationProject: not a member of this organization")
+	}
+	return nil
+}
+
+func ensureOrgOwner(ctx context.Context, repo orgRepo.OrganizationRepository, orgID, userID uuid.UUID) error {
+	org, err := repo.GetByID(ctx, orgID)
+	if err != nil {
+		return fmt.Errorf("organizationProject: %w", err)
+	}
+	if org == nil {
+		return domainErr.New("NOT_FOUND", "organization not found", nil)
+	}
+	if org.OwnerUserID != userID {
+		return domainErr.New("FORBIDDEN", "organization owner role required", nil)
 	}
 	return nil
 }

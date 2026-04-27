@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/masterfabric/masterfabric_go_basic/internal/application/organization/dto"
 	"github.com/masterfabric/masterfabric_go_basic/internal/application/push"
 	"github.com/masterfabric/masterfabric_go_basic/internal/domain/organization/model"
 	orgRepo "github.com/masterfabric/masterfabric_go_basic/internal/domain/organization/repository"
@@ -194,6 +195,43 @@ func (uc *AcceptOrganizationProjectOrgInviteUseCase) Execute(ctx context.Context
 	}
 	if err := uc.repo.AddOrganizationProjectMember(ctx, member); err != nil {
 		return nil, fmt.Errorf("acceptOrganizationProjectOrgInvite: add owner to roster: %w", err)
+	}
+	return out, nil
+}
+
+// ListPendingOrganizationProjectOrgInvitesUseCase lists pending invites for a participant org (owner only).
+type ListPendingOrganizationProjectOrgInvitesUseCase struct {
+	repo orgRepo.OrganizationRepository
+}
+
+// NewListPendingOrganizationProjectOrgInvitesUseCase constructs the use case.
+func NewListPendingOrganizationProjectOrgInvitesUseCase(repo orgRepo.OrganizationRepository) *ListPendingOrganizationProjectOrgInvitesUseCase {
+	return &ListPendingOrganizationProjectOrgInvitesUseCase{repo: repo}
+}
+
+// Execute returns pending cross-org invites for the given organization when the caller is its owner.
+func (uc *ListPendingOrganizationProjectOrgInvitesUseCase) Execute(ctx context.Context, organizationID, callerUserID uuid.UUID) ([]*dto.OrganizationProjectOrgInvitePendingResponse, error) {
+	if err := ensureOrgOwner(ctx, uc.repo, organizationID, callerUserID); err != nil {
+		return nil, err
+	}
+	rows, err := uc.repo.ListPendingOrganizationProjectOrgInvitesForParticipantOrg(ctx, organizationID)
+	if err != nil {
+		return nil, fmt.Errorf("pendingOrganizationProjectOrgInvites: %w", err)
+	}
+	out := make([]*dto.OrganizationProjectOrgInvitePendingResponse, 0, len(rows))
+	for _, row := range rows {
+		caps := string(row.Capabilities)
+		if caps == "" {
+			caps = "{}"
+		}
+		out = append(out, &dto.OrganizationProjectOrgInvitePendingResponse{
+			ProjectID:            row.ProjectID.String(),
+			ProjectName:          row.ProjectName,
+			HostOrganizationID:   row.HostOrganizationID.String(),
+			HostOrganizationName: row.HostOrganizationName,
+			InvitedAt:            row.InvitedAt.UTC().Format(time.RFC3339),
+			CapabilitiesJSON:     caps,
+		})
 	}
 	return out, nil
 }

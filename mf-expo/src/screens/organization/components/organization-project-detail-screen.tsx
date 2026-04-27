@@ -17,6 +17,7 @@ import type {
   OrganizationMemberPayload,
   OrganizationPayload,
   OrganizationProjectMemberPayload,
+  OrganizationProjectOrgInvitePendingRowPayload,
   OrganizationProjectPayload,
   OrganizationProjectPurchasePayload,
   OrganizationProjectTodoPayload,
@@ -165,6 +166,12 @@ export function OrganizationProjectDetailScreen({
   } | null>(null);
   const [projectSubtaskDrafts, setProjectSubtaskDrafts] = useState<Record<string, string>>({});
   const [projectSubtasksBusy, setProjectSubtasksBusy] = useState(false);
+  const [showProjectSettings, setShowProjectSettings] = useState(false);
+  const [inviteParticipantOrgId, setInviteParticipantOrgId] = useState('');
+  const [inviteCapabilitiesJson, setInviteCapabilitiesJson] = useState('');
+  const [inviteFlowBusy, setInviteFlowBusy] = useState(false);
+  const [pendingInviteRows, setPendingInviteRows] = useState<OrganizationProjectOrgInvitePendingRowPayload[]>([]);
+  const [pendingInvitesLoading, setPendingInvitesLoading] = useState(false);
 
   const isAdminOrOwner =
     !!organization &&
@@ -173,6 +180,17 @@ export function OrganizationProjectDetailScreen({
       orgMembers.some((m) => m.userID === user.id && (m.role === 'OWNER' || m.role === 'ADMIN')));
 
   const projectUserIds = useMemo(() => new Set(projMembers.map((m) => m.userId)), [projMembers]);
+
+  const isHostProjectContext = !!project && project.organizationId === organizationId;
+  const isParticipantOrgOwner =
+    !!organization && !!user && organization.ownerUserID === user.id;
+  const showProjectSettingsGear =
+    (isHostProjectContext && isAdminOrOwner) || (!isHostProjectContext && isParticipantOrgOwner);
+
+  const pendingInviteForThisProject = useMemo(
+    () => pendingInviteRows.find((r) => r.projectId === projectId),
+    [pendingInviteRows, projectId]
+  );
 
   const projectMemberNickByUserId = useMemo(() => {
     const m = new Map<string, string>();
@@ -307,6 +325,63 @@ export function OrganizationProjectDetailScreen({
       primaryAction: okSheetAction(() => setMsgSheet(null)),
     });
   }, []);
+
+  const loadPendingInvites = useCallback(async () => {
+    if (!user || !organization || organization.ownerUserID !== user.id) return;
+    setPendingInvitesLoading(true);
+    try {
+      const rows = await mfGoOrganizations.pendingOrganizationProjectOrgInvites(organizationId);
+      setPendingInviteRows(rows);
+    } catch {
+      setPendingInviteRows([]);
+      showErr(t('profile.organizations.projects.pendingInvitesLoadFailed'));
+    } finally {
+      setPendingInvitesLoading(false);
+    }
+  }, [user, organization, organizationId, showErr]);
+
+  const submitOrgProjectInvite = useCallback(async () => {
+    const trimmed = inviteParticipantOrgId.trim();
+    if (!trimmed) return;
+    setInviteFlowBusy(true);
+    try {
+      const caps = inviteCapabilitiesJson.trim();
+      await mfGoOrganizations.createOrganizationProjectOrgInvite({
+        projectId,
+        participantOrganizationId: trimmed,
+        capabilitiesJson: caps.length > 0 ? caps : undefined,
+      });
+      snackbarService.success(t('profile.organizations.projects.inviteSent'));
+      setInviteParticipantOrgId('');
+      setInviteCapabilitiesJson('');
+      setShowProjectSettings(false);
+    } catch {
+      showErr(t('profile.organizations.projects.inviteFailed'));
+    } finally {
+      setInviteFlowBusy(false);
+    }
+  }, [
+    inviteParticipantOrgId,
+    inviteCapabilitiesJson,
+    projectId,
+    showErr,
+    t,
+  ]);
+
+  const acceptOrgProjectInvite = useCallback(async () => {
+    setInviteFlowBusy(true);
+    try {
+      await mfGoOrganizations.acceptOrganizationProjectOrgInvite(projectId, organizationId);
+      snackbarService.success(t('profile.organizations.projects.acceptInviteSuccess'));
+      setShowProjectSettings(false);
+      setPendingInviteRows((rows) => rows.filter((r) => r.projectId !== projectId));
+      await load('refresh');
+    } catch {
+      showErr(t('profile.organizations.projects.acceptInviteFailed'));
+    } finally {
+      setInviteFlowBusy(false);
+    }
+  }, [organizationId, projectId, load, showErr, t]);
 
   const saveTodoFromSheet = useCallback(
     async (input: TodoSheetSaveInput) => {
@@ -628,16 +703,33 @@ export function OrganizationProjectDetailScreen({
             showBackButton
             variant="minimal"
             rightAction={
-              isAdminOrOwner ? (
-                <Pressable
-                  onPress={confirmDeleteProject}
-                  hitSlop={8}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('profile.organizations.projects.deleteProject')}
-                >
-                  <Ionicons name="trash-outline" size={22} color="#FF3B30" />
-                </Pressable>
-              ) : undefined
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                {showProjectSettingsGear ? (
+                  <Pressable
+                    onPress={() => {
+                      setShowProjectSettings(true);
+                      if (!isHostProjectContext && isParticipantOrgOwner) {
+                        void loadPendingInvites();
+                      }
+                    }}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('profile.organizations.projects.projectSettings')}
+                  >
+                    <Ionicons name="settings-outline" size={22} color={colors.text} />
+                  </Pressable>
+                ) : null}
+                {isHostProjectContext && isAdminOrOwner ? (
+                  <Pressable
+                    onPress={confirmDeleteProject}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('profile.organizations.projects.deleteProject')}
+                  >
+                    <Ionicons name="trash-outline" size={22} color="#FF3B30" />
+                  </Pressable>
+                ) : null}
+              </View>
             }
           />
         }
@@ -664,6 +756,23 @@ export function OrganizationProjectDetailScreen({
           >
             {project.description?.trim() ? (
               <Text style={{ color: colors.labelText, marginTop: 12 }}>{project.description}</Text>
+            ) : null}
+
+            {!isHostProjectContext ? (
+              <View
+                style={{
+                  marginTop: 12,
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 8,
+                  backgroundColor: isDark ? '#2C2C2E' : '#E5E5EA',
+                }}
+              >
+                <Text style={{ fontSize: 12, fontWeight: '700', color: colors.tint }}>
+                  {t('profile.organizations.projects.sharedProjectBadge')}
+                </Text>
+              </View>
             ) : null}
 
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1262,6 +1371,140 @@ export function OrganizationProjectDetailScreen({
           </ScrollView>
         )}
       </AppBarScaffold>
+
+      <Modal visible={showProjectSettings} transparent animationType="fade">
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.45)',
+            justifyContent: 'center',
+            padding: 20,
+          }}
+          onPress={() => !inviteFlowBusy && setShowProjectSettings(false)}
+        >
+          <Pressable
+            style={{
+              backgroundColor: rowBg,
+              borderRadius: 14,
+              padding: 16,
+              maxHeight: '88%',
+            }}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <ScrollView keyboardShouldPersistTaps="handled">
+              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.bodyText }}>
+                {t('profile.organizations.projects.projectSettingsTitle')}
+              </Text>
+
+              {isHostProjectContext && isAdminOrOwner ? (
+                <>
+                  <Text style={{ color: colors.bodyText, marginTop: 12, fontSize: 16, fontWeight: '600' }}>
+                    {t('profile.organizations.projects.inviteParticipantOrgTitle')}
+                  </Text>
+                  <Text style={{ color: colors.labelText, marginTop: 6, fontSize: 13 }}>
+                    {t('profile.organizations.projects.inviteParticipantOrgHint')}
+                  </Text>
+                  <TextInput
+                    value={inviteParticipantOrgId}
+                    onChangeText={setInviteParticipantOrgId}
+                    placeholder={t('profile.organizations.projects.inviteParticipantOrgPlaceholder')}
+                    placeholderTextColor={colors.labelText}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: colors.surfaceBorder,
+                      borderRadius: 10,
+                      padding: 12,
+                      marginTop: 12,
+                      color: colors.bodyText,
+                    }}
+                  />
+                  <TextInput
+                    value={inviteCapabilitiesJson}
+                    onChangeText={setInviteCapabilitiesJson}
+                    placeholder={t('profile.organizations.projects.inviteCapabilitiesPlaceholder')}
+                    placeholderTextColor={colors.labelText}
+                    multiline
+                    style={{
+                      borderWidth: 1,
+                      borderColor: colors.surfaceBorder,
+                      borderRadius: 10,
+                      padding: 12,
+                      marginTop: 10,
+                      minHeight: 72,
+                      color: colors.bodyText,
+                      textAlignVertical: 'top',
+                    }}
+                  />
+                  <Pressable
+                    disabled={inviteFlowBusy || !inviteParticipantOrgId.trim()}
+                    onPress={() => void submitOrgProjectInvite()}
+                    style={{
+                      marginTop: 16,
+                      paddingVertical: 14,
+                      backgroundColor: colors.tint,
+                      borderRadius: 10,
+                      opacity: inviteFlowBusy || !inviteParticipantOrgId.trim() ? 0.55 : 1,
+                    }}
+                  >
+                    <Text style={{ color: onTint, textAlign: 'center', fontWeight: '700' }}>
+                      {t('profile.organizations.projects.inviteSend')}
+                    </Text>
+                  </Pressable>
+                </>
+              ) : null}
+
+              {!isHostProjectContext && isParticipantOrgOwner ? (
+                <>
+                  {pendingInvitesLoading ? (
+                    <View style={{ paddingVertical: 24, alignItems: 'center' }}>
+                      <ActivityIndicator color={colors.tint} />
+                    </View>
+                  ) : pendingInviteForThisProject ? (
+                    <>
+                      <Text style={{ color: colors.bodyText, marginTop: 14, fontSize: 16, fontWeight: '600' }}>
+                        {t('profile.organizations.projects.acceptInviteTitle')}
+                      </Text>
+                      <Text style={{ color: colors.labelText, marginTop: 8, fontSize: 14 }}>
+                        {t('profile.organizations.projects.acceptInviteSubtitle', {
+                          host: pendingInviteForThisProject.hostOrganizationName,
+                          project: pendingInviteForThisProject.projectName,
+                        })}
+                      </Text>
+                      <Pressable
+                        disabled={inviteFlowBusy}
+                        onPress={() => void acceptOrgProjectInvite()}
+                        style={{
+                          marginTop: 16,
+                          paddingVertical: 14,
+                          backgroundColor: colors.tint,
+                          borderRadius: 10,
+                          opacity: inviteFlowBusy ? 0.6 : 1,
+                        }}
+                      >
+                        <Text style={{ color: onTint, textAlign: 'center', fontWeight: '700' }}>
+                          {t('profile.organizations.projects.acceptInviteButton')}
+                        </Text>
+                      </Pressable>
+                    </>
+                  ) : (
+                    <Text style={{ color: colors.labelText, marginTop: 14 }}>
+                      {t('profile.organizations.projects.noPendingInviteForProject')}
+                    </Text>
+                  )}
+                </>
+              ) : null}
+
+              <Pressable onPress={() => !inviteFlowBusy && setShowProjectSettings(false)} style={{ marginTop: 18 }}>
+                <Text style={{ color: colors.tint, textAlign: 'center', fontWeight: '600' }}>
+                  {t('common.close')}
+                </Text>
+              </Pressable>
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       <Modal visible={showAddMember} transparent animationType="slide">
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>

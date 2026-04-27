@@ -61,6 +61,7 @@ type OrganizationRepository interface {
 	UpdateOrganizationProjectOrgParticipationReinvite(ctx context.Context, row *model.OrganizationProjectOrgParticipation) error
 	AcceptOrganizationProjectOrgParticipation(ctx context.Context, projectID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error)
 	InsertOrganizationProjectOrgAuditEvent(ctx context.Context, projectID uuid.UUID, actorUserID *uuid.UUID, eventType string, metadataJSON []byte) error
+	ListPendingOrganizationProjectOrgInvitesForParticipantOrg(ctx context.Context, participantOrganizationID uuid.UUID) ([]*model.OrganizationProjectOrgInvitePending, error)
 	ListOrganizationProjectsByOrgID(ctx context.Context, orgID uuid.UUID) ([]*model.OrganizationProject, error)
 	// ListOrganizationProjectsForOrgMember lists projects the user is on the roster for (within org).
 	ListOrganizationProjectsForOrgMember(ctx context.Context, orgID, userID uuid.UUID) ([]*model.OrganizationProject, error)

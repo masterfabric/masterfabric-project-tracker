@@ -96,6 +96,14 @@ const (
 		INSERT INTO organization_project_org_audit_events (id, project_id, actor_user_id, event_type, metadata, created_at)
 		VALUES ($1, $2, $3, $4, COALESCE($5::jsonb, '{}'::jsonb), $6)`
 
+	sqlListPendingOrgProjectInvitesForParticipant = `
+		SELECT p.id, p.name, o.id, o.name, pop.invited_at, pop.capabilities
+		FROM organization_project_org_participations pop
+		INNER JOIN organization_projects p ON p.id = pop.project_id
+		INNER JOIN organizations o ON o.id = p.organization_id
+		WHERE pop.participant_organization_id = $1 AND pop.status = 'pending'
+		ORDER BY pop.invited_at DESC`
+
 	sqlInsertOrgProject = `
 		INSERT INTO organization_projects (id, organization_id, name, description, created_by_user_id, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)`
@@ -273,6 +281,26 @@ func (r *OrganizationRepo) AcceptOrganizationProjectOrgParticipation(ctx context
 		return nil, fmt.Errorf("organizationRepo.AcceptOrganizationProjectOrgParticipation: %w", err)
 	}
 	return out, nil
+}
+
+// ListPendingOrganizationProjectOrgInvitesForParticipantOrg lists pending invites for the participant org.
+func (r *OrganizationRepo) ListPendingOrganizationProjectOrgInvitesForParticipantOrg(ctx context.Context, participantOrganizationID uuid.UUID) ([]*model.OrganizationProjectOrgInvitePending, error) {
+	rows, err := r.db.Query(ctx, sqlListPendingOrgProjectInvitesForParticipant, participantOrganizationID)
+	if err != nil {
+		return nil, fmt.Errorf("organizationRepo.ListPendingOrganizationProjectOrgInvitesForParticipantOrg: %w", err)
+	}
+	defer rows.Close()
+	var out []*model.OrganizationProjectOrgInvitePending
+	for rows.Next() {
+		var row model.OrganizationProjectOrgInvitePending
+		var caps []byte
+		if err := rows.Scan(&row.ProjectID, &row.ProjectName, &row.HostOrganizationID, &row.HostOrganizationName, &row.InvitedAt, &caps); err != nil {
+			return nil, fmt.Errorf("organizationRepo.ListPendingOrganizationProjectOrgInvitesForParticipantOrg: %w", err)
+		}
+		row.Capabilities = caps
+		out = append(out, &row)
+	}
+	return out, rows.Err()
 }
 
 // InsertOrganizationProjectOrgAuditEvent appends an audit row.

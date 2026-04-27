@@ -653,6 +653,23 @@ func orgProjectMemberRespToModel(resp *organizationDTO.OrganizationProjectMember
 	}
 }
 
+func orgProjectOrgInvitePendingRowToModel(row *organizationDTO.OrganizationProjectOrgInvitePendingResponse) *model.OrganizationProjectOrgInvitePendingRow {
+	if row == nil {
+		return nil
+	}
+	pid, _ := uuid.Parse(row.ProjectID)
+	hid, _ := uuid.Parse(row.HostOrganizationID)
+	inv, _ := time.Parse(time.RFC3339, row.InvitedAt)
+	return &model.OrganizationProjectOrgInvitePendingRow{
+		ProjectID:            pid,
+		ProjectName:          row.ProjectName,
+		HostOrganizationID:   hid,
+		HostOrganizationName: row.HostOrganizationName,
+		InvitedAt:            inv,
+		CapabilitiesJSON:     row.CapabilitiesJSON,
+	}
+}
+
 func orgProjectOrgParticipationDomainToModel(m *orgDomainModel.OrganizationProjectOrgParticipation) *model.OrganizationProjectOrgParticipation {
 	if m == nil {
 		return nil

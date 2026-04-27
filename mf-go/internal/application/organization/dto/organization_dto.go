@@ -146,6 +146,16 @@ type PostOrganizationMessageRequest struct {
 	Body           string
 }
 
+// OrganizationProjectOrgInvitePendingResponse is a pending share invite for a participant org (GFG-179).
+type OrganizationProjectOrgInvitePendingResponse struct {
+	ProjectID            string
+	ProjectName          string
+	HostOrganizationID   string
+	HostOrganizationName string
+	InvitedAt            string
+	CapabilitiesJSON     string
+}
+
 // OrganizationProjectResponse is a project under an organization.
 type OrganizationProjectResponse struct {
 	ID              string

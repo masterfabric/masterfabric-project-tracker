@@ -558,6 +558,15 @@ type OrganizationProjectMember struct {
 	AddedAt      time.Time `json:"addedAt"`
 }
 
+type OrganizationProjectOrgInvitePendingRow struct {
+	ProjectID            uuid.UUID `json:"projectId"`
+	ProjectName          string    `json:"projectName"`
+	HostOrganizationID   uuid.UUID `json:"hostOrganizationId"`
+	HostOrganizationName string    `json:"hostOrganizationName"`
+	InvitedAt            time.Time `json:"invitedAt"`
+	CapabilitiesJSON     string    `json:"capabilitiesJson"`
+}
+
 type OrganizationProjectOrgParticipation struct {
 	ID                        uuid.UUID                                 `json:"id"`
 	ProjectID                 uuid.UUID                                 `json:"projectId"`

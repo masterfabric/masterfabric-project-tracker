@@ -375,6 +375,23 @@ func (r *queryResolver) OrganizationProjectPurchases(ctx context.Context, projec
 	return out, nil
 }
 
+// PendingOrganizationProjectOrgInvites is the resolver for the pendingOrganizationProjectOrgInvites field.
+func (r *queryResolver) PendingOrganizationProjectOrgInvites(ctx context.Context, organizationID uuid.UUID) ([]*model.OrganizationProjectOrgInvitePendingRow, error) {
+	userID := middleware.UserIDFromContext(ctx)
+	if userID == uuid.Nil {
+		return nil, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
+	}
+	rows, err := r.ListPendingOrganizationProjectOrgInvitesUC.Execute(ctx, organizationID, userID)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	out := make([]*model.OrganizationProjectOrgInvitePendingRow, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, orgProjectOrgInvitePendingRowToModel(row))
+	}
+	return out, nil
+}
+
 // OrganizationProjectTodo returns generated.OrganizationProjectTodoResolver implementation.
 func (r *Resolver) OrganizationProjectTodo() generated.OrganizationProjectTodoResolver {
 	return &organizationProjectTodoResolver{r}

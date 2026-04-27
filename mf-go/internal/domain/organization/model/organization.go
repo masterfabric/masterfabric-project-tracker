@@ -101,6 +101,16 @@ const (
 	OrganizationProjectOrgParticipationRevoked  OrganizationProjectOrgParticipationStatus = "revoked"
 )
 
+// OrganizationProjectOrgInvitePending is a pending cross-org invite for the participant org (GFG-179).
+type OrganizationProjectOrgInvitePending struct {
+	ProjectID            uuid.UUID
+	ProjectName          string
+	HostOrganizationID   uuid.UUID
+	HostOrganizationName string
+	InvitedAt            time.Time
+	Capabilities         []byte
+}
+
 // OrganizationProjectOrgParticipation links a canonical host project to another org (GFG-172 / GFG-179).
 type OrganizationProjectOrgParticipation struct {
 	ID                                  uuid.UUID

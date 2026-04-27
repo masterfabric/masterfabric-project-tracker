@@ -34,7 +34,10 @@ import {
   DeleteAccountImpactBadgeStrip,
   DeleteAccountImpactList,
 } from './delete-account-impact-list';
-import type { UpdateProfileFields } from '../hooks/use-profile-view-model';
+import type {
+  ProfileSharedProjectEntry,
+  UpdateProfileFields,
+} from '../hooks/use-profile-view-model';
 
 function ProfileElevated({
   isDark,
@@ -112,6 +115,8 @@ function InfoRow({
 interface ProfileContentProps {
   profile: UserProfile | null;
   organizations: OrganizationPayload[];
+  sharedProjects: ProfileSharedProjectEntry[];
+  sharedProjectsLoading: boolean;
   invitations: OrganizationInvitationPayload[];
   isLoading: boolean;
   error: string | null;
@@ -129,6 +134,7 @@ interface ProfileContentProps {
   onSettingsPress: () => void;
   onResetPasswordPress: () => void;
   onOrganizationPress: (org: OrganizationPayload) => void;
+  onSharedProjectPress: (contextOrganizationId: string, projectId: string) => void;
   showSetUsernameSheet: boolean;
   onSetNicknameComplete: (nickname: string) => Promise<string | null>;
   addresses: UserAddress[];
@@ -143,6 +149,8 @@ interface ProfileContentProps {
 export function ProfileContent({
   profile,
   organizations,
+  sharedProjects,
+  sharedProjectsLoading,
   invitations,
   isLoading,
   error,
@@ -160,6 +168,7 @@ export function ProfileContent({
   onSettingsPress,
   onResetPasswordPress,
   onOrganizationPress,
+  onSharedProjectPress,
   showSetUsernameSheet,
   onSetNicknameComplete,
   addresses,
@@ -554,6 +563,76 @@ export function ProfileContent({
           ))
         )}
       </ProfileElevated>
+
+      {organizations.length > 0 ? (
+        <>
+          <Text
+            style={[
+              styles.sectionHeader,
+              { color: sectionHeaderColor },
+            ]}
+          >
+            {t('profile.organizations.sharedProjectsTitle').toUpperCase()}
+          </Text>
+          <ProfileElevated isDark={isDark} rowBg={rowBg}>
+            {sharedProjectsLoading ? (
+              <View style={[styles.row, { justifyContent: 'center', paddingVertical: 20 }]}>
+                <ActivityIndicator size="small" color={colors.tint} />
+              </View>
+            ) : sharedProjects.length === 0 ? (
+              <View style={[styles.row, { alignItems: 'flex-start' }]}>
+                <Ionicons name="git-network-outline" size={20} color={colors.labelText} style={styles.infoIcon} />
+                <Text style={[styles.infoLabel, { color: colors.labelText, flex: 1 }]}>
+                  {t('profile.organizations.sharedProjectsEmpty')}
+                </Text>
+              </View>
+            ) : (
+              sharedProjects.map((row, i) => {
+                const hostLabel =
+                  row.hostOrganizationName?.trim() ||
+                  t('profile.organizations.sharedProjectsHostUnknown');
+                return (
+                  <Pressable
+                    key={`${row.contextOrganizationId}-${row.project.id}`}
+                    onPress={() => onSharedProjectPress(row.contextOrganizationId, row.project.id)}
+                    style={({ pressed }) => [
+                      styles.row,
+                      {
+                        borderTopWidth: i > 0 ? 1 : 0,
+                        borderTopColor: isDark ? '#38383A' : '#C6C6C8',
+                        opacity: pressed ? 0.6 : 1,
+                        alignItems: 'flex-start',
+                      },
+                    ]}
+                  >
+                    <Ionicons name="folder-outline" size={20} color={colors.tint} style={styles.infoIcon} />
+                    <View style={{ flex: 1, paddingRight: 8 }}>
+                      <Text style={[styles.rowTitle, { color: colors.text }]} numberOfLines={2}>
+                        {row.project.name}
+                      </Text>
+                      <Text
+                        style={[styles.infoLabel, { color: colors.labelText, marginTop: 4, fontSize: 13 }]}
+                        numberOfLines={2}
+                      >
+                        {t('profile.organizations.sharedProjectsViaOrg', {
+                          org: row.contextOrganizationName,
+                        })}
+                      </Text>
+                      <Text
+                        style={[styles.infoLabel, { color: colors.labelText, marginTop: 2, fontSize: 12 }]}
+                        numberOfLines={1}
+                      >
+                        {t('profile.organizations.sharedProjectsHostLabel', { host: hostLabel })}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={Sizing.icon.s} color={colors.icon} style={{ marginTop: 2 }} />
+                  </Pressable>
+                );
+              })
+            )}
+          </ProfileElevated>
+        </>
+      ) : null}
 
       <Text
         style={[
