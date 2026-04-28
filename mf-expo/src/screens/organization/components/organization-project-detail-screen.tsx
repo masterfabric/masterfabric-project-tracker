@@ -18,6 +18,7 @@ import type {
   OrganizationPayload,
   OrganizationProjectMemberPayload,
   OrganizationProjectOrgInvitePendingRowPayload,
+  OrganizationProjectOrgParticipationRowPayload,
   OrganizationProjectPayload,
   OrganizationProjectMyCapabilitiesPayload,
   OrganizationProjectPurchasePayload,
@@ -181,6 +182,9 @@ export function OrganizationProjectDetailScreen({
   const [inviteFlowBusy, setInviteFlowBusy] = useState(false);
   const [pendingInviteRows, setPendingInviteRows] = useState<OrganizationProjectOrgInvitePendingRowPayload[]>([]);
   const [pendingInvitesLoading, setPendingInvitesLoading] = useState(false);
+  const [projectOrgParticipations, setProjectOrgParticipations] = useState<OrganizationProjectOrgParticipationRowPayload[]>([]);
+  const [projectOrgParticipationsLoading, setProjectOrgParticipationsLoading] = useState(false);
+  const [updatingParticipationId, setUpdatingParticipationId] = useState<string | null>(null);
 
   const isAdminOrOwner =
     !!organization &&
@@ -416,6 +420,91 @@ export function OrganizationProjectDetailScreen({
       setInviteOrgCandidatesLoading(false);
     }
   }, [isAdminOrOwner, isHostProjectContext, organizationId, showErr, t]);
+
+  const loadProjectOrgParticipations = useCallback(async () => {
+    if (!isHostProjectContext || !isAdminOrOwner) return;
+    setProjectOrgParticipationsLoading(true);
+    try {
+      const rows = await mfGoOrganizations.organizationProjectOrgParticipations(projectId);
+      setProjectOrgParticipations(rows);
+    } catch {
+      setProjectOrgParticipations([]);
+      showErr(t('profile.organizations.projects.projectOrgsLoadFailed'));
+    } finally {
+      setProjectOrgParticipationsLoading(false);
+    }
+  }, [isAdminOrOwner, isHostProjectContext, projectId, showErr, t]);
+
+  const updateParticipationCapabilities = useCallback(
+    async (row: OrganizationProjectOrgParticipationRowPayload, next: { todos?: boolean; purchases?: boolean }) => {
+      let parsed: Record<string, unknown> = {};
+      try {
+        parsed = row.capabilitiesJson ? JSON.parse(row.capabilitiesJson) : {};
+      } catch {
+        parsed = {};
+      }
+      const capabilitiesJson = JSON.stringify({
+        ...parsed,
+        ...(next.todos !== undefined ? { todos: next.todos } : {}),
+        ...(next.purchases !== undefined ? { purchases: next.purchases } : {}),
+      });
+      setUpdatingParticipationId(row.participationId);
+      try {
+        await mfGoOrganizations.updateOrganizationProjectOrgParticipationCapabilities(
+          projectId,
+          row.participantOrganizationId,
+          capabilitiesJson
+        );
+        await loadProjectOrgParticipations();
+      } catch {
+        showErr(t('profile.organizations.projects.projectOrgsUpdateFailed'));
+      } finally {
+        setUpdatingParticipationId(null);
+      }
+    },
+    [projectId, loadProjectOrgParticipations, showErr, t]
+  );
+
+  const transferProjectOwnership = useCallback(
+    (row: OrganizationProjectOrgParticipationRowPayload) => {
+      setMsgSheet({
+        title: t('profile.organizations.projects.transferOwnershipTitle'),
+        message: t('profile.organizations.projects.transferOwnershipConfirm', {
+          org: row.participantOrganizationName,
+        }),
+        variant: 'info',
+        secondaryAction: {
+          label: t('common.cancel'),
+          onPress: () => setMsgSheet(null),
+        },
+        primaryAction: {
+          label: t('profile.organizations.projects.transferOwnershipButton'),
+          destructive: true,
+          onPress: () => {
+            setMsgSheet(null);
+            void (async () => {
+              setInviteFlowBusy(true);
+              try {
+                const updated = await mfGoOrganizations.transferOrganizationProjectOwnership(
+                  projectId,
+                  row.participantOrganizationId
+                );
+                setProject(updated);
+                snackbarService.success(t('profile.organizations.projects.transferOwnershipSuccess'));
+                setShowProjectSettings(false);
+                await load('refresh');
+              } catch {
+                showErr(t('profile.organizations.projects.transferOwnershipFailed'));
+              } finally {
+                setInviteFlowBusy(false);
+              }
+            })();
+          },
+        },
+      });
+    },
+    [load, projectId, showErr, t]
+  );
 
   const selectedInviteOrgName = useMemo(() => {
     if (!inviteParticipantOrgId.trim()) return null;
@@ -818,6 +907,7 @@ export function OrganizationProjectDetailScreen({
                       }
                       if (isHostProjectContext && isAdminOrOwner) {
                         void loadInviteOrgCandidates();
+                        void loadProjectOrgParticipations();
                       }
                     }}
                     hitSlop={8}
@@ -1679,6 +1769,92 @@ export function OrganizationProjectDetailScreen({
                       </Text>
                     )}
                   </Pressable>
+                  <Text style={{ color: colors.bodyText, marginTop: 16, fontSize: 16, fontWeight: '600' }}>
+                    {t('profile.organizations.projects.projectOrgsSection')}
+                  </Text>
+                  {projectOrgParticipationsLoading ? (
+                    <View style={{ paddingVertical: 12 }}>
+                      <ActivityIndicator color={colors.tint} />
+                    </View>
+                  ) : projectOrgParticipations.length === 0 ? (
+                    <Text style={{ color: colors.labelText, marginTop: 8, fontSize: 13 }}>
+                      {t('profile.organizations.projects.projectOrgsEmpty')}
+                    </Text>
+                  ) : (
+                    <View style={{ gap: 10, marginTop: 10 }}>
+                      {projectOrgParticipations.map((row) => {
+                        let caps: { todos: boolean; purchases: boolean } = { todos: false, purchases: false };
+                        try {
+                          const parsed = row.capabilitiesJson ? JSON.parse(row.capabilitiesJson) : {};
+                          caps = {
+                            todos: parsed?.todos === true,
+                            purchases: parsed?.purchases === true,
+                          };
+                        } catch {
+                          caps = { todos: false, purchases: false };
+                        }
+                        const statusColor =
+                          row.status === 'ACCEPTED'
+                            ? colors.successColor ?? '#34C759'
+                            : row.status === 'PENDING'
+                              ? colors.tint
+                              : colors.labelText;
+                        const statusBg = statusColor + '22';
+                        const locked = updatingParticipationId === row.participationId || inviteFlowBusy;
+                        return (
+                          <View
+                            key={row.participationId}
+                            style={{
+                              borderWidth: 1,
+                              borderColor: colors.surfaceBorder,
+                              borderRadius: 10,
+                              padding: 12,
+                            }}
+                          >
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <Text style={{ color: colors.bodyText, fontSize: 15, fontWeight: '600', flex: 1, paddingRight: 10 }}>
+                                {row.participantOrganizationName}
+                              </Text>
+                              <View style={{ backgroundColor: statusBg, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
+                                <Text style={{ color: statusColor, fontWeight: '700', fontSize: 11 }}>{row.status}</Text>
+                              </View>
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
+                              <Text style={{ color: colors.bodyText, fontSize: 14 }}>
+                                {t('profile.organizations.projects.inviteCapabilityTodos')}
+                              </Text>
+                              <Switch
+                                value={caps.todos}
+                                onValueChange={(v) => void updateParticipationCapabilities(row, { todos: v })}
+                                disabled={locked}
+                              />
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                              <Text style={{ color: colors.bodyText, fontSize: 14 }}>
+                                {t('profile.organizations.projects.inviteCapabilityPurchases')}
+                              </Text>
+                              <Switch
+                                value={caps.purchases}
+                                onValueChange={(v) => void updateParticipationCapabilities(row, { purchases: v })}
+                                disabled={locked}
+                              />
+                            </View>
+                            {row.status === 'ACCEPTED' ? (
+                              <Pressable
+                                disabled={locked}
+                                onPress={() => transferProjectOwnership(row)}
+                                style={{ marginTop: 12, opacity: locked ? 0.6 : 1 }}
+                              >
+                                <Text style={{ color: '#FF3B30', fontWeight: '700' }}>
+                                  {t('profile.organizations.projects.transferOwnershipButton')}
+                                </Text>
+                              </Pressable>
+                            ) : null}
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )}
                 </>
               ) : null}
 

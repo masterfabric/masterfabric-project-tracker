@@ -126,6 +126,21 @@ type OrganizationProjectOrgParticipation struct {
 	UpdatedAt                           time.Time
 }
 
+// OrganizationProjectOrgParticipationRow is host-side management projection with participant org identity.
+type OrganizationProjectOrgParticipationRow struct {
+	ParticipationID         uuid.UUID
+	ProjectID               uuid.UUID
+	ParticipantOrganizationID uuid.UUID
+	ParticipantOrganizationName string
+	Status                  OrganizationProjectOrgParticipationStatus
+	Capabilities            []byte
+	InvitedByUserID         *uuid.UUID
+	InvitedAt               time.Time
+	RespondedAt             *time.Time
+	CreatedAt               time.Time
+	UpdatedAt               time.Time
+}
+
 // OrganizationProject is a project workspace inside an organization.
 type OrganizationProject struct {
 	ID              uuid.UUID

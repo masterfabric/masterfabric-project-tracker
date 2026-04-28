@@ -916,7 +916,16 @@
         "pendingInvitesEmpty": "Bekleyen proje daveti yok.",
         "noPendingInviteForProject": "Bu proje için bekleyen davet yok.",
         "pendingInvitesLoadFailed": "Bekleyen davetler yüklenemedi.",
-        "inviteOrgCandidatesLoadFailed": "Organizasyon seçenekleri yüklenemedi."
+        "inviteOrgCandidatesLoadFailed": "Organizasyon seçenekleri yüklenemedi.",
+        "projectOrgsSection": "Bağlı organizasyonlar",
+        "projectOrgsEmpty": "Henüz bağlı organizasyon yok.",
+        "projectOrgsLoadFailed": "Bağlı organizasyonlar yüklenemedi.",
+        "projectOrgsUpdateFailed": "Organizasyon izinleri güncellenemedi.",
+        "transferOwnershipTitle": "Proje sahipliğini devret",
+        "transferOwnershipConfirm": "Proje sahipliği {{org}} organizasyonuna devredilsin mi? Host düzeyi kontrolü kaybedersiniz.",
+        "transferOwnershipButton": "Sahipliği devret",
+        "transferOwnershipSuccess": "Proje sahipliği devredildi.",
+        "transferOwnershipFailed": "Proje sahipliği devredilemedi."
       },
       "invite": {
         "title": "Kullanıcı Davet Et",

@@ -314,6 +314,9 @@ func main() {
 		AcceptOrganizationProjectOrgInviteUC:       organizationUC.NewAcceptOrganizationProjectOrgInviteUseCase(organizationRepo),
 		DeclineOrganizationProjectOrgInviteUC:      organizationUC.NewDeclineOrganizationProjectOrgInviteUseCase(organizationRepo),
 		ListPendingOrganizationProjectOrgInvitesUC: organizationUC.NewListPendingOrganizationProjectOrgInvitesUseCase(organizationRepo),
+		ListOrganizationProjectOrgParticipationsUC: organizationUC.NewListOrganizationProjectOrgParticipationsUseCase(organizationRepo),
+		UpdateOrganizationProjectOrgParticipationCapabilitiesUC: organizationUC.NewUpdateOrganizationProjectOrgParticipationCapabilitiesUseCase(organizationRepo),
+		TransferOrganizationProjectOwnershipUC: organizationUC.NewTransferOrganizationProjectOwnershipUseCase(organizationRepo),
 		OwnerTodoDashboardUC:                       organizationUC.NewOwnerTodoDashboardUseCase(organizationRepo),
 
 		ListNotificationsUC:          notificationUC.NewListNotificationsUseCase(notificationRepo),

@@ -586,6 +586,20 @@ type OrganizationProjectOrgParticipation struct {
 	UpdatedAt        time.Time  `json:"updatedAt"`
 }
 
+type OrganizationProjectOrgParticipationRow struct {
+	ParticipationID             uuid.UUID                                 `json:"participationId"`
+	ProjectID                   uuid.UUID                                 `json:"projectId"`
+	ParticipantOrganizationID   uuid.UUID                                 `json:"participantOrganizationId"`
+	ParticipantOrganizationName string                                    `json:"participantOrganizationName"`
+	Status                      OrganizationProjectOrgParticipationStatus `json:"status"`
+	CapabilitiesJSON            string                                    `json:"capabilitiesJson"`
+	InvitedByUserID             *uuid.UUID                                `json:"invitedByUserId,omitempty"`
+	InvitedAt                   time.Time                                 `json:"invitedAt"`
+	RespondedAt                 *time.Time                                `json:"respondedAt,omitempty"`
+	CreatedAt                   time.Time                                 `json:"createdAt"`
+	UpdatedAt                   time.Time                                 `json:"updatedAt"`
+}
+
 type OrganizationProjectPurchase struct {
 	ID              uuid.UUID                         `json:"id"`
 	ProjectID       uuid.UUID                         `json:"projectId"`

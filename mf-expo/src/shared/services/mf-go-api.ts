@@ -894,6 +894,20 @@ export interface OrganizationProjectOrgParticipationPayload {
   updatedAt: string;
 }
 
+export interface OrganizationProjectOrgParticipationRowPayload {
+  participationId: string;
+  projectId: string;
+  participantOrganizationId: string;
+  participantOrganizationName: string;
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'REVOKED';
+  capabilitiesJson: string;
+  invitedByUserId?: string | null;
+  invitedAt: string;
+  respondedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /** GFG-174 organization owner dashboard payload. */
 export interface OrganizationOwnerDashboardDayBucketPayload {
   day: string;
@@ -1398,6 +1412,60 @@ const DECLINE_ORGANIZATION_PROJECT_ORG_INVITE = /* GraphQL */ `
   }
 `;
 
+const ORGANIZATION_PROJECT_ORG_PARTICIPATIONS = /* GraphQL */ `
+  query OrganizationProjectOrgParticipations($projectId: UUID!) {
+    organizationProjectOrgParticipations(projectId: $projectId) {
+      participationId
+      projectId
+      participantOrganizationId
+      participantOrganizationName
+      status
+      capabilitiesJson
+      invitedByUserId
+      invitedAt
+      respondedAt
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const UPDATE_ORGANIZATION_PROJECT_ORG_PARTICIPATION_CAPABILITIES = /* GraphQL */ `
+  mutation UpdateOrganizationProjectOrgParticipationCapabilities(
+    $projectId: UUID!
+    $participantOrganizationId: UUID!
+    $capabilitiesJson: String
+  ) {
+    updateOrganizationProjectOrgParticipationCapabilities(
+      projectId: $projectId
+      participantOrganizationId: $participantOrganizationId
+      capabilitiesJson: $capabilitiesJson
+    ) {
+      id
+      projectId
+      participantOrganizationId
+      status
+      capabilitiesJson
+      invitedByUserId
+      invitedAt
+      respondedAt
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const TRANSFER_ORGANIZATION_PROJECT_OWNERSHIP = /* GraphQL */ `
+  mutation TransferOrganizationProjectOwnership($projectId: UUID!, $newHostOrganizationId: UUID!) {
+    transferOrganizationProjectOwnership(
+      projectId: $projectId
+      newHostOrganizationId: $newHostOrganizationId
+    ) {
+      id organizationId name description createdByUserId createdAt updatedAt
+    }
+  }
+`;
+
 const ORGANIZATION_OWNER_TODO_DASHBOARD = /* GraphQL */ `
   query OrganizationOwnerTodoDashboard($input: OrganizationOwnerTodoDashboardInput!) {
     organizationOwnerTodoDashboard(input: $input) {
@@ -1735,6 +1803,29 @@ export const mfGoOrganizations = {
       DECLINE_ORGANIZATION_PROJECT_ORG_INVITE,
       { projectId, participantOrganizationId }
     ).then((r) => r.declineOrganizationProjectOrgInvite),
+
+  organizationProjectOrgParticipations: (projectId: string) =>
+    graphqlRequest<{
+      organizationProjectOrgParticipations: OrganizationProjectOrgParticipationRowPayload[];
+    }>(ORGANIZATION_PROJECT_ORG_PARTICIPATIONS, { projectId }).then(
+      (r) => r.organizationProjectOrgParticipations
+    ),
+
+  updateOrganizationProjectOrgParticipationCapabilities: (
+    projectId: string,
+    participantOrganizationId: string,
+    capabilitiesJson?: string
+  ) =>
+    graphqlRequest<{ updateOrganizationProjectOrgParticipationCapabilities: OrganizationProjectOrgParticipationPayload }>(
+      UPDATE_ORGANIZATION_PROJECT_ORG_PARTICIPATION_CAPABILITIES,
+      { projectId, participantOrganizationId, capabilitiesJson }
+    ).then((r) => r.updateOrganizationProjectOrgParticipationCapabilities),
+
+  transferOrganizationProjectOwnership: (projectId: string, newHostOrganizationId: string) =>
+    graphqlRequest<{ transferOrganizationProjectOwnership: OrganizationProjectPayload }>(
+      TRANSFER_ORGANIZATION_PROJECT_OWNERSHIP,
+      { projectId, newHostOrganizationId }
+    ).then((r) => r.transferOrganizationProjectOwnership),
 
   addOrganizationProjectMember: (projectId: string, userId: string) =>
     graphqlRequest<{ addOrganizationProjectMember: boolean }>(ADD_ORGANIZATION_PROJECT_MEMBER, {

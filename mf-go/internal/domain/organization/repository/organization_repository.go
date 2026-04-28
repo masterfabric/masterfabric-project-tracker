@@ -62,8 +62,11 @@ type OrganizationRepository interface {
 	GetOrganizationProjectOrgParticipation(ctx context.Context, projectID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error)
 	InsertOrganizationProjectOrgParticipation(ctx context.Context, row *model.OrganizationProjectOrgParticipation) error
 	UpdateOrganizationProjectOrgParticipationReinvite(ctx context.Context, row *model.OrganizationProjectOrgParticipation) error
+	UpdateOrganizationProjectOrgParticipationCapabilities(ctx context.Context, projectID, participantOrganizationID uuid.UUID, capabilities []byte) (*model.OrganizationProjectOrgParticipation, error)
+	ListOrganizationProjectOrgParticipations(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectOrgParticipationRow, error)
 	AcceptOrganizationProjectOrgParticipation(ctx context.Context, projectID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error)
 	DeclineOrganizationProjectOrgParticipation(ctx context.Context, projectID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error)
+	TransferOrganizationProjectOwnership(ctx context.Context, projectID, newHostOrganizationID uuid.UUID) error
 	InsertOrganizationProjectOrgAuditEvent(ctx context.Context, projectID uuid.UUID, actorUserID *uuid.UUID, eventType string, metadataJSON []byte) error
 	ListPendingOrganizationProjectOrgInvitesForParticipantOrg(ctx context.Context, participantOrganizationID uuid.UUID) ([]*model.OrganizationProjectOrgInvitePending, error)
 	ListOrganizationProjectsByOrgID(ctx context.Context, orgID uuid.UUID) ([]*model.OrganizationProject, error)

@@ -95,6 +95,22 @@ const (
 			updated_at = $5
 		WHERE id = $1`
 
+	sqlUpdateOrgProjectParticipationCapabilities = `
+		UPDATE organization_project_org_participations SET
+			capabilities = $3::jsonb,
+			updated_at = NOW()
+		WHERE project_id = $1 AND participant_organization_id = $2
+		RETURNING id, project_id, participant_organization_id, status, capabilities, invited_by_user_id, invited_at,
+		          responded_at, leave_clear_partner_attribution_display, created_at, updated_at`
+
+	sqlListOrgProjectParticipations = `
+		SELECT pop.id, pop.project_id, pop.participant_organization_id, o.name, pop.status, pop.capabilities,
+		       pop.invited_by_user_id, pop.invited_at, pop.responded_at, pop.created_at, pop.updated_at
+		FROM organization_project_org_participations pop
+		INNER JOIN organizations o ON o.id = pop.participant_organization_id
+		WHERE pop.project_id = $1
+		ORDER BY pop.invited_at DESC`
+
 	sqlAcceptOrgProjectParticipation = `
 		UPDATE organization_project_org_participations SET
 			status = 'accepted',
@@ -132,6 +148,11 @@ const (
 	sqlUpdateOrgProject = `
 		UPDATE organization_projects
 		SET name = $2, description = $3, updated_at = $4
+		WHERE id = $1`
+
+	sqlTransferOrgProjectOwnership = `
+		UPDATE organization_projects
+		SET organization_id = $2, updated_at = NOW()
 		WHERE id = $1`
 
 	sqlDeleteOrgProject = `DELETE FROM organization_projects WHERE id = $1`
@@ -301,6 +322,55 @@ func (r *OrganizationRepo) UpdateOrganizationProjectOrgParticipationReinvite(ctx
 	return nil
 }
 
+// UpdateOrganizationProjectOrgParticipationCapabilities updates capability switches for a linked org row.
+func (r *OrganizationRepo) UpdateOrganizationProjectOrgParticipationCapabilities(ctx context.Context, projectID, participantOrganizationID uuid.UUID, capabilities []byte) (*model.OrganizationProjectOrgParticipation, error) {
+	caps := capabilities
+	if len(caps) == 0 {
+		caps = []byte("{}")
+	}
+	row := r.db.QueryRow(ctx, sqlUpdateOrgProjectParticipationCapabilities, projectID, participantOrganizationID, caps)
+	out, err := scanOrganizationProjectOrgParticipation(row)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("organizationRepo.UpdateOrganizationProjectOrgParticipationCapabilities: %w", err)
+	}
+	return out, nil
+}
+
+// ListOrganizationProjectOrgParticipations returns host-side management rows for a project.
+func (r *OrganizationRepo) ListOrganizationProjectOrgParticipations(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectOrgParticipationRow, error) {
+	rows, err := r.db.Query(ctx, sqlListOrgProjectParticipations, projectID)
+	if err != nil {
+		return nil, fmt.Errorf("organizationRepo.ListOrganizationProjectOrgParticipations: %w", err)
+	}
+	defer rows.Close()
+	out := make([]*model.OrganizationProjectOrgParticipationRow, 0)
+	for rows.Next() {
+		var m model.OrganizationProjectOrgParticipationRow
+		var status string
+		var caps []byte
+		var invited pgtype.UUID
+		var responded sql.NullTime
+		if err := rows.Scan(
+			&m.ParticipationID, &m.ProjectID, &m.ParticipantOrganizationID, &m.ParticipantOrganizationName, &status, &caps,
+			&invited, &m.InvitedAt, &responded, &m.CreatedAt, &m.UpdatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("organizationRepo.ListOrganizationProjectOrgParticipations: %w", err)
+		}
+		m.Status = model.OrganizationProjectOrgParticipationStatus(status)
+		m.Capabilities = caps
+		m.InvitedByUserID = uuidPtrFromPgUUID(invited)
+		if responded.Valid {
+			u := responded.Time.UTC()
+			m.RespondedAt = &u
+		}
+		out = append(out, &m)
+	}
+	return out, rows.Err()
+}
+
 // AcceptOrganizationProjectOrgParticipation marks pending as accepted and returns the row.
 func (r *OrganizationRepo) AcceptOrganizationProjectOrgParticipation(ctx context.Context, projectID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error) {
 	row := r.db.QueryRow(ctx, sqlAcceptOrgProjectParticipation, projectID, participantOrganizationID)
@@ -449,6 +519,18 @@ func (r *OrganizationRepo) DeleteOrganizationProject(ctx context.Context, id uui
 	}
 	if res.RowsAffected() == 0 {
 		return fmt.Errorf("organizationRepo.DeleteOrganizationProject: not found")
+	}
+	return nil
+}
+
+// TransferOrganizationProjectOwnership moves host ownership to another organization.
+func (r *OrganizationRepo) TransferOrganizationProjectOwnership(ctx context.Context, projectID, newHostOrganizationID uuid.UUID) error {
+	res, err := r.db.Exec(ctx, sqlTransferOrgProjectOwnership, projectID, newHostOrganizationID)
+	if err != nil {
+		return fmt.Errorf("organizationRepo.TransferOrganizationProjectOwnership: %w", err)
+	}
+	if res.RowsAffected() == 0 {
+		return fmt.Errorf("organizationRepo.TransferOrganizationProjectOwnership: not found")
 	}
 	return nil
 }

@@ -290,6 +290,32 @@ func (r *mutationResolver) DeclineOrganizationProjectOrgInvite(ctx context.Conte
 	return orgProjectOrgParticipationDomainToModel(row), nil
 }
 
+// UpdateOrganizationProjectOrgParticipationCapabilities is the resolver for the updateOrganizationProjectOrgParticipationCapabilities field.
+func (r *mutationResolver) UpdateOrganizationProjectOrgParticipationCapabilities(ctx context.Context, projectID uuid.UUID, participantOrganizationID uuid.UUID, capabilitiesJSON *string) (*model.OrganizationProjectOrgParticipation, error) {
+	userID := middleware.UserIDFromContext(ctx)
+	if userID == uuid.Nil {
+		return nil, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
+	}
+	row, err := r.UpdateOrganizationProjectOrgParticipationCapabilitiesUC.Execute(ctx, projectID, participantOrganizationID, userID, capabilitiesJSON)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	return orgProjectOrgParticipationDomainToModel(row), nil
+}
+
+// TransferOrganizationProjectOwnership is the resolver for the transferOrganizationProjectOwnership field.
+func (r *mutationResolver) TransferOrganizationProjectOwnership(ctx context.Context, projectID uuid.UUID, newHostOrganizationID uuid.UUID) (*model.OrganizationProject, error) {
+	userID := middleware.UserIDFromContext(ctx)
+	if userID == uuid.Nil {
+		return nil, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
+	}
+	resp, err := r.TransferOrganizationProjectOwnershipUC.Execute(ctx, projectID, newHostOrganizationID, userID)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	return orgProjectRespToModel(resp), nil
+}
+
 // Subtasks is the resolver for the subtasks field.
 func (r *organizationProjectTodoResolver) Subtasks(ctx context.Context, obj *model.OrganizationProjectTodo) ([]*model.OrganizationProjectTodoSubtask, error) {
 	userID := middleware.UserIDFromContext(ctx)
@@ -417,6 +443,23 @@ func (r *queryResolver) PendingOrganizationProjectOrgInvites(ctx context.Context
 	out := make([]*model.OrganizationProjectOrgInvitePendingRow, 0, len(rows))
 	for _, row := range rows {
 		out = append(out, orgProjectOrgInvitePendingRowToModel(row))
+	}
+	return out, nil
+}
+
+// OrganizationProjectOrgParticipations is the resolver for the organizationProjectOrgParticipations field.
+func (r *queryResolver) OrganizationProjectOrgParticipations(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectOrgParticipationRow, error) {
+	userID := middleware.UserIDFromContext(ctx)
+	if userID == uuid.Nil {
+		return nil, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
+	}
+	rows, err := r.ListOrganizationProjectOrgParticipationsUC.Execute(ctx, projectID, userID)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	out := make([]*model.OrganizationProjectOrgParticipationRow, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, orgProjectOrgParticipationRowToModel(row))
 	}
 	return out, nil
 }

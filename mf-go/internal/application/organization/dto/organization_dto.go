@@ -156,6 +156,21 @@ type OrganizationProjectOrgInvitePendingResponse struct {
 	CapabilitiesJSON     string
 }
 
+// OrganizationProjectOrgParticipationRowResponse is host-side linked org management row.
+type OrganizationProjectOrgParticipationRowResponse struct {
+	ParticipationID           string
+	ProjectID                 string
+	ParticipantOrganizationID string
+	ParticipantOrganizationName string
+	Status                    string
+	CapabilitiesJSON          string
+	InvitedByUserID           *string
+	InvitedAt                 string
+	RespondedAt               *string
+	CreatedAt                 string
+	UpdatedAt                 string
+}
+
 // OrganizationProjectResponse is a project under an organization.
 type OrganizationProjectResponse struct {
 	ID              string

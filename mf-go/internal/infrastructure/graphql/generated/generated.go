@@ -207,83 +207,85 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AcceptInvitation                     func(childComplexity int, invitationID uuid.UUID) int
-		AcceptOrganizationProjectOrgInvite   func(childComplexity int, projectID uuid.UUID, participantOrganizationID uuid.UUID) int
-		AddOrganizationProjectMember         func(childComplexity int, projectID uuid.UUID, userID uuid.UUID) int
-		AdminChangeRole                      func(childComplexity int, id uuid.UUID, role model.UserRole) int
-		AdminClearAllNotifications           func(childComplexity int) int
-		AdminCreateNotification              func(childComplexity int, input model.CreateNotificationInput) int
-		AdminCreateUserMessage               func(childComplexity int, input model.CreateUserMessageInput) int
-		AdminDeleteFeedbackThread            func(childComplexity int, threadID uuid.UUID) int
-		AdminDeleteNotification              func(childComplexity int, id uuid.UUID) int
-		AdminDeleteUser                      func(childComplexity int, id uuid.UUID) int
-		AdminDeleteUserMessage               func(childComplexity int, id uuid.UUID) int
-		AdminDeleteUserTodo                  func(childComplexity int, id uuid.UUID) int
-		AdminReplyToFeedback                 func(childComplexity int, input model.AdminReplyToFeedbackInput) int
-		AdminRequestOtp                      func(childComplexity int, input model.AdminRequestOTPInput) int
-		AdminSendTestMail                    func(childComplexity int, input model.AdminSendTestMailInput) int
-		AdminSendUserEmail                   func(childComplexity int, input model.AdminSendUserEmailInput) int
-		AdminSetUserStatus                   func(childComplexity int, id uuid.UUID, status model.UserStatus) int
-		AdminSuspendUser                     func(childComplexity int, id uuid.UUID, suspend bool) int
-		AdminUpdateMailSMTPSettings          func(childComplexity int, input model.AdminUpdateMailSMTPSettingsInput) int
-		AdminUpdateNotification              func(childComplexity int, id uuid.UUID, input model.UpdateNotificationInput) int
-		AdminUpdateProductRelease            func(childComplexity int, input model.AdminProductReleaseInput) int
-		AdminUpdateUserTodo                  func(childComplexity int, input model.AdminUpdateUserTodoInput) int
-		AdminUpsertAppSetting                func(childComplexity int, input model.AdminAppSettingInput) int
-		CreateOrganization                   func(childComplexity int, input model.CreateOrganizationInput) int
-		CreateOrganizationNews               func(childComplexity int, input model.CreateOrganizationNewsInput) int
-		CreateOrganizationProject            func(childComplexity int, input model.CreateOrganizationProjectInput) int
-		CreateOrganizationProjectOrgInvite   func(childComplexity int, input model.CreateOrganizationProjectOrgInviteInput) int
-		CreateOrganizationProjectPurchase    func(childComplexity int, input model.CreateOrganizationProjectPurchaseInput) int
-		CreateOrganizationProjectTodo        func(childComplexity int, input model.CreateOrganizationProjectTodoInput) int
-		CreateOrganizationProjectTodoSubtask func(childComplexity int, input model.CreateOrganizationProjectTodoSubtaskInput) int
-		CreateTodo                           func(childComplexity int, input model.CreateTodoInput) int
-		CreateUserTodoSubtask                func(childComplexity int, input model.CreateUserTodoSubtaskInput) int
-		DeclineInvitation                    func(childComplexity int, invitationID uuid.UUID) int
-		DeclineOrganizationProjectOrgInvite  func(childComplexity int, projectID uuid.UUID, participantOrganizationID uuid.UUID) int
-		DeleteAccount                        func(childComplexity int) int
-		DeleteMyAddress                      func(childComplexity int, id uuid.UUID) int
-		DeleteOrganizationMessage            func(childComplexity int, organizationID uuid.UUID, messageID uuid.UUID) int
-		DeleteOrganizationNews               func(childComplexity int, newsID uuid.UUID) int
-		DeleteOrganizationProject            func(childComplexity int, projectID uuid.UUID) int
-		DeleteOrganizationProjectPurchase    func(childComplexity int, purchaseID uuid.UUID) int
-		DeleteOrganizationProjectTodo        func(childComplexity int, todoID uuid.UUID) int
-		DeleteOrganizationProjectTodoSubtask func(childComplexity int, id uuid.UUID) int
-		DeleteTodo                           func(childComplexity int, id uuid.UUID) int
-		DeleteUserTodoSubtask                func(childComplexity int, id uuid.UUID) int
-		InviteToOrganization                 func(childComplexity int, input model.InviteToOrganizationInput) int
-		LeaveOrganization                    func(childComplexity int, organizationID uuid.UUID) int
-		Login                                func(childComplexity int, input model.LoginInput) int
-		LoginVerifyOtp                       func(childComplexity int, input model.LoginVerifyOTPInput) int
-		Logout                               func(childComplexity int, input model.LogoutInput) int
-		MarkAllNotificationsRead             func(childComplexity int) int
-		MarkNotificationRead                 func(childComplexity int, id uuid.UUID) int
-		MarkUserMessageRead                  func(childComplexity int, id uuid.UUID) int
-		PostOrganizationMessage              func(childComplexity int, organizationID uuid.UUID, body string) int
-		RefreshTokens                        func(childComplexity int, input model.RefreshInput) int
-		Register                             func(childComplexity int, input model.RegisterInput) int
-		RegisterDevice                       func(childComplexity int, input model.RegisterDeviceInput) int
-		RemoveOrganizationMember             func(childComplexity int, organizationID uuid.UUID, userID uuid.UUID) int
-		RemoveOrganizationProjectMember      func(childComplexity int, projectID uuid.UUID, userID uuid.UUID) int
-		RequestOtp                           func(childComplexity int, input model.RequestOTPInput) int
-		RequestPasswordReset                 func(childComplexity int, input model.RequestPasswordResetInput) int
-		ResendOrganizationInvitation         func(childComplexity int, invitationID uuid.UUID) int
-		ResetPasswordWithOtp                 func(childComplexity int, input model.ResetPasswordWithOtpInput) int
-		RevokeOrganizationInvitation         func(childComplexity int, invitationID uuid.UUID) int
-		SetOrganizationMemberSuspended       func(childComplexity int, organizationID uuid.UUID, userID uuid.UUID, suspended bool) int
-		SubmitFeedback                       func(childComplexity int, input model.SubmitFeedbackInput) int
-		UpdateMySettings                     func(childComplexity int, input model.UserSettingsInput) int
-		UpdateOrganization                   func(childComplexity int, input model.UpdateOrganizationInput) int
-		UpdateOrganizationNews               func(childComplexity int, input model.UpdateOrganizationNewsInput) int
-		UpdateOrganizationProject            func(childComplexity int, input model.UpdateOrganizationProjectInput) int
-		UpdateOrganizationProjectPurchase    func(childComplexity int, input model.UpdateOrganizationProjectPurchaseInput) int
-		UpdateOrganizationProjectTodo        func(childComplexity int, input model.UpdateOrganizationProjectTodoInput) int
-		UpdateOrganizationProjectTodoSubtask func(childComplexity int, input model.UpdateOrganizationProjectTodoSubtaskInput) int
-		UpdateProfile                        func(childComplexity int, input model.UpdateProfileInput) int
-		UpdateTodo                           func(childComplexity int, input model.UpdateTodoInput) int
-		UpdateUserTodoSubtask                func(childComplexity int, input model.UpdateUserTodoSubtaskInput) int
-		UpsertAddress                        func(childComplexity int, input model.UpsertAddressInput) int
-		VerifyOtp                            func(childComplexity int, input model.VerifyOTPInput) int
+		AcceptInvitation                                      func(childComplexity int, invitationID uuid.UUID) int
+		AcceptOrganizationProjectOrgInvite                    func(childComplexity int, projectID uuid.UUID, participantOrganizationID uuid.UUID) int
+		AddOrganizationProjectMember                          func(childComplexity int, projectID uuid.UUID, userID uuid.UUID) int
+		AdminChangeRole                                       func(childComplexity int, id uuid.UUID, role model.UserRole) int
+		AdminClearAllNotifications                            func(childComplexity int) int
+		AdminCreateNotification                               func(childComplexity int, input model.CreateNotificationInput) int
+		AdminCreateUserMessage                                func(childComplexity int, input model.CreateUserMessageInput) int
+		AdminDeleteFeedbackThread                             func(childComplexity int, threadID uuid.UUID) int
+		AdminDeleteNotification                               func(childComplexity int, id uuid.UUID) int
+		AdminDeleteUser                                       func(childComplexity int, id uuid.UUID) int
+		AdminDeleteUserMessage                                func(childComplexity int, id uuid.UUID) int
+		AdminDeleteUserTodo                                   func(childComplexity int, id uuid.UUID) int
+		AdminReplyToFeedback                                  func(childComplexity int, input model.AdminReplyToFeedbackInput) int
+		AdminRequestOtp                                       func(childComplexity int, input model.AdminRequestOTPInput) int
+		AdminSendTestMail                                     func(childComplexity int, input model.AdminSendTestMailInput) int
+		AdminSendUserEmail                                    func(childComplexity int, input model.AdminSendUserEmailInput) int
+		AdminSetUserStatus                                    func(childComplexity int, id uuid.UUID, status model.UserStatus) int
+		AdminSuspendUser                                      func(childComplexity int, id uuid.UUID, suspend bool) int
+		AdminUpdateMailSMTPSettings                           func(childComplexity int, input model.AdminUpdateMailSMTPSettingsInput) int
+		AdminUpdateNotification                               func(childComplexity int, id uuid.UUID, input model.UpdateNotificationInput) int
+		AdminUpdateProductRelease                             func(childComplexity int, input model.AdminProductReleaseInput) int
+		AdminUpdateUserTodo                                   func(childComplexity int, input model.AdminUpdateUserTodoInput) int
+		AdminUpsertAppSetting                                 func(childComplexity int, input model.AdminAppSettingInput) int
+		CreateOrganization                                    func(childComplexity int, input model.CreateOrganizationInput) int
+		CreateOrganizationNews                                func(childComplexity int, input model.CreateOrganizationNewsInput) int
+		CreateOrganizationProject                             func(childComplexity int, input model.CreateOrganizationProjectInput) int
+		CreateOrganizationProjectOrgInvite                    func(childComplexity int, input model.CreateOrganizationProjectOrgInviteInput) int
+		CreateOrganizationProjectPurchase                     func(childComplexity int, input model.CreateOrganizationProjectPurchaseInput) int
+		CreateOrganizationProjectTodo                         func(childComplexity int, input model.CreateOrganizationProjectTodoInput) int
+		CreateOrganizationProjectTodoSubtask                  func(childComplexity int, input model.CreateOrganizationProjectTodoSubtaskInput) int
+		CreateTodo                                            func(childComplexity int, input model.CreateTodoInput) int
+		CreateUserTodoSubtask                                 func(childComplexity int, input model.CreateUserTodoSubtaskInput) int
+		DeclineInvitation                                     func(childComplexity int, invitationID uuid.UUID) int
+		DeclineOrganizationProjectOrgInvite                   func(childComplexity int, projectID uuid.UUID, participantOrganizationID uuid.UUID) int
+		DeleteAccount                                         func(childComplexity int) int
+		DeleteMyAddress                                       func(childComplexity int, id uuid.UUID) int
+		DeleteOrganizationMessage                             func(childComplexity int, organizationID uuid.UUID, messageID uuid.UUID) int
+		DeleteOrganizationNews                                func(childComplexity int, newsID uuid.UUID) int
+		DeleteOrganizationProject                             func(childComplexity int, projectID uuid.UUID) int
+		DeleteOrganizationProjectPurchase                     func(childComplexity int, purchaseID uuid.UUID) int
+		DeleteOrganizationProjectTodo                         func(childComplexity int, todoID uuid.UUID) int
+		DeleteOrganizationProjectTodoSubtask                  func(childComplexity int, id uuid.UUID) int
+		DeleteTodo                                            func(childComplexity int, id uuid.UUID) int
+		DeleteUserTodoSubtask                                 func(childComplexity int, id uuid.UUID) int
+		InviteToOrganization                                  func(childComplexity int, input model.InviteToOrganizationInput) int
+		LeaveOrganization                                     func(childComplexity int, organizationID uuid.UUID) int
+		Login                                                 func(childComplexity int, input model.LoginInput) int
+		LoginVerifyOtp                                        func(childComplexity int, input model.LoginVerifyOTPInput) int
+		Logout                                                func(childComplexity int, input model.LogoutInput) int
+		MarkAllNotificationsRead                              func(childComplexity int) int
+		MarkNotificationRead                                  func(childComplexity int, id uuid.UUID) int
+		MarkUserMessageRead                                   func(childComplexity int, id uuid.UUID) int
+		PostOrganizationMessage                               func(childComplexity int, organizationID uuid.UUID, body string) int
+		RefreshTokens                                         func(childComplexity int, input model.RefreshInput) int
+		Register                                              func(childComplexity int, input model.RegisterInput) int
+		RegisterDevice                                        func(childComplexity int, input model.RegisterDeviceInput) int
+		RemoveOrganizationMember                              func(childComplexity int, organizationID uuid.UUID, userID uuid.UUID) int
+		RemoveOrganizationProjectMember                       func(childComplexity int, projectID uuid.UUID, userID uuid.UUID) int
+		RequestOtp                                            func(childComplexity int, input model.RequestOTPInput) int
+		RequestPasswordReset                                  func(childComplexity int, input model.RequestPasswordResetInput) int
+		ResendOrganizationInvitation                          func(childComplexity int, invitationID uuid.UUID) int
+		ResetPasswordWithOtp                                  func(childComplexity int, input model.ResetPasswordWithOtpInput) int
+		RevokeOrganizationInvitation                          func(childComplexity int, invitationID uuid.UUID) int
+		SetOrganizationMemberSuspended                        func(childComplexity int, organizationID uuid.UUID, userID uuid.UUID, suspended bool) int
+		SubmitFeedback                                        func(childComplexity int, input model.SubmitFeedbackInput) int
+		TransferOrganizationProjectOwnership                  func(childComplexity int, projectID uuid.UUID, newHostOrganizationID uuid.UUID) int
+		UpdateMySettings                                      func(childComplexity int, input model.UserSettingsInput) int
+		UpdateOrganization                                    func(childComplexity int, input model.UpdateOrganizationInput) int
+		UpdateOrganizationNews                                func(childComplexity int, input model.UpdateOrganizationNewsInput) int
+		UpdateOrganizationProject                             func(childComplexity int, input model.UpdateOrganizationProjectInput) int
+		UpdateOrganizationProjectOrgParticipationCapabilities func(childComplexity int, projectID uuid.UUID, participantOrganizationID uuid.UUID, capabilitiesJSON *string) int
+		UpdateOrganizationProjectPurchase                     func(childComplexity int, input model.UpdateOrganizationProjectPurchaseInput) int
+		UpdateOrganizationProjectTodo                         func(childComplexity int, input model.UpdateOrganizationProjectTodoInput) int
+		UpdateOrganizationProjectTodoSubtask                  func(childComplexity int, input model.UpdateOrganizationProjectTodoSubtaskInput) int
+		UpdateProfile                                         func(childComplexity int, input model.UpdateProfileInput) int
+		UpdateTodo                                            func(childComplexity int, input model.UpdateTodoInput) int
+		UpdateUserTodoSubtask                                 func(childComplexity int, input model.UpdateUserTodoSubtaskInput) int
+		UpsertAddress                                         func(childComplexity int, input model.UpsertAddressInput) int
+		VerifyOtp                                             func(childComplexity int, input model.VerifyOTPInput) int
 	}
 
 	MyAccountDeletionImpact struct {
@@ -474,6 +476,20 @@ type ComplexityRoot struct {
 		UpdatedAt                 func(childComplexity int) int
 	}
 
+	OrganizationProjectOrgParticipationRow struct {
+		CapabilitiesJSON            func(childComplexity int) int
+		CreatedAt                   func(childComplexity int) int
+		InvitedAt                   func(childComplexity int) int
+		InvitedByUserID             func(childComplexity int) int
+		ParticipantOrganizationID   func(childComplexity int) int
+		ParticipantOrganizationName func(childComplexity int) int
+		ParticipationID             func(childComplexity int) int
+		ProjectID                   func(childComplexity int) int
+		RespondedAt                 func(childComplexity int) int
+		Status                      func(childComplexity int) int
+		UpdatedAt                   func(childComplexity int) int
+	}
+
 	OrganizationProjectPurchase struct {
 		CreatedAt       func(childComplexity int) int
 		CreatedByUserID func(childComplexity int) int
@@ -561,6 +577,7 @@ type ComplexityRoot struct {
 		OrganizationProject                  func(childComplexity int, projectID uuid.UUID) int
 		OrganizationProjectMembers           func(childComplexity int, projectID uuid.UUID) int
 		OrganizationProjectMyCapabilities    func(childComplexity int, projectID uuid.UUID) int
+		OrganizationProjectOrgParticipations func(childComplexity int, projectID uuid.UUID) int
 		OrganizationProjectPurchases         func(childComplexity int, projectID uuid.UUID) int
 		OrganizationProjectTodos             func(childComplexity int, projectID uuid.UUID) int
 		OrganizationProjects                 func(childComplexity int, organizationID uuid.UUID) int
@@ -732,6 +749,8 @@ type MutationResolver interface {
 	CreateOrganizationProjectOrgInvite(ctx context.Context, input model.CreateOrganizationProjectOrgInviteInput) (*model.OrganizationProjectOrgParticipation, error)
 	AcceptOrganizationProjectOrgInvite(ctx context.Context, projectID uuid.UUID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error)
 	DeclineOrganizationProjectOrgInvite(ctx context.Context, projectID uuid.UUID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error)
+	UpdateOrganizationProjectOrgParticipationCapabilities(ctx context.Context, projectID uuid.UUID, participantOrganizationID uuid.UUID, capabilitiesJSON *string) (*model.OrganizationProjectOrgParticipation, error)
+	TransferOrganizationProjectOwnership(ctx context.Context, projectID uuid.UUID, newHostOrganizationID uuid.UUID) (*model.OrganizationProject, error)
 	CreateOrganization(ctx context.Context, input model.CreateOrganizationInput) (*model.Organization, error)
 	UpdateOrganization(ctx context.Context, input model.UpdateOrganizationInput) (*model.Organization, error)
 	RemoveOrganizationMember(ctx context.Context, organizationID uuid.UUID, userID uuid.UUID) (bool, error)
@@ -791,6 +810,7 @@ type QueryResolver interface {
 	OrganizationProjectPurchases(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectPurchase, error)
 	OrganizationProjectMyCapabilities(ctx context.Context, projectID uuid.UUID) (*model.OrganizationProjectMyCapabilities, error)
 	PendingOrganizationProjectOrgInvites(ctx context.Context, organizationID uuid.UUID) ([]*model.OrganizationProjectOrgInvitePendingRow, error)
+	OrganizationProjectOrgParticipations(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectOrgParticipationRow, error)
 	MyOrganizations(ctx context.Context) ([]*model.Organization, error)
 	Organization(ctx context.Context, organizationID uuid.UUID) (*model.Organization, error)
 	MyPendingInvitations(ctx context.Context) ([]*model.OrganizationInvitation, error)
@@ -2362,6 +2382,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SubmitFeedback(childComplexity, args["input"].(model.SubmitFeedbackInput)), true
 
+	case "Mutation.transferOrganizationProjectOwnership":
+		if e.complexity.Mutation.TransferOrganizationProjectOwnership == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_transferOrganizationProjectOwnership_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.TransferOrganizationProjectOwnership(childComplexity, args["projectId"].(uuid.UUID), args["newHostOrganizationId"].(uuid.UUID)), true
+
 	case "Mutation.updateMySettings":
 		if e.complexity.Mutation.UpdateMySettings == nil {
 			break
@@ -2409,6 +2441,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateOrganizationProject(childComplexity, args["input"].(model.UpdateOrganizationProjectInput)), true
+
+	case "Mutation.updateOrganizationProjectOrgParticipationCapabilities":
+		if e.complexity.Mutation.UpdateOrganizationProjectOrgParticipationCapabilities == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateOrganizationProjectOrgParticipationCapabilities_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateOrganizationProjectOrgParticipationCapabilities(childComplexity, args["projectId"].(uuid.UUID), args["participantOrganizationId"].(uuid.UUID), args["capabilitiesJson"].(*string)), true
 
 	case "Mutation.updateOrganizationProjectPurchase":
 		if e.complexity.Mutation.UpdateOrganizationProjectPurchase == nil {
@@ -3423,6 +3467,83 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.OrganizationProjectOrgParticipation.UpdatedAt(childComplexity), true
 
+	case "OrganizationProjectOrgParticipationRow.capabilitiesJson":
+		if e.complexity.OrganizationProjectOrgParticipationRow.CapabilitiesJSON == nil {
+			break
+		}
+
+		return e.complexity.OrganizationProjectOrgParticipationRow.CapabilitiesJSON(childComplexity), true
+
+	case "OrganizationProjectOrgParticipationRow.createdAt":
+		if e.complexity.OrganizationProjectOrgParticipationRow.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.OrganizationProjectOrgParticipationRow.CreatedAt(childComplexity), true
+
+	case "OrganizationProjectOrgParticipationRow.invitedAt":
+		if e.complexity.OrganizationProjectOrgParticipationRow.InvitedAt == nil {
+			break
+		}
+
+		return e.complexity.OrganizationProjectOrgParticipationRow.InvitedAt(childComplexity), true
+
+	case "OrganizationProjectOrgParticipationRow.invitedByUserId":
+		if e.complexity.OrganizationProjectOrgParticipationRow.InvitedByUserID == nil {
+			break
+		}
+
+		return e.complexity.OrganizationProjectOrgParticipationRow.InvitedByUserID(childComplexity), true
+
+	case "OrganizationProjectOrgParticipationRow.participantOrganizationId":
+		if e.complexity.OrganizationProjectOrgParticipationRow.ParticipantOrganizationID == nil {
+			break
+		}
+
+		return e.complexity.OrganizationProjectOrgParticipationRow.ParticipantOrganizationID(childComplexity), true
+
+	case "OrganizationProjectOrgParticipationRow.participantOrganizationName":
+		if e.complexity.OrganizationProjectOrgParticipationRow.ParticipantOrganizationName == nil {
+			break
+		}
+
+		return e.complexity.OrganizationProjectOrgParticipationRow.ParticipantOrganizationName(childComplexity), true
+
+	case "OrganizationProjectOrgParticipationRow.participationId":
+		if e.complexity.OrganizationProjectOrgParticipationRow.ParticipationID == nil {
+			break
+		}
+
+		return e.complexity.OrganizationProjectOrgParticipationRow.ParticipationID(childComplexity), true
+
+	case "OrganizationProjectOrgParticipationRow.projectId":
+		if e.complexity.OrganizationProjectOrgParticipationRow.ProjectID == nil {
+			break
+		}
+
+		return e.complexity.OrganizationProjectOrgParticipationRow.ProjectID(childComplexity), true
+
+	case "OrganizationProjectOrgParticipationRow.respondedAt":
+		if e.complexity.OrganizationProjectOrgParticipationRow.RespondedAt == nil {
+			break
+		}
+
+		return e.complexity.OrganizationProjectOrgParticipationRow.RespondedAt(childComplexity), true
+
+	case "OrganizationProjectOrgParticipationRow.status":
+		if e.complexity.OrganizationProjectOrgParticipationRow.Status == nil {
+			break
+		}
+
+		return e.complexity.OrganizationProjectOrgParticipationRow.Status(childComplexity), true
+
+	case "OrganizationProjectOrgParticipationRow.updatedAt":
+		if e.complexity.OrganizationProjectOrgParticipationRow.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.OrganizationProjectOrgParticipationRow.UpdatedAt(childComplexity), true
+
 	case "OrganizationProjectPurchase.createdAt":
 		if e.complexity.OrganizationProjectPurchase.CreatedAt == nil {
 			break
@@ -4029,6 +4150,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.OrganizationProjectMyCapabilities(childComplexity, args["projectId"].(uuid.UUID)), true
+
+	case "Query.organizationProjectOrgParticipations":
+		if e.complexity.Query.OrganizationProjectOrgParticipations == nil {
+			break
+		}
+
+		args, err := ec.field_Query_organizationProjectOrgParticipations_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.OrganizationProjectOrgParticipations(childComplexity, args["projectId"].(uuid.UUID)), true
 
 	case "Query.organizationProjectPurchases":
 		if e.complexity.Query.OrganizationProjectPurchases == nil {
@@ -5524,6 +5657,8 @@ extend type Query {
   Organization owner only.
   """
   pendingOrganizationProjectOrgInvites(organizationId: UUID!): [OrganizationProjectOrgInvitePendingRow!]!
+  """Host-side management list of all linked/invited organizations for a project."""
+  organizationProjectOrgParticipations(projectId: UUID!): [OrganizationProjectOrgParticipationRow!]!
 }
 
 extend type Mutation {
@@ -5561,6 +5696,14 @@ extend type Mutation {
   acceptOrganizationProjectOrgInvite(projectId: UUID!, participantOrganizationId: UUID!): OrganizationProjectOrgParticipation!
   """Decline a pending cross-org project invite (participant org owner only)."""
   declineOrganizationProjectOrgInvite(projectId: UUID!, participantOrganizationId: UUID!): OrganizationProjectOrgParticipation!
+  """Host updates capability switches for a linked/invited participant organization."""
+  updateOrganizationProjectOrgParticipationCapabilities(
+    projectId: UUID!
+    participantOrganizationId: UUID!
+    capabilitiesJson: String
+  ): OrganizationProjectOrgParticipation!
+  """Transfer project ownership to an accepted participant organization (host admin/owner only)."""
+  transferOrganizationProjectOwnership(projectId: UUID!, newHostOrganizationId: UUID!): OrganizationProject!
 }
 
 input CreateOrganizationProjectOrgInviteInput {
@@ -5642,6 +5785,20 @@ type OrganizationProjectOrgInvitePendingRow {
   hostOrganizationName: String!
   invitedAt: Time!
   capabilitiesJson: String!
+}
+
+type OrganizationProjectOrgParticipationRow {
+  participationId: UUID!
+  projectId: UUID!
+  participantOrganizationId: UUID!
+  participantOrganizationName: String!
+  status: OrganizationProjectOrgParticipationStatus!
+  capabilitiesJson: String!
+  invitedByUserId: UUID
+  invitedAt: Time!
+  respondedAt: Time
+  createdAt: Time!
+  updatedAt: Time!
 }
 
 type OrganizationProjectMember {
@@ -8761,6 +8918,65 @@ func (ec *executionContext) field_Mutation_submitFeedback_argsInput(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_Mutation_transferOrganizationProjectOwnership_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_transferOrganizationProjectOwnership_argsProjectID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["projectId"] = arg0
+	arg1, err := ec.field_Mutation_transferOrganizationProjectOwnership_argsNewHostOrganizationID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["newHostOrganizationId"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_transferOrganizationProjectOwnership_argsProjectID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["projectId"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("projectId"))
+	if tmp, ok := rawArgs["projectId"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_transferOrganizationProjectOwnership_argsNewHostOrganizationID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["newHostOrganizationId"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("newHostOrganizationId"))
+	if tmp, ok := rawArgs["newHostOrganizationId"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Mutation_updateMySettings_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -8822,6 +9038,92 @@ func (ec *executionContext) field_Mutation_updateOrganizationNews_argsInput(
 	}
 
 	var zeroVal model.UpdateOrganizationNewsInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateOrganizationProjectOrgParticipationCapabilities_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_updateOrganizationProjectOrgParticipationCapabilities_argsProjectID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["projectId"] = arg0
+	arg1, err := ec.field_Mutation_updateOrganizationProjectOrgParticipationCapabilities_argsParticipantOrganizationID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["participantOrganizationId"] = arg1
+	arg2, err := ec.field_Mutation_updateOrganizationProjectOrgParticipationCapabilities_argsCapabilitiesJSON(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["capabilitiesJson"] = arg2
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_updateOrganizationProjectOrgParticipationCapabilities_argsProjectID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["projectId"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("projectId"))
+	if tmp, ok := rawArgs["projectId"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateOrganizationProjectOrgParticipationCapabilities_argsParticipantOrganizationID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["participantOrganizationId"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("participantOrganizationId"))
+	if tmp, ok := rawArgs["participantOrganizationId"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateOrganizationProjectOrgParticipationCapabilities_argsCapabilitiesJSON(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["capabilitiesJson"]
+	if !ok {
+		var zeroVal *string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("capabilitiesJson"))
+	if tmp, ok := rawArgs["capabilitiesJson"]; ok {
+		return ec.unmarshalOString2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
 	return zeroVal, nil
 }
 
@@ -10066,6 +10368,38 @@ func (ec *executionContext) field_Query_organizationProjectMyCapabilities_args(c
 	return args, nil
 }
 func (ec *executionContext) field_Query_organizationProjectMyCapabilities_argsProjectID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["projectId"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("projectId"))
+	if tmp, ok := rawArgs["projectId"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_organizationProjectOrgParticipations_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Query_organizationProjectOrgParticipations_argsProjectID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["projectId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_organizationProjectOrgParticipations_argsProjectID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
 ) (uuid.UUID, error) {
@@ -18200,6 +18534,154 @@ func (ec *executionContext) fieldContext_Mutation_declineOrganizationProjectOrgI
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_updateOrganizationProjectOrgParticipationCapabilities(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateOrganizationProjectOrgParticipationCapabilities(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateOrganizationProjectOrgParticipationCapabilities(rctx, fc.Args["projectId"].(uuid.UUID), fc.Args["participantOrganizationId"].(uuid.UUID), fc.Args["capabilitiesJson"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.OrganizationProjectOrgParticipation)
+	fc.Result = res
+	return ec.marshalNOrganizationProjectOrgParticipation2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProjectOrgParticipation(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateOrganizationProjectOrgParticipationCapabilities(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_id(ctx, field)
+			case "projectId":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_projectId(ctx, field)
+			case "participantOrganizationId":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_participantOrganizationId(ctx, field)
+			case "status":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_status(ctx, field)
+			case "capabilitiesJson":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_capabilitiesJson(ctx, field)
+			case "invitedByUserId":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_invitedByUserId(ctx, field)
+			case "invitedAt":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_invitedAt(ctx, field)
+			case "respondedAt":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_respondedAt(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OrganizationProjectOrgParticipation", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateOrganizationProjectOrgParticipationCapabilities_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_transferOrganizationProjectOwnership(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_transferOrganizationProjectOwnership(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().TransferOrganizationProjectOwnership(rctx, fc.Args["projectId"].(uuid.UUID), fc.Args["newHostOrganizationId"].(uuid.UUID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.OrganizationProject)
+	fc.Result = res
+	return ec.marshalNOrganizationProject2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProject(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_transferOrganizationProjectOwnership(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_OrganizationProject_id(ctx, field)
+			case "organizationId":
+				return ec.fieldContext_OrganizationProject_organizationId(ctx, field)
+			case "name":
+				return ec.fieldContext_OrganizationProject_name(ctx, field)
+			case "description":
+				return ec.fieldContext_OrganizationProject_description(ctx, field)
+			case "createdByUserId":
+				return ec.fieldContext_OrganizationProject_createdByUserId(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_OrganizationProject_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_OrganizationProject_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OrganizationProject", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_transferOrganizationProjectOwnership_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createOrganization(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createOrganization(ctx, field)
 	if err != nil {
@@ -26155,6 +26637,484 @@ func (ec *executionContext) fieldContext_OrganizationProjectOrgParticipation_upd
 	return fc, nil
 }
 
+func (ec *executionContext) _OrganizationProjectOrgParticipationRow_participationId(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectOrgParticipationRow) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationProjectOrgParticipationRow_participationId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ParticipationID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationProjectOrgParticipationRow_participationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationProjectOrgParticipationRow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationProjectOrgParticipationRow_projectId(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectOrgParticipationRow) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationProjectOrgParticipationRow_projectId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ProjectID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationProjectOrgParticipationRow_projectId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationProjectOrgParticipationRow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationProjectOrgParticipationRow_participantOrganizationId(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectOrgParticipationRow) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationProjectOrgParticipationRow_participantOrganizationId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ParticipantOrganizationID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationProjectOrgParticipationRow_participantOrganizationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationProjectOrgParticipationRow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationProjectOrgParticipationRow_participantOrganizationName(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectOrgParticipationRow) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationProjectOrgParticipationRow_participantOrganizationName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ParticipantOrganizationName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationProjectOrgParticipationRow_participantOrganizationName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationProjectOrgParticipationRow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationProjectOrgParticipationRow_status(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectOrgParticipationRow) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationProjectOrgParticipationRow_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.OrganizationProjectOrgParticipationStatus)
+	fc.Result = res
+	return ec.marshalNOrganizationProjectOrgParticipationStatus2githubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProjectOrgParticipationStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationProjectOrgParticipationRow_status(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationProjectOrgParticipationRow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type OrganizationProjectOrgParticipationStatus does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationProjectOrgParticipationRow_capabilitiesJson(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectOrgParticipationRow) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationProjectOrgParticipationRow_capabilitiesJson(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CapabilitiesJSON, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationProjectOrgParticipationRow_capabilitiesJson(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationProjectOrgParticipationRow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationProjectOrgParticipationRow_invitedByUserId(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectOrgParticipationRow) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationProjectOrgParticipationRow_invitedByUserId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.InvitedByUserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*uuid.UUID)
+	fc.Result = res
+	return ec.marshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationProjectOrgParticipationRow_invitedByUserId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationProjectOrgParticipationRow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationProjectOrgParticipationRow_invitedAt(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectOrgParticipationRow) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationProjectOrgParticipationRow_invitedAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.InvitedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationProjectOrgParticipationRow_invitedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationProjectOrgParticipationRow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationProjectOrgParticipationRow_respondedAt(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectOrgParticipationRow) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationProjectOrgParticipationRow_respondedAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RespondedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationProjectOrgParticipationRow_respondedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationProjectOrgParticipationRow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationProjectOrgParticipationRow_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectOrgParticipationRow) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationProjectOrgParticipationRow_createdAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationProjectOrgParticipationRow_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationProjectOrgParticipationRow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationProjectOrgParticipationRow_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectOrgParticipationRow) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationProjectOrgParticipationRow_updatedAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationProjectOrgParticipationRow_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationProjectOrgParticipationRow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _OrganizationProjectPurchase_id(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectPurchase) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_OrganizationProjectPurchase_id(ctx, field)
 	if err != nil {
@@ -29279,6 +30239,85 @@ func (ec *executionContext) fieldContext_Query_pendingOrganizationProjectOrgInvi
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_pendingOrganizationProjectOrgInvites_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_organizationProjectOrgParticipations(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_organizationProjectOrgParticipations(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().OrganizationProjectOrgParticipations(rctx, fc.Args["projectId"].(uuid.UUID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.OrganizationProjectOrgParticipationRow)
+	fc.Result = res
+	return ec.marshalNOrganizationProjectOrgParticipationRow2ᚕᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProjectOrgParticipationRowᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_organizationProjectOrgParticipations(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "participationId":
+				return ec.fieldContext_OrganizationProjectOrgParticipationRow_participationId(ctx, field)
+			case "projectId":
+				return ec.fieldContext_OrganizationProjectOrgParticipationRow_projectId(ctx, field)
+			case "participantOrganizationId":
+				return ec.fieldContext_OrganizationProjectOrgParticipationRow_participantOrganizationId(ctx, field)
+			case "participantOrganizationName":
+				return ec.fieldContext_OrganizationProjectOrgParticipationRow_participantOrganizationName(ctx, field)
+			case "status":
+				return ec.fieldContext_OrganizationProjectOrgParticipationRow_status(ctx, field)
+			case "capabilitiesJson":
+				return ec.fieldContext_OrganizationProjectOrgParticipationRow_capabilitiesJson(ctx, field)
+			case "invitedByUserId":
+				return ec.fieldContext_OrganizationProjectOrgParticipationRow_invitedByUserId(ctx, field)
+			case "invitedAt":
+				return ec.fieldContext_OrganizationProjectOrgParticipationRow_invitedAt(ctx, field)
+			case "respondedAt":
+				return ec.fieldContext_OrganizationProjectOrgParticipationRow_respondedAt(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_OrganizationProjectOrgParticipationRow_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_OrganizationProjectOrgParticipationRow_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OrganizationProjectOrgParticipationRow", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_organizationProjectOrgParticipations_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -40316,6 +41355,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "updateOrganizationProjectOrgParticipationCapabilities":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateOrganizationProjectOrgParticipationCapabilities(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "transferOrganizationProjectOwnership":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_transferOrganizationProjectOwnership(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createOrganization":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createOrganization(ctx, field)
@@ -41826,6 +42879,89 @@ func (ec *executionContext) _OrganizationProjectOrgParticipation(ctx context.Con
 	return out
 }
 
+var organizationProjectOrgParticipationRowImplementors = []string{"OrganizationProjectOrgParticipationRow"}
+
+func (ec *executionContext) _OrganizationProjectOrgParticipationRow(ctx context.Context, sel ast.SelectionSet, obj *model.OrganizationProjectOrgParticipationRow) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, organizationProjectOrgParticipationRowImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("OrganizationProjectOrgParticipationRow")
+		case "participationId":
+			out.Values[i] = ec._OrganizationProjectOrgParticipationRow_participationId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "projectId":
+			out.Values[i] = ec._OrganizationProjectOrgParticipationRow_projectId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "participantOrganizationId":
+			out.Values[i] = ec._OrganizationProjectOrgParticipationRow_participantOrganizationId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "participantOrganizationName":
+			out.Values[i] = ec._OrganizationProjectOrgParticipationRow_participantOrganizationName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "status":
+			out.Values[i] = ec._OrganizationProjectOrgParticipationRow_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "capabilitiesJson":
+			out.Values[i] = ec._OrganizationProjectOrgParticipationRow_capabilitiesJson(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "invitedByUserId":
+			out.Values[i] = ec._OrganizationProjectOrgParticipationRow_invitedByUserId(ctx, field, obj)
+		case "invitedAt":
+			out.Values[i] = ec._OrganizationProjectOrgParticipationRow_invitedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "respondedAt":
+			out.Values[i] = ec._OrganizationProjectOrgParticipationRow_respondedAt(ctx, field, obj)
+		case "createdAt":
+			out.Values[i] = ec._OrganizationProjectOrgParticipationRow_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updatedAt":
+			out.Values[i] = ec._OrganizationProjectOrgParticipationRow_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var organizationProjectPurchaseImplementors = []string{"OrganizationProjectPurchase"}
 
 func (ec *executionContext) _OrganizationProjectPurchase(ctx context.Context, sel ast.SelectionSet, obj *model.OrganizationProjectPurchase) graphql.Marshaler {
@@ -42664,6 +43800,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_pendingOrganizationProjectOrgInvites(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "organizationProjectOrgParticipations":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_organizationProjectOrgParticipations(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -45839,6 +46997,60 @@ func (ec *executionContext) marshalNOrganizationProjectOrgParticipation2ᚖgithu
 		return graphql.Null
 	}
 	return ec._OrganizationProjectOrgParticipation(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNOrganizationProjectOrgParticipationRow2ᚕᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProjectOrgParticipationRowᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.OrganizationProjectOrgParticipationRow) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNOrganizationProjectOrgParticipationRow2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProjectOrgParticipationRow(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNOrganizationProjectOrgParticipationRow2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProjectOrgParticipationRow(ctx context.Context, sel ast.SelectionSet, v *model.OrganizationProjectOrgParticipationRow) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._OrganizationProjectOrgParticipationRow(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNOrganizationProjectOrgParticipationStatus2githubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProjectOrgParticipationStatus(ctx context.Context, v interface{}) (model.OrganizationProjectOrgParticipationStatus, error) {

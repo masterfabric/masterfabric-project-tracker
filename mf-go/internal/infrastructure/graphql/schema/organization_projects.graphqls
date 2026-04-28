@@ -18,6 +18,8 @@ extend type Query {
   Organization owner only.
   """
   pendingOrganizationProjectOrgInvites(organizationId: UUID!): [OrganizationProjectOrgInvitePendingRow!]!
+  """Host-side management list of all linked/invited organizations for a project."""
+  organizationProjectOrgParticipations(projectId: UUID!): [OrganizationProjectOrgParticipationRow!]!
 }
 
 extend type Mutation {
@@ -55,6 +57,14 @@ extend type Mutation {
   acceptOrganizationProjectOrgInvite(projectId: UUID!, participantOrganizationId: UUID!): OrganizationProjectOrgParticipation!
   """Decline a pending cross-org project invite (participant org owner only)."""
   declineOrganizationProjectOrgInvite(projectId: UUID!, participantOrganizationId: UUID!): OrganizationProjectOrgParticipation!
+  """Host updates capability switches for a linked/invited participant organization."""
+  updateOrganizationProjectOrgParticipationCapabilities(
+    projectId: UUID!
+    participantOrganizationId: UUID!
+    capabilitiesJson: String
+  ): OrganizationProjectOrgParticipation!
+  """Transfer project ownership to an accepted participant organization (host admin/owner only)."""
+  transferOrganizationProjectOwnership(projectId: UUID!, newHostOrganizationId: UUID!): OrganizationProject!
 }
 
 input CreateOrganizationProjectOrgInviteInput {
@@ -136,6 +146,20 @@ type OrganizationProjectOrgInvitePendingRow {
   hostOrganizationName: String!
   invitedAt: Time!
   capabilitiesJson: String!
+}
+
+type OrganizationProjectOrgParticipationRow {
+  participationId: UUID!
+  projectId: UUID!
+  participantOrganizationId: UUID!
+  participantOrganizationName: String!
+  status: OrganizationProjectOrgParticipationStatus!
+  capabilitiesJson: String!
+  invitedByUserId: UUID
+  invitedAt: Time!
+  respondedAt: Time
+  createdAt: Time!
+  updatedAt: Time!
 }
 
 type OrganizationProjectMember {

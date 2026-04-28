@@ -958,7 +958,16 @@
         "pendingInvitesEmpty": "No pending project invites.",
         "noPendingInviteForProject": "No pending invite for this project.",
         "pendingInvitesLoadFailed": "Could not load pending invites.",
-        "inviteOrgCandidatesLoadFailed": "Could not load organization options."
+        "inviteOrgCandidatesLoadFailed": "Could not load organization options.",
+        "projectOrgsSection": "Linked organizations",
+        "projectOrgsEmpty": "No linked organizations yet.",
+        "projectOrgsLoadFailed": "Could not load linked organizations.",
+        "projectOrgsUpdateFailed": "Could not update organization permissions.",
+        "transferOwnershipTitle": "Transfer project ownership",
+        "transferOwnershipConfirm": "Transfer project ownership to {{org}}? You will lose host-level control.",
+        "transferOwnershipButton": "Transfer ownership",
+        "transferOwnershipSuccess": "Project ownership transferred.",
+        "transferOwnershipFailed": "Could not transfer project ownership."
       },
       "invite": {
         "title": "Invite User",

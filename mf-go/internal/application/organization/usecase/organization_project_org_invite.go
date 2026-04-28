@@ -19,6 +19,8 @@ const (
 	auditEventOrgProjectInviteCreated  = "project_org_invite_created"
 	auditEventOrgProjectInviteAccepted = "project_org_invite_accepted"
 	auditEventOrgProjectInviteDeclined = "project_org_invite_declined"
+	auditEventOrgProjectCapabilitiesUpdated = "project_org_capabilities_updated"
+	auditEventOrgProjectOwnershipTransferred = "project_org_ownership_transferred"
 )
 
 func parseOrgProjectInviteCapabilitiesJSON(raw *string) ([]byte, error) {
@@ -287,4 +289,149 @@ func (uc *ListPendingOrganizationProjectOrgInvitesUseCase) Execute(ctx context.C
 		})
 	}
 	return out, nil
+}
+
+// ListOrganizationProjectOrgParticipationsUseCase lists all linked/invited org rows for a host project.
+type ListOrganizationProjectOrgParticipationsUseCase struct {
+	repo orgRepo.OrganizationRepository
+}
+
+func NewListOrganizationProjectOrgParticipationsUseCase(repo orgRepo.OrganizationRepository) *ListOrganizationProjectOrgParticipationsUseCase {
+	return &ListOrganizationProjectOrgParticipationsUseCase{repo: repo}
+}
+
+func (uc *ListOrganizationProjectOrgParticipationsUseCase) Execute(ctx context.Context, projectID, callerUserID uuid.UUID) ([]*dto.OrganizationProjectOrgParticipationRowResponse, error) {
+	p, err := uc.repo.GetOrganizationProjectByID(ctx, projectID)
+	if err != nil {
+		return nil, fmt.Errorf("organizationProjectOrgParticipations: %w", err)
+	}
+	if p == nil {
+		return nil, domainErr.New("NOT_FOUND", "project not found", nil)
+	}
+	if err := ensureOrgAdminOrOwner(ctx, uc.repo, p.OrganizationID, callerUserID); err != nil {
+		return nil, err
+	}
+	rows, err := uc.repo.ListOrganizationProjectOrgParticipations(ctx, projectID)
+	if err != nil {
+		return nil, fmt.Errorf("organizationProjectOrgParticipations: %w", err)
+	}
+	out := make([]*dto.OrganizationProjectOrgParticipationRowResponse, 0, len(rows))
+	for _, row := range rows {
+		caps := string(row.Capabilities)
+		if caps == "" {
+			caps = "{}"
+		}
+		var invitedBy *string
+		if row.InvitedByUserID != nil {
+			s := row.InvitedByUserID.String()
+			invitedBy = &s
+		}
+		var responded *string
+		if row.RespondedAt != nil {
+			s := row.RespondedAt.UTC().Format(time.RFC3339)
+			responded = &s
+		}
+		out = append(out, &dto.OrganizationProjectOrgParticipationRowResponse{
+			ParticipationID:           row.ParticipationID.String(),
+			ProjectID:                 row.ProjectID.String(),
+			ParticipantOrganizationID: row.ParticipantOrganizationID.String(),
+			ParticipantOrganizationName: row.ParticipantOrganizationName,
+			Status:                    strings.ToUpper(string(row.Status)),
+			CapabilitiesJSON:          caps,
+			InvitedByUserID:           invitedBy,
+			InvitedAt:                 row.InvitedAt.UTC().Format(time.RFC3339),
+			RespondedAt:               responded,
+			CreatedAt:                 row.CreatedAt.UTC().Format(time.RFC3339),
+			UpdatedAt:                 row.UpdatedAt.UTC().Format(time.RFC3339),
+		})
+	}
+	return out, nil
+}
+
+type UpdateOrganizationProjectOrgParticipationCapabilitiesUseCase struct {
+	repo orgRepo.OrganizationRepository
+}
+
+func NewUpdateOrganizationProjectOrgParticipationCapabilitiesUseCase(repo orgRepo.OrganizationRepository) *UpdateOrganizationProjectOrgParticipationCapabilitiesUseCase {
+	return &UpdateOrganizationProjectOrgParticipationCapabilitiesUseCase{repo: repo}
+}
+
+func (uc *UpdateOrganizationProjectOrgParticipationCapabilitiesUseCase) Execute(ctx context.Context, projectID, participantOrganizationID, callerUserID uuid.UUID, capabilitiesJSON *string) (*model.OrganizationProjectOrgParticipation, error) {
+	p, err := uc.repo.GetOrganizationProjectByID(ctx, projectID)
+	if err != nil {
+		return nil, fmt.Errorf("updateOrganizationProjectOrgParticipationCapabilities: %w", err)
+	}
+	if p == nil {
+		return nil, domainErr.New("NOT_FOUND", "project not found", nil)
+	}
+	if err := ensureOrgAdminOrOwner(ctx, uc.repo, p.OrganizationID, callerUserID); err != nil {
+		return nil, err
+	}
+	caps, err := parseOrgProjectInviteCapabilitiesJSON(capabilitiesJSON)
+	if err != nil {
+		return nil, domainErr.New("INVALID_ARGUMENT", err.Error(), nil)
+	}
+	row, err := uc.repo.UpdateOrganizationProjectOrgParticipationCapabilities(ctx, projectID, participantOrganizationID, caps)
+	if err != nil {
+		return nil, fmt.Errorf("updateOrganizationProjectOrgParticipationCapabilities: %w", err)
+	}
+	if row == nil {
+		return nil, domainErr.New("NOT_FOUND", "project organization link not found", nil)
+	}
+	meta, _ := json.Marshal(map[string]string{
+		"participantOrganizationId": participantOrganizationID.String(),
+	})
+	if err := uc.repo.InsertOrganizationProjectOrgAuditEvent(ctx, projectID, &callerUserID, auditEventOrgProjectCapabilitiesUpdated, meta); err != nil {
+		return nil, fmt.Errorf("updateOrganizationProjectOrgParticipationCapabilities: audit: %w", err)
+	}
+	return row, nil
+}
+
+type TransferOrganizationProjectOwnershipUseCase struct {
+	repo orgRepo.OrganizationRepository
+}
+
+func NewTransferOrganizationProjectOwnershipUseCase(repo orgRepo.OrganizationRepository) *TransferOrganizationProjectOwnershipUseCase {
+	return &TransferOrganizationProjectOwnershipUseCase{repo: repo}
+}
+
+func (uc *TransferOrganizationProjectOwnershipUseCase) Execute(ctx context.Context, projectID, newHostOrganizationID, callerUserID uuid.UUID) (*dto.OrganizationProjectResponse, error) {
+	p, err := uc.repo.GetOrganizationProjectByID(ctx, projectID)
+	if err != nil {
+		return nil, fmt.Errorf("transferOrganizationProjectOwnership: %w", err)
+	}
+	if p == nil {
+		return nil, domainErr.New("NOT_FOUND", "project not found", nil)
+	}
+	if err := ensureOrgAdminOrOwner(ctx, uc.repo, p.OrganizationID, callerUserID); err != nil {
+		return nil, err
+	}
+	if newHostOrganizationID == p.OrganizationID {
+		return nil, domainErr.New("INVALID_ARGUMENT", "new host organization must be different", nil)
+	}
+	participation, err := uc.repo.GetOrganizationProjectOrgParticipation(ctx, projectID, newHostOrganizationID)
+	if err != nil {
+		return nil, fmt.Errorf("transferOrganizationProjectOwnership: %w", err)
+	}
+	if participation == nil || participation.Status != model.OrganizationProjectOrgParticipationAccepted {
+		return nil, domainErr.New("FAILED_PRECONDITION", "target organization must be an accepted participant", nil)
+	}
+	if err := uc.repo.TransferOrganizationProjectOwnership(ctx, projectID, newHostOrganizationID); err != nil {
+		return nil, fmt.Errorf("transferOrganizationProjectOwnership: %w", err)
+	}
+	meta, _ := json.Marshal(map[string]string{
+		"fromOrganizationId": p.OrganizationID.String(),
+		"toOrganizationId":   newHostOrganizationID.String(),
+	})
+	if err := uc.repo.InsertOrganizationProjectOrgAuditEvent(ctx, projectID, &callerUserID, auditEventOrgProjectOwnershipTransferred, meta); err != nil {
+		return nil, fmt.Errorf("transferOrganizationProjectOwnership: audit: %w", err)
+	}
+	updated, err := uc.repo.GetOrganizationProjectByID(ctx, projectID)
+	if err != nil {
+		return nil, fmt.Errorf("transferOrganizationProjectOwnership: %w", err)
+	}
+	if updated == nil {
+		return nil, domainErr.New("NOT_FOUND", "project not found", nil)
+	}
+	return organizationProjectToDTO(updated), nil
 }

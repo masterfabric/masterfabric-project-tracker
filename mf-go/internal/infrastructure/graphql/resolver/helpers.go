@@ -704,6 +704,52 @@ func orgProjectOrgParticipationDomainToModel(m *orgDomainModel.OrganizationProje
 	return out
 }
 
+func orgProjectOrgParticipationRowToModel(row *organizationDTO.OrganizationProjectOrgParticipationRowResponse) *model.OrganizationProjectOrgParticipationRow {
+	if row == nil {
+		return nil
+	}
+	participationID, _ := uuid.Parse(row.ParticipationID)
+	projectID, _ := uuid.Parse(row.ProjectID)
+	participantOrgID, _ := uuid.Parse(row.ParticipantOrganizationID)
+	invitedAt, _ := time.Parse(time.RFC3339, row.InvitedAt)
+	createdAt, _ := time.Parse(time.RFC3339, row.CreatedAt)
+	updatedAt, _ := time.Parse(time.RFC3339, row.UpdatedAt)
+	var invitedBy *uuid.UUID
+	if row.InvitedByUserID != nil && *row.InvitedByUserID != "" {
+		if u, err := uuid.Parse(*row.InvitedByUserID); err == nil {
+			invitedBy = &u
+		}
+	}
+	var responded *time.Time
+	if row.RespondedAt != nil && *row.RespondedAt != "" {
+		if ts, err := time.Parse(time.RFC3339, *row.RespondedAt); err == nil {
+			responded = &ts
+		}
+	}
+	status := model.OrganizationProjectOrgParticipationStatusPending
+	switch strings.ToUpper(row.Status) {
+	case "ACCEPTED":
+		status = model.OrganizationProjectOrgParticipationStatusAccepted
+	case "DECLINED":
+		status = model.OrganizationProjectOrgParticipationStatusDeclined
+	case "REVOKED":
+		status = model.OrganizationProjectOrgParticipationStatusRevoked
+	}
+	return &model.OrganizationProjectOrgParticipationRow{
+		ParticipationID:           participationID,
+		ProjectID:                 projectID,
+		ParticipantOrganizationID: participantOrgID,
+		ParticipantOrganizationName: row.ParticipantOrganizationName,
+		Status:                    status,
+		CapabilitiesJSON:          row.CapabilitiesJSON,
+		InvitedByUserID:           invitedBy,
+		InvitedAt:                 invitedAt,
+		RespondedAt:               responded,
+		CreatedAt:                 createdAt,
+		UpdatedAt:                 updatedAt,
+	}
+}
+
 func orgProjectTodoRespToModel(resp *organizationDTO.OrganizationProjectTodoResponse) *model.OrganizationProjectTodo {
 	id, _ := uuid.Parse(resp.ID)
 	pid, _ := uuid.Parse(resp.ProjectID)
