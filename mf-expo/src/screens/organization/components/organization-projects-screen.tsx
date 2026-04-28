@@ -16,9 +16,10 @@ import { useAppStore } from '@/src/shared/store';
 import { themedTextInputProps } from '@/src/shared/utils/themed-text-input';
 import { foregroundOnTint } from '@/src/shared/utils/tint-contrast';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { getThemeColors, Sizing, useTheme } from 'masterfabric-expo-core';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -159,6 +160,21 @@ export function OrganizationProjectsScreen({ organizationId }: OrganizationProje
   useEffect(() => {
     void load('initial');
   }, [load]);
+
+  const projectsScreenFocusSkipRef = useRef(true);
+  useEffect(() => {
+    projectsScreenFocusSkipRef.current = true;
+  }, [organizationId]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) return;
+      if (projectsScreenFocusSkipRef.current) {
+        projectsScreenFocusSkipRef.current = false;
+        return;
+      }
+      void load('refresh');
+    }, [user, load])
+  );
 
   const onBack = useCallback(() => {
     if (router.canGoBack()) router.back();

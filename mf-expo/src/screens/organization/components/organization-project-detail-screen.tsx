@@ -364,7 +364,9 @@ export function OrganizationProjectDetailScreen({
       setInviteParticipantOrgId('');
       setInviteCapTodos(true);
       setInviteCapPurchases(true);
+      setShowInviteOrgPicker(false);
       setShowProjectSettings(false);
+      await load('refresh');
     } catch {
       showErr(t('profile.organizations.projects.inviteFailed'));
     } finally {
@@ -375,6 +377,7 @@ export function OrganizationProjectDetailScreen({
     inviteCapTodos,
     inviteCapPurchases,
     projectId,
+    load,
     showErr,
     t,
   ]);
@@ -1542,9 +1545,13 @@ export function OrganizationProjectDetailScreen({
                       opacity: inviteFlowBusy || !inviteParticipantOrgId.trim() ? 0.55 : 1,
                     }}
                   >
-                    <Text style={{ color: onTint, textAlign: 'center', fontWeight: '700' }}>
-                      {t('profile.organizations.projects.inviteSend')}
-                    </Text>
+                    {inviteFlowBusy ? (
+                      <ActivityIndicator color={onTint} />
+                    ) : (
+                      <Text style={{ color: onTint, textAlign: 'center', fontWeight: '700' }}>
+                        {t('profile.organizations.projects.inviteSend')}
+                      </Text>
+                    )}
                   </Pressable>
                 </>
               ) : null}
@@ -1590,7 +1597,11 @@ export function OrganizationProjectDetailScreen({
                 </>
               ) : null}
 
-              <Pressable onPress={() => setShowProjectSettings(false)} style={{ marginTop: 18 }}>
+              <Pressable
+                onPress={() => !inviteFlowBusy && setShowProjectSettings(false)}
+                disabled={inviteFlowBusy}
+                style={{ marginTop: 18, opacity: inviteFlowBusy ? 0.6 : 1 }}
+              >
                 <Text style={{ color: colors.tint, textAlign: 'center', fontWeight: '600' }}>
                   {t('common.close')}
                 </Text>
