@@ -10,13 +10,22 @@ import (
 	domainErr "github.com/masterfabric/masterfabric_go_basic/internal/shared/errors"
 )
 
+type projectAccessRepository interface {
+	GetOrganizationProjectByID(ctx context.Context, id uuid.UUID) (*model.OrganizationProject, error)
+	IsMember(ctx context.Context, orgID, userID uuid.UUID) (bool, error)
+	IsAdminOrOwner(ctx context.Context, orgID, userID uuid.UUID) (bool, error)
+	IsOrganizationProjectMember(ctx context.Context, projectID, userID uuid.UUID) (bool, error)
+	UserMayViewProjectViaAcceptedParticipation(ctx context.Context, projectID, userID uuid.UUID) (bool, error)
+	UserHasProjectCapabilityViaAcceptedParticipation(ctx context.Context, projectID, userID uuid.UUID, capabilityKey string) (bool, error)
+}
+
 func ensureOrgMember(ctx context.Context, repo orgRepo.OrganizationRepository, orgID, userID uuid.UUID) error {
 	ok, err := repo.IsMember(ctx, orgID, userID)
 	if err != nil {
 		return fmt.Errorf("organizationProject: %w", err)
 	}
 	if !ok {
-		return fmt.Errorf("organizationProject: not a member of this organization")
+		return domainErr.New("FORBIDDEN", "not a member of this organization", nil)
 	}
 	return nil
 }
@@ -44,7 +53,7 @@ func ensureOrgAdminOrOwner(ctx context.Context, repo orgRepo.OrganizationReposit
 		return fmt.Errorf("organizationProject: %w", err)
 	}
 	if !ok {
-		return fmt.Errorf("organizationProject: admin or owner role required")
+		return domainErr.New("FORBIDDEN", "admin or owner role required", nil)
 	}
 	return nil
 }
@@ -53,7 +62,7 @@ func ensureOrgAdminOrOwner(ctx context.Context, repo orgRepo.OrganizationReposit
 // or an active member of a participant organization with an accepted participation link (GFG-172 / GFG-179).
 func ensureProjectReader(
 	ctx context.Context,
-	repo orgRepo.OrganizationRepository,
+	repo projectAccessRepository,
 	projectID, userID uuid.UUID,
 ) (*model.OrganizationProject, error) {
 	p, err := repo.GetOrganizationProjectByID(ctx, projectID)
@@ -61,7 +70,7 @@ func ensureProjectReader(
 		return nil, fmt.Errorf("organizationProject: %w", err)
 	}
 	if p == nil {
-		return nil, fmt.Errorf("organizationProject: project not found")
+		return nil, domainErr.New("NOT_FOUND", "project not found", nil)
 	}
 	hostMember, err := repo.IsMember(ctx, p.OrganizationID, userID)
 	if err != nil {
@@ -80,7 +89,7 @@ func ensureProjectReader(
 			return nil, fmt.Errorf("organizationProject: %w", err)
 		}
 		if !onProject {
-			return nil, fmt.Errorf("organizationProject: not assigned to this project")
+			return nil, domainErr.New("FORBIDDEN", "not assigned to this project", nil)
 		}
 		return p, nil
 	}
@@ -89,40 +98,83 @@ func ensureProjectReader(
 		return nil, fmt.Errorf("organizationProject: %w", err)
 	}
 	if !ok {
-		return nil, fmt.Errorf("organizationProject: not a member of this organization")
+		return nil, domainErr.New("FORBIDDEN", "not a member of this organization", nil)
 	}
 	return p, nil
 }
 
-// ensureProjectTodoEditor is host org member and org admin/owner or on the project roster (mutations; no cross-org yet).
+// ensureProjectTodoEditor allows writes via host-org path or accepted participant-org "todos" capability.
 func ensureProjectTodoEditor(
 	ctx context.Context,
-	repo orgRepo.OrganizationRepository,
+	repo projectAccessRepository,
 	projectID, userID uuid.UUID,
+) (*model.OrganizationProject, error) {
+	return ensureProjectCapabilityEditor(ctx, repo, projectID, userID, "todos")
+}
+
+// ensureProjectPurchaseEditor allows writes via host-org rules or accepted participant-org purchase capability.
+func ensureProjectPurchaseEditor(
+	ctx context.Context,
+	repo projectAccessRepository,
+	projectID, userID uuid.UUID,
+) (*model.OrganizationProject, error) {
+	return ensureProjectCapabilityEditor(ctx, repo, projectID, userID, "purchases")
+}
+
+func ensureProjectCapabilityEditor(
+	ctx context.Context,
+	repo projectAccessRepository,
+	projectID, userID uuid.UUID,
+	capabilityKey string,
 ) (*model.OrganizationProject, error) {
 	p, err := repo.GetOrganizationProjectByID(ctx, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("organizationProject: %w", err)
 	}
 	if p == nil {
-		return nil, fmt.Errorf("organizationProject: project not found")
+		return nil, domainErr.New("NOT_FOUND", "project not found", nil)
 	}
-	if err := ensureOrgMember(ctx, repo, p.OrganizationID, userID); err != nil {
-		return nil, err
+	participantViewer, pvErr := repo.UserMayViewProjectViaAcceptedParticipation(ctx, projectID, userID)
+	if pvErr != nil {
+		return nil, fmt.Errorf("organizationProject: %w", pvErr)
 	}
-	admin, err := repo.IsAdminOrOwner(ctx, p.OrganizationID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("organizationProject: %w", err)
-	}
-	if admin {
+	if participantViewer {
+		ok, capErr := repo.UserHasProjectCapabilityViaAcceptedParticipation(ctx, projectID, userID, capabilityKey)
+		if capErr != nil {
+			return nil, fmt.Errorf("organizationProject: %w", capErr)
+		}
+		if !ok {
+			return nil, domainErr.New("FORBIDDEN", "not assigned to this project", nil)
+		}
 		return p, nil
 	}
-	onProject, err := repo.IsOrganizationProjectMember(ctx, projectID, userID)
+	hostMember, err := repo.IsMember(ctx, p.OrganizationID, userID)
 	if err != nil {
 		return nil, fmt.Errorf("organizationProject: %w", err)
 	}
-	if !onProject {
-		return nil, fmt.Errorf("organizationProject: not assigned to this project")
+	if hostMember {
+		admin, err := repo.IsAdminOrOwner(ctx, p.OrganizationID, userID)
+		if err != nil {
+			return nil, fmt.Errorf("organizationProject: %w", err)
+		}
+		if admin {
+			return p, nil
+		}
+		onProject, err := repo.IsOrganizationProjectMember(ctx, projectID, userID)
+		if err != nil {
+			return nil, fmt.Errorf("organizationProject: %w", err)
+		}
+		if !onProject {
+			return nil, domainErr.New("FORBIDDEN", "not assigned to this project", nil)
+		}
+		return p, nil
+	}
+	ok, capErr := repo.UserHasProjectCapabilityViaAcceptedParticipation(ctx, projectID, userID, capabilityKey)
+	if capErr != nil {
+		return nil, fmt.Errorf("organizationProject: %w", capErr)
+	}
+	if !ok {
+		return nil, domainErr.New("FORBIDDEN", "not assigned to this project", nil)
 	}
 	return p, nil
 }

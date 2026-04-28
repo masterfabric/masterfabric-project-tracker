@@ -60,6 +60,7 @@ export function MessageBottomSheet({
   const insets = useSafeAreaInsets();
   const tint = colors.tint;
   const icon = iconForVariant(variant);
+  const primaryTextColor = isDark ? '#000000' : '#FFFFFF';
 
   return (
     <Modal
@@ -128,7 +129,7 @@ export function MessageBottomSheet({
                 },
               ]}
             >
-              <Text style={styles.primaryBtnText}>{primaryAction.label}</Text>
+              <Text style={[styles.primaryBtnText, { color: primaryTextColor }]}>{primaryAction.label}</Text>
             </Pressable>
           </View>
         </Pressable>

@@ -293,6 +293,7 @@ func main() {
 		GetOrganizationProjectUC:                   organizationUC.NewGetOrganizationProjectUseCase(organizationRepo),
 		ListOrganizationProjectMembersUC:           organizationUC.NewListOrganizationProjectMembersUseCase(organizationRepo, getProfileUC),
 		ListOrganizationProjectTodosUC:             organizationUC.NewListOrganizationProjectTodosUseCase(organizationRepo),
+		GetOrganizationProjectMyCapabilitiesUC:     organizationUC.NewGetOrganizationProjectMyCapabilitiesUseCase(organizationRepo),
 		CreateOrganizationProjectUC:                organizationUC.NewCreateOrganizationProjectUseCase(organizationRepo),
 		UpdateOrganizationProjectUC:                organizationUC.NewUpdateOrganizationProjectUseCase(organizationRepo),
 		DeleteOrganizationProjectUC:                organizationUC.NewDeleteOrganizationProjectUseCase(organizationRepo),
@@ -311,6 +312,7 @@ func main() {
 		DeleteOrganizationProjectPurchaseUC:        organizationUC.NewDeleteOrganizationProjectPurchaseUseCase(organizationRepo),
 		CreateOrganizationProjectOrgInviteUC:       organizationUC.NewCreateOrganizationProjectOrgInviteUseCase(organizationRepo, projectOrgInvitePush),
 		AcceptOrganizationProjectOrgInviteUC:       organizationUC.NewAcceptOrganizationProjectOrgInviteUseCase(organizationRepo),
+		DeclineOrganizationProjectOrgInviteUC:      organizationUC.NewDeclineOrganizationProjectOrgInviteUseCase(organizationRepo),
 		ListPendingOrganizationProjectOrgInvitesUC: organizationUC.NewListPendingOrganizationProjectOrgInvitesUseCase(organizationRepo),
 		OwnerTodoDashboardUC:                       organizationUC.NewOwnerTodoDashboardUseCase(organizationRepo),
 

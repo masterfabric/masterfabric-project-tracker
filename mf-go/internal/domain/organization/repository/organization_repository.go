@@ -54,12 +54,16 @@ type OrganizationRepository interface {
 	// UserMayViewProjectViaAcceptedParticipation is true when the user is an active member of a participant org
 	// with an accepted link to the project (GFG-172 / GFG-179 cross-org read path).
 	UserMayViewProjectViaAcceptedParticipation(ctx context.Context, projectID, userID uuid.UUID) (bool, error)
+	// UserHasProjectCapabilityViaAcceptedParticipation checks accepted participant-org link capabilities
+	// (e.g. "todos", "purchases") for this user in project context.
+	UserHasProjectCapabilityViaAcceptedParticipation(ctx context.Context, projectID, userID uuid.UUID, capabilityKey string) (bool, error)
 
 	// Organization project cross-org participation (GFG-179).
 	GetOrganizationProjectOrgParticipation(ctx context.Context, projectID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error)
 	InsertOrganizationProjectOrgParticipation(ctx context.Context, row *model.OrganizationProjectOrgParticipation) error
 	UpdateOrganizationProjectOrgParticipationReinvite(ctx context.Context, row *model.OrganizationProjectOrgParticipation) error
 	AcceptOrganizationProjectOrgParticipation(ctx context.Context, projectID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error)
+	DeclineOrganizationProjectOrgParticipation(ctx context.Context, projectID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error)
 	InsertOrganizationProjectOrgAuditEvent(ctx context.Context, projectID uuid.UUID, actorUserID *uuid.UUID, eventType string, metadataJSON []byte) error
 	ListPendingOrganizationProjectOrgInvitesForParticipantOrg(ctx context.Context, participantOrganizationID uuid.UUID) ([]*model.OrganizationProjectOrgInvitePending, error)
 	ListOrganizationProjectsByOrgID(ctx context.Context, orgID uuid.UUID) ([]*model.OrganizationProject, error)

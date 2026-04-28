@@ -558,6 +558,11 @@ type OrganizationProjectMember struct {
 	AddedAt      time.Time `json:"addedAt"`
 }
 
+type OrganizationProjectMyCapabilities struct {
+	CanEditTodos     bool `json:"canEditTodos"`
+	CanEditPurchases bool `json:"canEditPurchases"`
+}
+
 type OrganizationProjectOrgInvitePendingRow struct {
 	ProjectID            uuid.UUID `json:"projectId"`
 	ProjectName          string    `json:"projectName"`

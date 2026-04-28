@@ -18,6 +18,7 @@ import (
 const (
 	auditEventOrgProjectInviteCreated  = "project_org_invite_created"
 	auditEventOrgProjectInviteAccepted = "project_org_invite_accepted"
+	auditEventOrgProjectInviteDeclined = "project_org_invite_declined"
 )
 
 func parseOrgProjectInviteCapabilitiesJSON(raw *string) ([]byte, error) {
@@ -195,6 +196,58 @@ func (uc *AcceptOrganizationProjectOrgInviteUseCase) Execute(ctx context.Context
 	}
 	if err := uc.repo.AddOrganizationProjectMember(ctx, member); err != nil {
 		return nil, fmt.Errorf("acceptOrganizationProjectOrgInvite: add owner to roster: %w", err)
+	}
+	return out, nil
+}
+
+// DeclineOrganizationProjectOrgInviteUseCase declines a pending invite (participant org owner only).
+type DeclineOrganizationProjectOrgInviteUseCase struct {
+	repo orgRepo.OrganizationRepository
+}
+
+// NewDeclineOrganizationProjectOrgInviteUseCase constructs the use case.
+func NewDeclineOrganizationProjectOrgInviteUseCase(repo orgRepo.OrganizationRepository) *DeclineOrganizationProjectOrgInviteUseCase {
+	return &DeclineOrganizationProjectOrgInviteUseCase{repo: repo}
+}
+
+// Execute transitions pending -> declined.
+func (uc *DeclineOrganizationProjectOrgInviteUseCase) Execute(ctx context.Context, projectID, participantOrganizationID, actorUserID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error) {
+	partOrg, err := uc.repo.GetByID(ctx, participantOrganizationID)
+	if err != nil {
+		return nil, fmt.Errorf("declineOrganizationProjectOrgInvite: %w", err)
+	}
+	if partOrg == nil {
+		return nil, domainErr.New("NOT_FOUND", "participant organization not found", nil)
+	}
+	if partOrg.OwnerUserID != actorUserID {
+		return nil, domainErr.New("FORBIDDEN", "only the participant organization owner may decline this invite", nil)
+	}
+	ok, err := uc.repo.IsMember(ctx, participantOrganizationID, actorUserID)
+	if err != nil {
+		return nil, fmt.Errorf("declineOrganizationProjectOrgInvite: %w", err)
+	}
+	if !ok {
+		return nil, domainErr.New("FORBIDDEN", "not a member of the participant organization", nil)
+	}
+	existing, err := uc.repo.GetOrganizationProjectOrgParticipation(ctx, projectID, participantOrganizationID)
+	if err != nil {
+		return nil, fmt.Errorf("declineOrganizationProjectOrgInvite: %w", err)
+	}
+	if existing == nil || existing.Status != model.OrganizationProjectOrgParticipationPending {
+		return nil, domainErr.New("NOT_FOUND", "no pending invite for this organization", nil)
+	}
+	out, err := uc.repo.DeclineOrganizationProjectOrgParticipation(ctx, projectID, participantOrganizationID)
+	if err != nil {
+		return nil, fmt.Errorf("declineOrganizationProjectOrgInvite: %w", err)
+	}
+	if out == nil {
+		return nil, domainErr.New("CONFLICT", "invite could not be declined", nil)
+	}
+	meta, _ := json.Marshal(map[string]string{
+		"participantOrganizationId": participantOrganizationID.String(),
+	})
+	if err := uc.repo.InsertOrganizationProjectOrgAuditEvent(ctx, projectID, &actorUserID, auditEventOrgProjectInviteDeclined, meta); err != nil {
+		return nil, fmt.Errorf("declineOrganizationProjectOrgInvite: audit: %w", err)
 	}
 	return out, nil
 }

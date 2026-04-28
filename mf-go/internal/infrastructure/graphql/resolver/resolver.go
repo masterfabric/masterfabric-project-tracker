@@ -96,6 +96,7 @@ type Resolver struct {
 	GetOrganizationProjectUC         *organizationUC.GetOrganizationProjectUseCase
 	ListOrganizationProjectMembersUC *organizationUC.ListOrganizationProjectMembersUseCase
 	ListOrganizationProjectTodosUC   *organizationUC.ListOrganizationProjectTodosUseCase
+	GetOrganizationProjectMyCapabilitiesUC *organizationUC.GetOrganizationProjectMyCapabilitiesUseCase
 	CreateOrganizationProjectUC      *organizationUC.CreateOrganizationProjectUseCase
 	UpdateOrganizationProjectUC      *organizationUC.UpdateOrganizationProjectUseCase
 	DeleteOrganizationProjectUC      *organizationUC.DeleteOrganizationProjectUseCase
@@ -114,6 +115,7 @@ type Resolver struct {
 	DeleteOrganizationProjectPurchaseUC  *organizationUC.DeleteOrganizationProjectPurchaseUseCase
 	CreateOrganizationProjectOrgInviteUC *organizationUC.CreateOrganizationProjectOrgInviteUseCase
 	AcceptOrganizationProjectOrgInviteUC *organizationUC.AcceptOrganizationProjectOrgInviteUseCase
+	DeclineOrganizationProjectOrgInviteUC *organizationUC.DeclineOrganizationProjectOrgInviteUseCase
 	ListPendingOrganizationProjectOrgInvitesUC *organizationUC.ListPendingOrganizationProjectOrgInvitesUseCase
 	// GFG-174
 	OwnerTodoDashboardUC *organizationUC.OwnerTodoDashboardUseCase

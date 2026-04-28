@@ -97,6 +97,7 @@ export function OrganizationProjectsScreen({ organizationId }: OrganizationProje
   const [pendingInviteRows, setPendingInviteRows] = useState<OrganizationProjectOrgInvitePendingRowPayload[]>([]);
   const [pendingInvitesLoading, setPendingInvitesLoading] = useState(false);
   const [acceptingInviteProjectId, setAcceptingInviteProjectId] = useState<string | null>(null);
+  const [rejectingInviteProjectId, setRejectingInviteProjectId] = useState<string | null>(null);
 
   const isAdminOrOwner =
     !!organization &&
@@ -223,6 +224,28 @@ export function OrganizationProjectsScreen({ organizationId }: OrganizationProje
     [organizationId, load]
   );
 
+  const rejectPendingInvite = useCallback(
+    async (projectId: string) => {
+      // #region agent log
+      fetch('http://127.0.0.1:7659/ingest/2c0544e2-f318-40c6-96cc-b244c127100f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8a9b74'},body:JSON.stringify({sessionId:'8a9b74',runId:'initial',hypothesisId:'H5',location:'organization-projects-screen.tsx:rejectPendingInvite:start',message:'reject button action started',data:{organizationId,projectId},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      setRejectingInviteProjectId(projectId);
+      try {
+        await mfGoOrganizations.declineOrganizationProjectOrgInvite(projectId, organizationId);
+        snackbarService.success(t('profile.organizations.projects.rejectInviteSuccess'));
+        await load('refresh');
+      } catch {
+        // #region agent log
+        fetch('http://127.0.0.1:7659/ingest/2c0544e2-f318-40c6-96cc-b244c127100f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8a9b74'},body:JSON.stringify({sessionId:'8a9b74',runId:'initial',hypothesisId:'H5',location:'organization-projects-screen.tsx:rejectPendingInvite:catch',message:'reject button action failed',data:{organizationId,projectId},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+        snackbarService.error(t('profile.organizations.projects.rejectInviteFailed'));
+      } finally {
+        setRejectingInviteProjectId(null);
+      }
+    },
+    [organizationId, load]
+  );
+
   const rowBg = isDark ? '#1C1C1E' : '#FFFFFF';
   const sectionHeaderColor = isDark ? '#8E8E93' : '#6D6D72';
 
@@ -325,27 +348,67 @@ export function OrganizationProjectsScreen({ organizationId }: OrganizationProje
                           project: row.projectName,
                         })}
                       </Text>
-                      <Pressable
-                        onPress={() => void acceptPendingInvite(row.projectId)}
-                        disabled={acceptingInviteProjectId === row.projectId}
-                        style={({ pressed }) => ({
-                          alignSelf: 'flex-start',
-                          borderRadius: 9,
-                          backgroundColor: colors.tint,
-                          paddingVertical: 9,
-                          paddingHorizontal: 12,
-                          opacity:
-                            acceptingInviteProjectId === row.projectId ? 0.6 : pressed ? 0.85 : 1,
-                        })}
-                      >
-                        {acceptingInviteProjectId === row.projectId ? (
-                          <ActivityIndicator size="small" color={onTint} />
-                        ) : (
-                          <Text style={{ color: onTint, fontWeight: '700', fontSize: 13 }}>
-                            {t('profile.organizations.projects.acceptInviteButton')}
-                          </Text>
-                        )}
-                      </Pressable>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <Pressable
+                          onPress={() => void acceptPendingInvite(row.projectId)}
+                          disabled={
+                            acceptingInviteProjectId === row.projectId ||
+                            rejectingInviteProjectId === row.projectId
+                          }
+                          style={({ pressed }) => ({
+                            alignSelf: 'flex-start',
+                            borderRadius: 9,
+                            backgroundColor: colors.tint,
+                            paddingVertical: 9,
+                            paddingHorizontal: 12,
+                            opacity:
+                              acceptingInviteProjectId === row.projectId ||
+                              rejectingInviteProjectId === row.projectId
+                                ? 0.6
+                                : pressed
+                                  ? 0.85
+                                  : 1,
+                          })}
+                        >
+                          {acceptingInviteProjectId === row.projectId ? (
+                            <ActivityIndicator size="small" color={onTint} />
+                          ) : (
+                            <Text style={{ color: onTint, fontWeight: '700', fontSize: 13 }}>
+                              {t('profile.organizations.projects.acceptInviteButton')}
+                            </Text>
+                          )}
+                        </Pressable>
+                        <Pressable
+                          onPress={() => void rejectPendingInvite(row.projectId)}
+                          disabled={
+                            acceptingInviteProjectId === row.projectId ||
+                            rejectingInviteProjectId === row.projectId
+                          }
+                          style={({ pressed }) => ({
+                            alignSelf: 'flex-start',
+                            borderRadius: 9,
+                            borderWidth: 1,
+                            borderColor: '#FF3B30',
+                            paddingVertical: 9,
+                            paddingHorizontal: 12,
+                            opacity:
+                              acceptingInviteProjectId === row.projectId ||
+                              rejectingInviteProjectId === row.projectId
+                                ? 0.6
+                                : pressed
+                                  ? 0.85
+                                  : 1,
+                          })}
+                        >
+                          {rejectingInviteProjectId === row.projectId ? (
+                            <ActivityIndicator size="small" color="#FF3B30" />
+                          ) : (
+                            <Text style={{ color: '#FF3B30', fontWeight: '700', fontSize: 13 }}>
+                              {t('profile.organizations.projects.rejectInviteButton')}
+                            </Text>
+                          )}
+                        </Pressable>
+                      </View>
                     </View>
                   ))
                 )}

@@ -133,6 +133,79 @@ func (uc *ListOrganizationProjectTodosUseCase) Execute(ctx context.Context, proj
 	return out, nil
 }
 
+type OrganizationProjectMyCapabilities struct {
+	CanEditTodos     bool
+	CanEditPurchases bool
+}
+
+type GetOrganizationProjectMyCapabilitiesUseCase struct {
+	repo orgRepo.OrganizationRepository
+}
+
+func NewGetOrganizationProjectMyCapabilitiesUseCase(repo orgRepo.OrganizationRepository) *GetOrganizationProjectMyCapabilitiesUseCase {
+	return &GetOrganizationProjectMyCapabilitiesUseCase{repo: repo}
+}
+
+func (uc *GetOrganizationProjectMyCapabilitiesUseCase) Execute(ctx context.Context, projectID, callerUserID uuid.UUID) (*OrganizationProjectMyCapabilities, error) {
+	return getOrganizationProjectMyCapabilities(ctx, uc.repo, projectID, callerUserID)
+}
+
+func getOrganizationProjectMyCapabilities(
+	ctx context.Context,
+	repo projectAccessRepository,
+	projectID, callerUserID uuid.UUID,
+) (*OrganizationProjectMyCapabilities, error) {
+	p, err := ensureProjectReader(ctx, repo, projectID, callerUserID)
+	if err != nil {
+		return nil, err
+	}
+	if p == nil {
+		return nil, fmt.Errorf("organizationProjectMyCapabilities: project not found")
+	}
+	participantViewer, err := repo.UserMayViewProjectViaAcceptedParticipation(ctx, projectID, callerUserID)
+	if err != nil {
+		return nil, fmt.Errorf("organizationProjectMyCapabilities: %w", err)
+	}
+	if participantViewer {
+		canTodos, err := repo.UserHasProjectCapabilityViaAcceptedParticipation(ctx, projectID, callerUserID, "todos")
+		if err != nil {
+			return nil, fmt.Errorf("organizationProjectMyCapabilities: %w", err)
+		}
+		canPurchases, err := repo.UserHasProjectCapabilityViaAcceptedParticipation(ctx, projectID, callerUserID, "purchases")
+		if err != nil {
+			return nil, fmt.Errorf("organizationProjectMyCapabilities: %w", err)
+		}
+		return &OrganizationProjectMyCapabilities{CanEditTodos: canTodos, CanEditPurchases: canPurchases}, nil
+	}
+	hostMember, err := repo.IsMember(ctx, p.OrganizationID, callerUserID)
+	if err != nil {
+		return nil, fmt.Errorf("organizationProjectMyCapabilities: %w", err)
+	}
+	if hostMember {
+		admin, err := repo.IsAdminOrOwner(ctx, p.OrganizationID, callerUserID)
+		if err != nil {
+			return nil, fmt.Errorf("organizationProjectMyCapabilities: %w", err)
+		}
+		if admin {
+			return &OrganizationProjectMyCapabilities{CanEditTodos: true, CanEditPurchases: true}, nil
+		}
+		onProject, err := repo.IsOrganizationProjectMember(ctx, projectID, callerUserID)
+		if err != nil {
+			return nil, fmt.Errorf("organizationProjectMyCapabilities: %w", err)
+		}
+		return &OrganizationProjectMyCapabilities{CanEditTodos: onProject, CanEditPurchases: onProject}, nil
+	}
+	canTodos, err := repo.UserHasProjectCapabilityViaAcceptedParticipation(ctx, projectID, callerUserID, "todos")
+	if err != nil {
+		return nil, fmt.Errorf("organizationProjectMyCapabilities: %w", err)
+	}
+	canPurchases, err := repo.UserHasProjectCapabilityViaAcceptedParticipation(ctx, projectID, callerUserID, "purchases")
+	if err != nil {
+		return nil, fmt.Errorf("organizationProjectMyCapabilities: %w", err)
+	}
+	return &OrganizationProjectMyCapabilities{CanEditTodos: canTodos, CanEditPurchases: canPurchases}, nil
+}
+
 func organizationProjectToDTO(p *model.OrganizationProject) *dto.OrganizationProjectResponse {
 	return &dto.OrganizationProjectResponse{
 		ID:              p.ID.String(),

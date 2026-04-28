@@ -240,6 +240,7 @@ type ComplexityRoot struct {
 		CreateTodo                           func(childComplexity int, input model.CreateTodoInput) int
 		CreateUserTodoSubtask                func(childComplexity int, input model.CreateUserTodoSubtaskInput) int
 		DeclineInvitation                    func(childComplexity int, invitationID uuid.UUID) int
+		DeclineOrganizationProjectOrgInvite  func(childComplexity int, projectID uuid.UUID, participantOrganizationID uuid.UUID) int
 		DeleteAccount                        func(childComplexity int) int
 		DeleteMyAddress                      func(childComplexity int, id uuid.UUID) int
 		DeleteOrganizationMessage            func(childComplexity int, organizationID uuid.UUID, messageID uuid.UUID) int
@@ -446,6 +447,11 @@ type ComplexityRoot struct {
 		UserNickname func(childComplexity int) int
 	}
 
+	OrganizationProjectMyCapabilities struct {
+		CanEditPurchases func(childComplexity int) int
+		CanEditTodos     func(childComplexity int) int
+	}
+
 	OrganizationProjectOrgInvitePendingRow struct {
 		CapabilitiesJSON     func(childComplexity int) int
 		HostOrganizationID   func(childComplexity int) int
@@ -554,6 +560,7 @@ type ComplexityRoot struct {
 		OrganizationOwnerTodoDashboard       func(childComplexity int, input model.OrganizationOwnerTodoDashboardInput) int
 		OrganizationProject                  func(childComplexity int, projectID uuid.UUID) int
 		OrganizationProjectMembers           func(childComplexity int, projectID uuid.UUID) int
+		OrganizationProjectMyCapabilities    func(childComplexity int, projectID uuid.UUID) int
 		OrganizationProjectPurchases         func(childComplexity int, projectID uuid.UUID) int
 		OrganizationProjectTodos             func(childComplexity int, projectID uuid.UUID) int
 		OrganizationProjects                 func(childComplexity int, organizationID uuid.UUID) int
@@ -724,6 +731,7 @@ type MutationResolver interface {
 	DeleteOrganizationProjectPurchase(ctx context.Context, purchaseID uuid.UUID) (bool, error)
 	CreateOrganizationProjectOrgInvite(ctx context.Context, input model.CreateOrganizationProjectOrgInviteInput) (*model.OrganizationProjectOrgParticipation, error)
 	AcceptOrganizationProjectOrgInvite(ctx context.Context, projectID uuid.UUID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error)
+	DeclineOrganizationProjectOrgInvite(ctx context.Context, projectID uuid.UUID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error)
 	CreateOrganization(ctx context.Context, input model.CreateOrganizationInput) (*model.Organization, error)
 	UpdateOrganization(ctx context.Context, input model.UpdateOrganizationInput) (*model.Organization, error)
 	RemoveOrganizationMember(ctx context.Context, organizationID uuid.UUID, userID uuid.UUID) (bool, error)
@@ -781,6 +789,7 @@ type QueryResolver interface {
 	OrganizationProjectMembers(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectMember, error)
 	OrganizationProjectTodos(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectTodo, error)
 	OrganizationProjectPurchases(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectPurchase, error)
+	OrganizationProjectMyCapabilities(ctx context.Context, projectID uuid.UUID) (*model.OrganizationProjectMyCapabilities, error)
 	PendingOrganizationProjectOrgInvites(ctx context.Context, organizationID uuid.UUID) ([]*model.OrganizationProjectOrgInvitePendingRow, error)
 	MyOrganizations(ctx context.Context) ([]*model.Organization, error)
 	Organization(ctx context.Context, organizationID uuid.UUID) (*model.Organization, error)
@@ -1978,6 +1987,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeclineInvitation(childComplexity, args["invitationId"].(uuid.UUID)), true
+
+	case "Mutation.declineOrganizationProjectOrgInvite":
+		if e.complexity.Mutation.DeclineOrganizationProjectOrgInvite == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_declineOrganizationProjectOrgInvite_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeclineOrganizationProjectOrgInvite(childComplexity, args["projectId"].(uuid.UUID), args["participantOrganizationId"].(uuid.UUID)), true
 
 	case "Mutation.deleteAccount":
 		if e.complexity.Mutation.DeleteAccount == nil {
@@ -3276,6 +3297,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.OrganizationProjectMember.UserNickname(childComplexity), true
 
+	case "OrganizationProjectMyCapabilities.canEditPurchases":
+		if e.complexity.OrganizationProjectMyCapabilities.CanEditPurchases == nil {
+			break
+		}
+
+		return e.complexity.OrganizationProjectMyCapabilities.CanEditPurchases(childComplexity), true
+
+	case "OrganizationProjectMyCapabilities.canEditTodos":
+		if e.complexity.OrganizationProjectMyCapabilities.CanEditTodos == nil {
+			break
+		}
+
+		return e.complexity.OrganizationProjectMyCapabilities.CanEditTodos(childComplexity), true
+
 	case "OrganizationProjectOrgInvitePendingRow.capabilitiesJson":
 		if e.complexity.OrganizationProjectOrgInvitePendingRow.CapabilitiesJSON == nil {
 			break
@@ -3982,6 +4017,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.OrganizationProjectMembers(childComplexity, args["projectId"].(uuid.UUID)), true
+
+	case "Query.organizationProjectMyCapabilities":
+		if e.complexity.Query.OrganizationProjectMyCapabilities == nil {
+			break
+		}
+
+		args, err := ec.field_Query_organizationProjectMyCapabilities_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.OrganizationProjectMyCapabilities(childComplexity, args["projectId"].(uuid.UUID)), true
 
 	case "Query.organizationProjectPurchases":
 		if e.complexity.Query.OrganizationProjectPurchases == nil {
@@ -5470,6 +5517,8 @@ extend type Query {
   organizationProjectTodos(projectId: UUID!): [OrganizationProjectTodo!]!
   """Purchase line items on the project (same visibility as organizationProject)."""
   organizationProjectPurchases(projectId: UUID!): [OrganizationProjectPurchase!]!
+  """Current caller write capabilities in this project context."""
+  organizationProjectMyCapabilities(projectId: UUID!): OrganizationProjectMyCapabilities!
   """
   Pending cross-org project share invites where this organization is the participant (GFG-179).
   Organization owner only.
@@ -5510,6 +5559,8 @@ extend type Mutation {
   createOrganizationProjectOrgInvite(input: CreateOrganizationProjectOrgInviteInput!): OrganizationProjectOrgParticipation!
   """Accept a pending cross-org project invite (participant org owner only). GFG-179."""
   acceptOrganizationProjectOrgInvite(projectId: UUID!, participantOrganizationId: UUID!): OrganizationProjectOrgParticipation!
+  """Decline a pending cross-org project invite (participant org owner only)."""
+  declineOrganizationProjectOrgInvite(projectId: UUID!, participantOrganizationId: UUID!): OrganizationProjectOrgParticipation!
 }
 
 input CreateOrganizationProjectOrgInviteInput {
@@ -5556,6 +5607,11 @@ type OrganizationProject {
   createdByUserId: UUID!
   createdAt:       Time!
   updatedAt:       Time!
+}
+
+type OrganizationProjectMyCapabilities {
+  canEditTodos: Boolean!
+  canEditPurchases: Boolean!
 }
 
 enum OrganizationProjectOrgParticipationStatus {
@@ -7549,6 +7605,65 @@ func (ec *executionContext) field_Mutation_declineInvitation_argsInvitationID(
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("invitationId"))
 	if tmp, ok := rawArgs["invitationId"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_declineOrganizationProjectOrgInvite_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_declineOrganizationProjectOrgInvite_argsProjectID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["projectId"] = arg0
+	arg1, err := ec.field_Mutation_declineOrganizationProjectOrgInvite_argsParticipantOrganizationID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["participantOrganizationId"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_declineOrganizationProjectOrgInvite_argsProjectID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["projectId"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("projectId"))
+	if tmp, ok := rawArgs["projectId"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_declineOrganizationProjectOrgInvite_argsParticipantOrganizationID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["participantOrganizationId"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("participantOrganizationId"))
+	if tmp, ok := rawArgs["participantOrganizationId"]; ok {
 		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
 	}
 
@@ -9919,6 +10034,38 @@ func (ec *executionContext) field_Query_organizationProjectMembers_args(ctx cont
 	return args, nil
 }
 func (ec *executionContext) field_Query_organizationProjectMembers_argsProjectID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["projectId"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("projectId"))
+	if tmp, ok := rawArgs["projectId"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_organizationProjectMyCapabilities_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Query_organizationProjectMyCapabilities_argsProjectID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["projectId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_organizationProjectMyCapabilities_argsProjectID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
 ) (uuid.UUID, error) {
@@ -17976,6 +18123,83 @@ func (ec *executionContext) fieldContext_Mutation_acceptOrganizationProjectOrgIn
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_declineOrganizationProjectOrgInvite(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_declineOrganizationProjectOrgInvite(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeclineOrganizationProjectOrgInvite(rctx, fc.Args["projectId"].(uuid.UUID), fc.Args["participantOrganizationId"].(uuid.UUID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.OrganizationProjectOrgParticipation)
+	fc.Result = res
+	return ec.marshalNOrganizationProjectOrgParticipation2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProjectOrgParticipation(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_declineOrganizationProjectOrgInvite(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_id(ctx, field)
+			case "projectId":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_projectId(ctx, field)
+			case "participantOrganizationId":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_participantOrganizationId(ctx, field)
+			case "status":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_status(ctx, field)
+			case "capabilitiesJson":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_capabilitiesJson(ctx, field)
+			case "invitedByUserId":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_invitedByUserId(ctx, field)
+			case "invitedAt":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_invitedAt(ctx, field)
+			case "respondedAt":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_respondedAt(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_OrganizationProjectOrgParticipation_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OrganizationProjectOrgParticipation", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_declineOrganizationProjectOrgInvite_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createOrganization(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createOrganization(ctx, field)
 	if err != nil {
@@ -25145,6 +25369,94 @@ func (ec *executionContext) fieldContext_OrganizationProjectMember_addedAt(_ con
 	return fc, nil
 }
 
+func (ec *executionContext) _OrganizationProjectMyCapabilities_canEditTodos(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectMyCapabilities) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationProjectMyCapabilities_canEditTodos(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CanEditTodos, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationProjectMyCapabilities_canEditTodos(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationProjectMyCapabilities",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationProjectMyCapabilities_canEditPurchases(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectMyCapabilities) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationProjectMyCapabilities_canEditPurchases(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CanEditPurchases, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationProjectMyCapabilities_canEditPurchases(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationProjectMyCapabilities",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _OrganizationProjectOrgInvitePendingRow_projectId(ctx context.Context, field graphql.CollectedField, obj *model.OrganizationProjectOrgInvitePendingRow) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_OrganizationProjectOrgInvitePendingRow_projectId(ctx, field)
 	if err != nil {
@@ -28837,6 +29149,67 @@ func (ec *executionContext) fieldContext_Query_organizationProjectPurchases(ctx 
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_organizationProjectPurchases_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_organizationProjectMyCapabilities(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_organizationProjectMyCapabilities(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().OrganizationProjectMyCapabilities(rctx, fc.Args["projectId"].(uuid.UUID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.OrganizationProjectMyCapabilities)
+	fc.Result = res
+	return ec.marshalNOrganizationProjectMyCapabilities2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProjectMyCapabilities(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_organizationProjectMyCapabilities(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "canEditTodos":
+				return ec.fieldContext_OrganizationProjectMyCapabilities_canEditTodos(ctx, field)
+			case "canEditPurchases":
+				return ec.fieldContext_OrganizationProjectMyCapabilities_canEditPurchases(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OrganizationProjectMyCapabilities", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_organizationProjectMyCapabilities_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -39936,6 +40309,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "declineOrganizationProjectOrgInvite":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_declineOrganizationProjectOrgInvite(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createOrganization":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createOrganization(ctx, field)
@@ -41260,6 +41640,50 @@ func (ec *executionContext) _OrganizationProjectMember(ctx context.Context, sel 
 	return out
 }
 
+var organizationProjectMyCapabilitiesImplementors = []string{"OrganizationProjectMyCapabilities"}
+
+func (ec *executionContext) _OrganizationProjectMyCapabilities(ctx context.Context, sel ast.SelectionSet, obj *model.OrganizationProjectMyCapabilities) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, organizationProjectMyCapabilitiesImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("OrganizationProjectMyCapabilities")
+		case "canEditTodos":
+			out.Values[i] = ec._OrganizationProjectMyCapabilities_canEditTodos(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "canEditPurchases":
+			out.Values[i] = ec._OrganizationProjectMyCapabilities_canEditPurchases(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var organizationProjectOrgInvitePendingRowImplementors = []string{"OrganizationProjectOrgInvitePendingRow"}
 
 func (ec *executionContext) _OrganizationProjectOrgInvitePendingRow(ctx context.Context, sel ast.SelectionSet, obj *model.OrganizationProjectOrgInvitePendingRow) graphql.Marshaler {
@@ -42196,6 +42620,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_organizationProjectPurchases(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "organizationProjectMyCapabilities":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_organizationProjectMyCapabilities(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -45311,6 +45757,20 @@ func (ec *executionContext) marshalNOrganizationProjectMember2ᚖgithubᚗcomᚋ
 		return graphql.Null
 	}
 	return ec._OrganizationProjectMember(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNOrganizationProjectMyCapabilities2githubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProjectMyCapabilities(ctx context.Context, sel ast.SelectionSet, v model.OrganizationProjectMyCapabilities) graphql.Marshaler {
+	return ec._OrganizationProjectMyCapabilities(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNOrganizationProjectMyCapabilities2ᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProjectMyCapabilities(ctx context.Context, sel ast.SelectionSet, v *model.OrganizationProjectMyCapabilities) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._OrganizationProjectMyCapabilities(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNOrganizationProjectOrgInvitePendingRow2ᚕᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProjectOrgInvitePendingRowᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.OrganizationProjectOrgInvitePendingRow) graphql.Marshaler {

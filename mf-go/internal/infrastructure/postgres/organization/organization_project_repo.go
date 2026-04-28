@@ -60,6 +60,18 @@ const (
 				AND om.membership_status = 'active'
 		)`
 
+	sqlUserHasProjectCapabilityViaParticipation = `
+		SELECT EXISTS (
+			SELECT 1
+			FROM organization_project_org_participations pop
+			INNER JOIN organization_members om ON om.organization_id = pop.participant_organization_id
+			WHERE pop.project_id = $1
+				AND pop.status = 'accepted'
+				AND om.user_id = $2
+				AND om.membership_status = 'active'
+				AND COALESCE((pop.capabilities ->> $3)::boolean, false) = true
+		)`
+
 	sqlGetOrgProjectParticipation = `
 		SELECT id, project_id, participant_organization_id, status, capabilities, invited_by_user_id, invited_at,
 		       responded_at, leave_clear_partner_attribution_display, created_at, updated_at
@@ -86,6 +98,15 @@ const (
 	sqlAcceptOrgProjectParticipation = `
 		UPDATE organization_project_org_participations SET
 			status = 'accepted',
+			responded_at = NOW(),
+			updated_at = NOW()
+		WHERE project_id = $1 AND participant_organization_id = $2 AND status = 'pending'
+		RETURNING id, project_id, participant_organization_id, status, capabilities, invited_by_user_id, invited_at,
+		          responded_at, leave_clear_partner_attribution_display, created_at, updated_at`
+
+	sqlDeclineOrgProjectParticipation = `
+		UPDATE organization_project_org_participations SET
+			status = 'declined',
 			responded_at = NOW(),
 			updated_at = NOW()
 		WHERE project_id = $1 AND participant_organization_id = $2 AND status = 'pending'
@@ -213,6 +234,16 @@ func (r *OrganizationRepo) UserMayViewProjectViaAcceptedParticipation(ctx contex
 	return ok, nil
 }
 
+// UserHasProjectCapabilityViaAcceptedParticipation reports cross-org capability access for accepted participations.
+func (r *OrganizationRepo) UserHasProjectCapabilityViaAcceptedParticipation(ctx context.Context, projectID, userID uuid.UUID, capabilityKey string) (bool, error) {
+	var ok bool
+	err := r.db.QueryRow(ctx, sqlUserHasProjectCapabilityViaParticipation, projectID, userID, capabilityKey).Scan(&ok)
+	if err != nil {
+		return false, fmt.Errorf("organizationRepo.UserHasProjectCapabilityViaAcceptedParticipation: %w", err)
+	}
+	return ok, nil
+}
+
 // GetOrganizationProjectOrgParticipation returns a participation row or nil.
 func (r *OrganizationRepo) GetOrganizationProjectOrgParticipation(ctx context.Context, projectID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error) {
 	row := r.db.QueryRow(ctx, sqlGetOrgProjectParticipation, projectID, participantOrganizationID)
@@ -279,6 +310,19 @@ func (r *OrganizationRepo) AcceptOrganizationProjectOrgParticipation(ctx context
 			return nil, nil
 		}
 		return nil, fmt.Errorf("organizationRepo.AcceptOrganizationProjectOrgParticipation: %w", err)
+	}
+	return out, nil
+}
+
+// DeclineOrganizationProjectOrgParticipation marks pending as declined and returns the row.
+func (r *OrganizationRepo) DeclineOrganizationProjectOrgParticipation(ctx context.Context, projectID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error) {
+	row := r.db.QueryRow(ctx, sqlDeclineOrgProjectParticipation, projectID, participantOrganizationID)
+	out, err := scanOrganizationProjectOrgParticipation(row)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("organizationRepo.DeclineOrganizationProjectOrgParticipation: %w", err)
 	}
 	return out, nil
 }

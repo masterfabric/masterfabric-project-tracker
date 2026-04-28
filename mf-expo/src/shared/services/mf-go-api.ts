@@ -865,6 +865,11 @@ export interface OrganizationProjectPayload {
   updatedAt: string;
 }
 
+export interface OrganizationProjectMyCapabilitiesPayload {
+  canEditTodos: boolean;
+  canEditPurchases: boolean;
+}
+
 /** GFG-180 / GFG-179 pending cross-org invite row (participant org owner query). */
 export interface OrganizationProjectOrgInvitePendingRowPayload {
   projectId: string;
@@ -1162,6 +1167,15 @@ const ORGANIZATION_PROJECT = /* GraphQL */ `
   }
 `;
 
+const ORGANIZATION_PROJECT_MY_CAPABILITIES = /* GraphQL */ `
+  query OrganizationProjectMyCapabilities($projectId: UUID!) {
+    organizationProjectMyCapabilities(projectId: $projectId) {
+      canEditTodos
+      canEditPurchases
+    }
+  }
+`;
+
 const ORGANIZATION_PROJECT_MEMBERS = /* GraphQL */ `
   query OrganizationProjectMembers($projectId: UUID!) {
     organizationProjectMembers(projectId: $projectId) {
@@ -1347,6 +1361,26 @@ const CREATE_ORGANIZATION_PROJECT_ORG_INVITE = /* GraphQL */ `
 const ACCEPT_ORGANIZATION_PROJECT_ORG_INVITE = /* GraphQL */ `
   mutation AcceptOrganizationProjectOrgInvite($projectId: UUID!, $participantOrganizationId: UUID!) {
     acceptOrganizationProjectOrgInvite(
+      projectId: $projectId
+      participantOrganizationId: $participantOrganizationId
+    ) {
+      id
+      projectId
+      participantOrganizationId
+      status
+      capabilitiesJson
+      invitedByUserId
+      invitedAt
+      respondedAt
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const DECLINE_ORGANIZATION_PROJECT_ORG_INVITE = /* GraphQL */ `
+  mutation DeclineOrganizationProjectOrgInvite($projectId: UUID!, $participantOrganizationId: UUID!) {
+    declineOrganizationProjectOrgInvite(
       projectId: $projectId
       participantOrganizationId: $participantOrganizationId
     ) {
@@ -1594,6 +1628,12 @@ export const mfGoOrganizations = {
       projectId,
     }).then((r) => r.organizationProject),
 
+  organizationProjectMyCapabilities: (projectId: string) =>
+    graphqlRequest<{ organizationProjectMyCapabilities: OrganizationProjectMyCapabilitiesPayload }>(
+      ORGANIZATION_PROJECT_MY_CAPABILITIES,
+      { projectId }
+    ).then((r) => r.organizationProjectMyCapabilities),
+
   organizationProjectMembers: (projectId: string) =>
     graphqlRequest<{ organizationProjectMembers: OrganizationProjectMemberPayload[] }>(
       ORGANIZATION_PROJECT_MEMBERS,
@@ -1689,6 +1729,12 @@ export const mfGoOrganizations = {
       ACCEPT_ORGANIZATION_PROJECT_ORG_INVITE,
       { projectId, participantOrganizationId }
     ).then((r) => r.acceptOrganizationProjectOrgInvite),
+
+  declineOrganizationProjectOrgInvite: (projectId: string, participantOrganizationId: string) =>
+    graphqlRequest<{ declineOrganizationProjectOrgInvite: OrganizationProjectOrgParticipationPayload }>(
+      DECLINE_ORGANIZATION_PROJECT_ORG_INVITE,
+      { projectId, participantOrganizationId }
+    ).then((r) => r.declineOrganizationProjectOrgInvite),
 
   addOrganizationProjectMember: (projectId: string, userId: string) =>
     graphqlRequest<{ addOrganizationProjectMember: boolean }>(ADD_ORGANIZATION_PROJECT_MEMBER, {

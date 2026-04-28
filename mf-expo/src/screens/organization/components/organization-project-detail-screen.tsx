@@ -19,6 +19,7 @@ import type {
   OrganizationProjectMemberPayload,
   OrganizationProjectOrgInvitePendingRowPayload,
   OrganizationProjectPayload,
+  OrganizationProjectMyCapabilitiesPayload,
   OrganizationProjectPurchasePayload,
   OrganizationProjectTodoPayload,
   OrganizationProjectTodoSubtaskPayload,
@@ -31,6 +32,7 @@ import {
 } from '@/src/screens/home/components/todo-sheet';
 import { foregroundOnTint } from '@/src/shared/utils/tint-contrast';
 import { snackbarService } from '@/src/shared/services/snackbar-service';
+import { getGraphQLErrorMessage } from '@/src/shared/helpers/graphql-error-helper';
 import {
   cancelTodoReminder,
   projectTodoToReminderPayload,
@@ -146,6 +148,7 @@ export function OrganizationProjectDetailScreen({
   const [projMembers, setProjMembers] = useState<OrganizationProjectMemberPayload[]>([]);
   const [todos, setTodos] = useState<OrganizationProjectTodoPayload[]>([]);
   const [purchases, setPurchases] = useState<OrganizationProjectPurchasePayload[]>([]);
+  const [projectCapabilities, setProjectCapabilities] = useState<OrganizationProjectMyCapabilitiesPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showTodoSheet, setShowTodoSheet] = useState(false);
@@ -192,6 +195,11 @@ export function OrganizationProjectDetailScreen({
     !!organization && !!user && organization.ownerUserID === user.id;
   const showProjectSettingsGear =
     (isHostProjectContext && isAdminOrOwner) || (!isHostProjectContext && isParticipantOrgOwner);
+  const capabilitiesLoaded = projectCapabilities != null;
+  const canEditTodos = projectCapabilities?.canEditTodos === true;
+  const canEditPurchases = projectCapabilities?.canEditPurchases === true;
+  const disabledActionColor = isDark ? '#6E6E73' : '#8E8E93';
+  const disabledActionBackground = isDark ? '#3A3A3C' : '#E5E5EA';
 
   const pendingInviteForThisProject = useMemo(
     () => pendingInviteRows.find((r) => r.projectId === projectId),
@@ -218,6 +226,9 @@ export function OrganizationProjectDetailScreen({
       if (mode === 'initial') setLoading(true);
       else setRefreshing(true);
       try {
+        setProjectCapabilities(null);
+        const caps = await mfGoOrganizations.organizationProjectMyCapabilities(projectId);
+        setProjectCapabilities(caps);
         const [org, om, p, pm, td] = await Promise.all([
           mfGoOrganizations.organization(organizationId),
           mfGoOrganizations.organizationMembers(organizationId),
@@ -242,6 +253,7 @@ export function OrganizationProjectDetailScreen({
         setProjMembers([]);
         setTodos([]);
         setPurchases([]);
+        setProjectCapabilities(null);
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -265,6 +277,15 @@ export function OrganizationProjectDetailScreen({
     setShowPurchaseSheet(false);
     setEditingPurchase(null);
   }, [organizationId, projectId]);
+
+  useEffect(() => {
+    if (projectCapabilities == null) return;
+    if (!canEditTodos) setShowTodoSheet(false);
+    if (!canEditPurchases) {
+      setShowPurchaseSheet(false);
+      setEditingPurchase(null);
+    }
+  }, [canEditPurchases, canEditTodos, projectCapabilities]);
 
   useEffect(() => {
     if (todos.length === 0) return;
@@ -417,8 +438,26 @@ export function OrganizationProjectDetailScreen({
     }
   }, [organizationId, projectId, load, showErr, t]);
 
+  const declineOrgProjectInvite = useCallback(async () => {
+    setInviteFlowBusy(true);
+    try {
+      await mfGoOrganizations.declineOrganizationProjectOrgInvite(projectId, organizationId);
+      snackbarService.success(t('profile.organizations.projects.rejectInviteSuccess'));
+      setShowProjectSettings(false);
+      setPendingInviteRows((rows) => rows.filter((r) => r.projectId !== projectId));
+      await load('refresh');
+    } catch {
+      showErr(t('profile.organizations.projects.rejectInviteFailed'));
+    } finally {
+      setInviteFlowBusy(false);
+    }
+  }, [organizationId, projectId, load, showErr, t]);
+
   const saveTodoFromSheet = useCallback(
     async (input: TodoSheetSaveInput) => {
+      if (!canEditTodos) {
+        return t('profile.organizations.projects.noTodoPermission');
+      }
       try {
         const created = await mfGoOrganizations.createOrganizationProjectTodo({
           projectId,
@@ -432,15 +471,19 @@ export function OrganizationProjectDetailScreen({
           snackbarService.info(t('home.todos.dueAtNotSavedOnServer'), 4200);
         }
         return null;
-      } catch {
-        return t('profile.organizations.projects.todoAddFailed');
+      } catch (e) {
+        return getGraphQLErrorMessage(e);
       }
     },
-    [projectId, load, t]
+    [canEditTodos, projectId, load, t]
   );
 
   const toggleTodo = useCallback(
     async (item: OrganizationProjectTodoPayload) => {
+      if (!canEditTodos) {
+        snackbarService.info(t('profile.organizations.projects.noTodoPermission'));
+        return;
+      }
       const next = item.status === 'DONE' ? 'OPEN' : 'DONE';
       try {
         const updated = await mfGoOrganizations.updateOrganizationProjectTodo({
@@ -454,15 +497,19 @@ export function OrganizationProjectDetailScreen({
               : x
           )
         );
-      } catch {
-        showErr(t('profile.organizations.projects.todoUpdateFailed'));
+      } catch (e) {
+        showErr(getGraphQLErrorMessage(e));
       }
     },
-    [showErr]
+    [canEditTodos, showErr, t]
   );
 
   const toggleProjectSubtask = useCallback(
     async (parent: OrganizationProjectTodoPayload, sub: OrganizationProjectTodoSubtaskPayload) => {
+      if (!canEditTodos) {
+        snackbarService.info(t('profile.organizations.projects.noTodoPermission'));
+        return;
+      }
       if (!Array.isArray(parent.subtasks)) return;
       setProjectSubtasksBusy(true);
       try {
@@ -486,11 +533,15 @@ export function OrganizationProjectDetailScreen({
         setProjectSubtasksBusy(false);
       }
     },
-    [showErr, t]
+    [canEditTodos, showErr, t]
   );
 
   const deleteProjectSubtask = useCallback(
     async (parent: OrganizationProjectTodoPayload, subId: string) => {
+      if (!canEditTodos) {
+        snackbarService.info(t('profile.organizations.projects.noTodoPermission'));
+        return;
+      }
       if (!Array.isArray(parent.subtasks)) return;
       setProjectSubtasksBusy(true);
       try {
@@ -508,11 +559,15 @@ export function OrganizationProjectDetailScreen({
         setProjectSubtasksBusy(false);
       }
     },
-    [showErr, t]
+    [canEditTodos, showErr, t]
   );
 
   const addProjectSubtask = useCallback(
     async (parent: OrganizationProjectTodoPayload) => {
+      if (!canEditTodos) {
+        snackbarService.info(t('profile.organizations.projects.noTodoPermission'));
+        return;
+      }
       if (!Array.isArray(parent.subtasks)) return;
       const title = (projectSubtaskDrafts[parent.id] ?? '').trim();
       if (!title) return;
@@ -536,7 +591,7 @@ export function OrganizationProjectDetailScreen({
         setProjectSubtasksBusy(false);
       }
     },
-    [projectSubtaskDrafts, showErr, t]
+    [canEditTodos, projectSubtaskDrafts, showErr, t]
   );
 
   const confirmDeleteTodo = useCallback(
@@ -556,6 +611,10 @@ export function OrganizationProjectDetailScreen({
             setMsgSheet(null);
             void (async () => {
               try {
+                if (!canEditTodos) {
+                  snackbarService.info(t('profile.organizations.projects.noTodoPermission'));
+                  return;
+                }
                 await cancelTodoReminder(item.id);
                 await mfGoOrganizations.deleteOrganizationProjectTodo(item.id);
                 setTodos((prev) => prev.filter((x) => x.id !== item.id));
@@ -567,7 +626,7 @@ export function OrganizationProjectDetailScreen({
         },
       });
     },
-    [showErr]
+    [canEditTodos, showErr, t]
   );
 
   const addMember = useCallback(
@@ -632,31 +691,43 @@ export function OrganizationProjectDetailScreen({
             setMsgSheet(null);
             void (async () => {
               try {
+                if (!canEditPurchases) {
+                  snackbarService.info(t('profile.organizations.projects.noPurchasePermission'));
+                  return;
+                }
                 await mfGoOrganizations.deleteOrganizationProjectPurchase(item.id);
                 setPurchases((prev) => prev.filter((x) => x.id !== item.id));
                 snackbarService.success(t('profile.organizations.projects.purchaseDeleted'), 2400);
-              } catch {
-                showErr(t('profile.organizations.projects.purchaseDeleteFailed'));
+              } catch (e) {
+                showErr(getGraphQLErrorMessage(e));
               }
             })();
           },
         },
       });
     },
-    [showErr]
+    [canEditPurchases, showErr, t]
   );
 
   const openNewPurchase = useCallback(() => {
+    if (!canEditPurchases) {
+      snackbarService.info(t('profile.organizations.projects.noPurchasePermission'));
+      return;
+    }
     purchaseSheetModeRef.current = 'create';
     setEditingPurchase(null);
     setShowPurchaseSheet(true);
-  }, []);
+  }, [canEditPurchases, t]);
 
   const openEditPurchase = useCallback((item: OrganizationProjectPurchasePayload) => {
+    if (!canEditPurchases) {
+      snackbarService.info(t('profile.organizations.projects.noPurchasePermission'));
+      return;
+    }
     purchaseSheetModeRef.current = 'edit';
     setEditingPurchase(item);
     setShowPurchaseSheet(true);
-  }, []);
+  }, [canEditPurchases, t]);
 
   const onPurchaseSaved = useCallback((item: OrganizationProjectPurchasePayload) => {
     setPurchases((prev) => {
@@ -929,11 +1000,16 @@ export function OrganizationProjectDetailScreen({
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       setShowTodoSheet(true);
                     }}
+                    disabled={!capabilitiesLoaded || !canEditTodos}
                     hitSlop={12}
                     accessibilityRole="button"
                     accessibilityLabel={t('profile.organizations.projects.addProjectTodo')}
                   >
-                    <Ionicons name="add-circle-outline" size={28} color={colors.tint} />
+                    <Ionicons
+                      name="add-circle-outline"
+                      size={28}
+                      color={capabilitiesLoaded && canEditTodos ? colors.tint : disabledActionColor}
+                    />
                   </Pressable>
                 </View>
 
@@ -1041,6 +1117,7 @@ export function OrganizationProjectDetailScreen({
                             }).format(new Date(item.dueAt))
                           : null;
                       const { leadingEmoji, body } = splitLeadingTodoEmoji(item.title);
+                      const todoActionsDisabled = !capabilitiesLoaded || !canEditTodos;
                       const titleLineStyle = {
                         fontSize: 16,
                         color: colors.bodyText,
@@ -1060,14 +1137,20 @@ export function OrganizationProjectDetailScreen({
                           }
                         >
                           <View style={styles.row}>
-                            <Pressable onPress={() => void toggleTodo(item)} style={styles.todoRow}>
+                            <Pressable
+                              onPress={() => void toggleTodo(item)}
+                              style={styles.todoRow}
+                              disabled={todoActionsDisabled}
+                            >
                               <Ionicons
                                 name={item.status === 'DONE' ? 'checkmark-circle' : 'ellipse-outline'}
                                 size={24}
                                 color={
-                                  item.status === 'DONE'
-                                    ? colors.successColor ?? '#34C759'
-                                    : colors.icon
+                                  todoActionsDisabled
+                                    ? disabledActionColor
+                                    : item.status === 'DONE'
+                                      ? colors.successColor ?? '#34C759'
+                                      : colors.icon
                                 }
                               />
                               <View style={{ flex: 1, minWidth: 0 }}>
@@ -1119,8 +1202,16 @@ export function OrganizationProjectDetailScreen({
                                 ) : null}
                               </View>
                             </Pressable>
-                            <Pressable onPress={() => confirmDeleteTodo(item)} hitSlop={8}>
-                              <Ionicons name="trash-outline" size={20} color={colors.icon} />
+                            <Pressable
+                              onPress={() => confirmDeleteTodo(item)}
+                              hitSlop={8}
+                              disabled={todoActionsDisabled}
+                            >
+                              <Ionicons
+                                name="trash-outline"
+                                size={20}
+                                color={todoActionsDisabled ? disabledActionColor : colors.icon}
+                              />
                             </Pressable>
                           </View>
                           {Array.isArray(item.subtasks) ? (
@@ -1153,14 +1244,16 @@ export function OrganizationProjectDetailScreen({
                                 >
                                   <Pressable
                                     onPress={() => void toggleProjectSubtask(item, st)}
-                                    disabled={projectSubtasksBusy}
+                                    disabled={projectSubtasksBusy || todoActionsDisabled}
                                     hitSlop={6}
                                   >
                                     <Ionicons
                                       name={st.completed ? 'checkmark-circle' : 'ellipse-outline'}
                                       size={20}
                                       color={
-                                        st.completed
+                                        todoActionsDisabled
+                                          ? disabledActionColor
+                                          : st.completed
                                           ? colors.successColor ?? '#34C759'
                                           : colors.icon
                                       }
@@ -1179,11 +1272,15 @@ export function OrganizationProjectDetailScreen({
                                   </Text>
                                   <Pressable
                                     onPress={() => void deleteProjectSubtask(item, st.id)}
-                                    disabled={projectSubtasksBusy}
+                                    disabled={projectSubtasksBusy || todoActionsDisabled}
                                     hitSlop={8}
                                     accessibilityLabel={t('home.todos.subtaskDeleteA11y')}
                                   >
-                                    <Ionicons name="trash-outline" size={18} color={colors.icon} />
+                                    <Ionicons
+                                      name="trash-outline"
+                                      size={18}
+                                      color={todoActionsDisabled ? disabledActionColor : colors.icon}
+                                    />
                                   </Pressable>
                                 </View>
                               ))}
@@ -1195,11 +1292,18 @@ export function OrganizationProjectDetailScreen({
                                   }
                                   placeholder={t('home.todos.subtaskPlaceholder')}
                                   placeholderTextColor={colors.labelText}
-                                  editable={!projectSubtasksBusy}
+                                  editable={!projectSubtasksBusy && !todoActionsDisabled}
                                   style={{
                                     flex: 1,
                                     borderWidth: StyleSheet.hairlineWidth,
-                                    borderColor: isDark ? '#38383A' : '#C6C6C8',
+                                    borderColor: todoActionsDisabled
+                                      ? disabledActionColor
+                                      : isDark
+                                        ? '#38383A'
+                                        : '#C6C6C8',
+                                    backgroundColor: todoActionsDisabled
+                                      ? disabledActionBackground
+                                      : 'transparent',
                                     borderRadius: 8,
                                     paddingHorizontal: 10,
                                     paddingVertical: 8,
@@ -1211,6 +1315,7 @@ export function OrganizationProjectDetailScreen({
                                   onPress={() => void addProjectSubtask(item)}
                                   disabled={
                                     projectSubtasksBusy ||
+                                    todoActionsDisabled ||
                                     !(projectSubtaskDrafts[item.id] ?? '').trim()
                                   }
                                   activeOpacity={0.85}
@@ -1220,8 +1325,9 @@ export function OrganizationProjectDetailScreen({
                                     borderRadius: 8,
                                     backgroundColor:
                                       projectSubtasksBusy ||
+                                      todoActionsDisabled ||
                                       !(projectSubtaskDrafts[item.id] ?? '').trim()
-                                        ? colors.surfaceBorder
+                                        ? disabledActionBackground
                                         : colors.tint,
                                   }}
                                 >
@@ -1231,8 +1337,9 @@ export function OrganizationProjectDetailScreen({
                                       fontWeight: '600',
                                       color:
                                         projectSubtasksBusy ||
+                                        todoActionsDisabled ||
                                         !(projectSubtaskDrafts[item.id] ?? '').trim()
-                                          ? colors.labelText
+                                          ? disabledActionColor
                                           : onTint,
                                     }}
                                   >
@@ -1266,11 +1373,16 @@ export function OrganizationProjectDetailScreen({
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       openNewPurchase();
                     }}
+                    disabled={!capabilitiesLoaded || !canEditPurchases}
                     hitSlop={12}
                     accessibilityRole="button"
                     accessibilityLabel={t('profile.organizations.projects.addPurchase')}
                   >
-                    <Ionicons name="add-circle-outline" size={28} color={colors.tint} />
+                    <Ionicons
+                      name="add-circle-outline"
+                      size={28}
+                      color={capabilitiesLoaded && canEditPurchases ? colors.tint : disabledActionColor}
+                    />
                   </Pressable>
                 </View>
 
@@ -1305,6 +1417,7 @@ export function OrganizationProjectDetailScreen({
                             ? colors.labelText
                             : colors.tint;
                       const link = item.productLink?.trim();
+                      const purchaseActionsDisabled = !capabilitiesLoaded || !canEditPurchases;
                       return (
                         <View
                           key={item.id}
@@ -1320,6 +1433,7 @@ export function OrganizationProjectDetailScreen({
                           <Pressable
                             onPress={() => openEditPurchase(item)}
                             style={{ flex: 1, minWidth: 0 }}
+                            disabled={purchaseActionsDisabled}
                           >
                             <View
                               style={{
@@ -1332,7 +1446,7 @@ export function OrganizationProjectDetailScreen({
                               <Text
                                 style={{
                                   flex: 1,
-                                  color: colors.bodyText,
+                                  color: purchaseActionsDisabled ? disabledActionColor : colors.bodyText,
                                   fontSize: 16,
                                   fontWeight: '600',
                                 }}
@@ -1364,7 +1478,11 @@ export function OrganizationProjectDetailScreen({
                             </Text>
                             {item.productPurpose?.trim() ? (
                               <Text
-                                style={{ color: colors.bodyText, fontSize: 13, marginTop: 6 }}
+                                style={{
+                                  color: purchaseActionsDisabled ? disabledActionColor : colors.bodyText,
+                                  fontSize: 13,
+                                  marginTop: 6,
+                                }}
                                 numberOfLines={4}
                               >
                                 {item.productPurpose.trim()}
@@ -1395,8 +1513,16 @@ export function OrganizationProjectDetailScreen({
                               </Pressable>
                             ) : null}
                           </Pressable>
-                          <Pressable onPress={() => confirmDeletePurchase(item)} hitSlop={8}>
-                            <Ionicons name="trash-outline" size={20} color={colors.icon} />
+                          <Pressable
+                            onPress={() => confirmDeletePurchase(item)}
+                            hitSlop={8}
+                            disabled={purchaseActionsDisabled}
+                          >
+                            <Ionicons
+                              name="trash-outline"
+                              size={20}
+                              color={purchaseActionsDisabled ? disabledActionColor : colors.icon}
+                            />
                           </Pressable>
                         </View>
                       );
@@ -1586,6 +1712,28 @@ export function OrganizationProjectDetailScreen({
                       >
                         <Text style={{ color: onTint, textAlign: 'center', fontWeight: '700' }}>
                           {t('profile.organizations.projects.acceptInviteButton')}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        disabled={inviteFlowBusy}
+                        onPress={() => void declineOrgProjectInvite()}
+                        style={{
+                          marginTop: 10,
+                          paddingVertical: 12,
+                          borderRadius: 10,
+                          borderWidth: 1,
+                          borderColor: '#FF3B30',
+                          opacity: inviteFlowBusy ? 0.6 : 1,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: '#FF3B30',
+                            textAlign: 'center',
+                            fontWeight: '700',
+                          }}
+                        >
+                          {t('profile.organizations.projects.rejectInviteButton')}
                         </Text>
                       </Pressable>
                     </>

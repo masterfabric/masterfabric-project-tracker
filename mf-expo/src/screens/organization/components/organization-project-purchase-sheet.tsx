@@ -26,6 +26,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getGraphQLErrorMessage } from '@/src/shared/helpers/graphql-error-helper';
 
 const styles = StyleSheet.create({
   fieldLabel: { fontSize: 13, fontWeight: '600', marginBottom: 6 },
@@ -290,12 +291,8 @@ export function OrganizationProjectPurchaseSheet({
         onSaved(created);
       }
       onClose();
-    } catch {
-      onErrorMessage(
-        isEdit
-          ? t('profile.organizations.projects.purchaseSaveFailed')
-          : t('profile.organizations.projects.purchaseCreateFailed')
-      );
+    } catch (e) {
+      onErrorMessage(getGraphQLErrorMessage(e));
     } finally {
       setSaving(false);
     }

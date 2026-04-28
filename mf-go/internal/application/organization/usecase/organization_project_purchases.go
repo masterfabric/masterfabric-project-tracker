@@ -70,7 +70,7 @@ func (uc *CreateOrganizationProjectPurchaseUseCase) Execute(
 	status *string,
 	statusNote string,
 ) (*dto.OrganizationProjectPurchaseResponse, error) {
-	if _, err := ensureProjectTodoEditor(ctx, uc.repo, projectID, actorUserID); err != nil {
+	if _, err := ensureProjectPurchaseEditor(ctx, uc.repo, projectID, actorUserID); err != nil {
 		return nil, err
 	}
 	name := strings.TrimSpace(productName)
@@ -176,7 +176,7 @@ func (uc *UpdateOrganizationProjectPurchaseUseCase) Execute(
 	if existing == nil {
 		return nil, fmt.Errorf("updateOrganizationProjectPurchase: purchase not found")
 	}
-	if _, err := ensureProjectTodoEditor(ctx, uc.repo, existing.ProjectID, actorUserID); err != nil {
+	if _, err := ensureProjectPurchaseEditor(ctx, uc.repo, existing.ProjectID, actorUserID); err != nil {
 		return nil, err
 	}
 	if productName != nil {
@@ -274,7 +274,7 @@ func (uc *DeleteOrganizationProjectPurchaseUseCase) Execute(ctx context.Context,
 	if existing == nil {
 		return fmt.Errorf("deleteOrganizationProjectPurchase: purchase not found")
 	}
-	if _, err := ensureProjectTodoEditor(ctx, uc.repo, existing.ProjectID, actorUserID); err != nil {
+	if _, err := ensureProjectPurchaseEditor(ctx, uc.repo, existing.ProjectID, actorUserID); err != nil {
 		return err
 	}
 	if err := uc.repo.DeleteOrganizationProjectPurchase(ctx, purchaseID); err != nil {

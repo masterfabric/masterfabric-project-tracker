@@ -277,6 +277,19 @@ func (r *mutationResolver) AcceptOrganizationProjectOrgInvite(ctx context.Contex
 	return orgProjectOrgParticipationDomainToModel(row), nil
 }
 
+// DeclineOrganizationProjectOrgInvite is the resolver for the declineOrganizationProjectOrgInvite field.
+func (r *mutationResolver) DeclineOrganizationProjectOrgInvite(ctx context.Context, projectID uuid.UUID, participantOrganizationID uuid.UUID) (*model.OrganizationProjectOrgParticipation, error) {
+	userID := middleware.UserIDFromContext(ctx)
+	if userID == uuid.Nil {
+		return nil, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
+	}
+	row, err := r.DeclineOrganizationProjectOrgInviteUC.Execute(ctx, projectID, participantOrganizationID, userID)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	return orgProjectOrgParticipationDomainToModel(row), nil
+}
+
 // Subtasks is the resolver for the subtasks field.
 func (r *organizationProjectTodoResolver) Subtasks(ctx context.Context, obj *model.OrganizationProjectTodo) ([]*model.OrganizationProjectTodoSubtask, error) {
 	userID := middleware.UserIDFromContext(ctx)
@@ -373,6 +386,22 @@ func (r *queryResolver) OrganizationProjectPurchases(ctx context.Context, projec
 		out = append(out, orgProjectPurchaseRespToModel(row))
 	}
 	return out, nil
+}
+
+// OrganizationProjectMyCapabilities is the resolver for the organizationProjectMyCapabilities field.
+func (r *queryResolver) OrganizationProjectMyCapabilities(ctx context.Context, projectID uuid.UUID) (*model.OrganizationProjectMyCapabilities, error) {
+	userID := middleware.UserIDFromContext(ctx)
+	if userID == uuid.Nil {
+		return nil, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
+	}
+	caps, err := r.GetOrganizationProjectMyCapabilitiesUC.Execute(ctx, projectID, userID)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	return &model.OrganizationProjectMyCapabilities{
+		CanEditTodos:     caps.CanEditTodos,
+		CanEditPurchases: caps.CanEditPurchases,
+	}, nil
 }
 
 // PendingOrganizationProjectOrgInvites is the resolver for the pendingOrganizationProjectOrgInvites field.
