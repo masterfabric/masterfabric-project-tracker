@@ -21,6 +21,7 @@ Supplement for **debug identifiers, ingest endpoints, or default dev logins** (n
 ### Fixed
 
 - **mf-go:** **GFG-181** — `organizationOwnerTodoDashboard` project-side aggregates now include projects visible in the selected org context via either host ownership or **accepted** cross-org participation (`organization_project_org_participations`). Scope checks use dedupe-safe visibility predicates (no join fan-out), preventing double counting while keeping shared projects visible for participant org owners.
+- **mf-expo:** **GFG-184** — project org-invite submit flow no longer freezes UI: invite settings modal now guards close actions while submit is busy, shows inline submit loading state, closes picker deterministically, and refreshes detail data after successful invite. Organization projects screen also refreshes on focus so participant-owner pending invites appear without requiring a full app refresh.
 
 - **mf-expo:** **Auth sync** — comments in **`use-mf-go-auth-sync`** and **`auth-refresh-service`** no longer claim a fixed **5 min** access token TTL. Access lifetime is **server-driven** (login/refresh **`expiresIn`**; e.g. Azure may return **900s** / 15 min), clarifying how that relates to the **3 min** proactive refresh. (**GFG-81**)
 

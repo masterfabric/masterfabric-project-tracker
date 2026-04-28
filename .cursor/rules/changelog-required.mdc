@@ -1,0 +1,12 @@
+---
+description: Require changelog updates for shipped code changes
+alwaysApply: true
+---
+
+# Changelog Required
+
+- For every user-requested code change that affects behavior, API, UX, or developer workflow, update `CHANGELOG.md` in the same task.
+- Add entries under `## [Unreleased]` using the existing section style (`Added`, `Changed`, `Fixed`).
+- Include issue/ticket references when available (for example: `GFG-184`).
+- Keep entries concise and user-facing; avoid internal-only noise.
+- If a change is intentionally excluded from changelog, explicitly state why in the response.
