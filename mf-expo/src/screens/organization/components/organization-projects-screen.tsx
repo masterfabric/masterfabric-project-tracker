@@ -9,10 +9,12 @@ import { mfGoOrganizations } from '@/src/shared/services/mf-go-api';
 import type {
   OrganizationMemberPayload,
   OrganizationPayload,
+  OrganizationProjectOrgInvitePendingRowPayload,
   OrganizationProjectPayload,
 } from '@/src/shared/services/mf-go-api';
 import { useAppStore } from '@/src/shared/store';
 import { themedTextInputProps } from '@/src/shared/utils/themed-text-input';
+import { foregroundOnTint } from '@/src/shared/utils/tint-contrast';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { getThemeColors, Sizing, useTheme } from 'masterfabric-expo-core';
@@ -29,6 +31,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { snackbarService } from '@/src/shared/services/snackbar-service';
 
 const styles = StyleSheet.create({
   row: {
@@ -77,6 +80,7 @@ export interface OrganizationProjectsScreenProps {
 export function OrganizationProjectsScreen({ organizationId }: OrganizationProjectsScreenProps) {
   const { isDark } = useTheme();
   const colors = getThemeColors(isDark);
+  const onTint = foregroundOnTint(isDark);
   const user = useAppStore((s) => s.user);
   const textInputTheme = themedTextInputProps(colors, isDark);
 
@@ -89,12 +93,16 @@ export function OrganizationProjectsScreen({ organizationId }: OrganizationProje
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [saving, setSaving] = useState(false);
+  const [pendingInviteRows, setPendingInviteRows] = useState<OrganizationProjectOrgInvitePendingRowPayload[]>([]);
+  const [pendingInvitesLoading, setPendingInvitesLoading] = useState(false);
+  const [acceptingInviteProjectId, setAcceptingInviteProjectId] = useState<string | null>(null);
 
   const isAdminOrOwner =
     !!organization &&
     !!user &&
     (organization.ownerUserID === user.id ||
       members.some((m) => m.userID === user.id && (m.role === 'OWNER' || m.role === 'ADMIN')));
+  const isOrgOwner = !!organization && !!user && organization.ownerUserID === user.id;
 
   const load = useCallback(
     async (mode: 'initial' | 'refresh' = 'initial') => {
@@ -125,6 +133,21 @@ export function OrganizationProjectsScreen({ organizationId }: OrganizationProje
           projs = [];
         }
         setProjects(projs);
+
+        if (org && user && org.ownerUserID === user.id) {
+          setPendingInvitesLoading(true);
+          try {
+            const pending = await mfGoOrganizations.pendingOrganizationProjectOrgInvites(organizationId);
+            setPendingInviteRows(pending);
+          } catch {
+            setPendingInviteRows([]);
+          } finally {
+            setPendingInvitesLoading(false);
+          }
+        } else {
+          setPendingInviteRows([]);
+          setPendingInvitesLoading(false);
+        }
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -167,6 +190,22 @@ export function OrganizationProjectsScreen({ organizationId }: OrganizationProje
       setSaving(false);
     }
   }, [organizationId, newName, newDesc, load]);
+
+  const acceptPendingInvite = useCallback(
+    async (projectId: string) => {
+      setAcceptingInviteProjectId(projectId);
+      try {
+        await mfGoOrganizations.acceptOrganizationProjectOrgInvite(projectId, organizationId);
+        snackbarService.success(t('profile.organizations.projects.acceptInviteSuccess'));
+        await load('refresh');
+      } catch {
+        snackbarService.error(t('profile.organizations.projects.acceptInviteFailed'));
+      } finally {
+        setAcceptingInviteProjectId(null);
+      }
+    },
+    [organizationId, load]
+  );
 
   const rowBg = isDark ? '#1C1C1E' : '#FFFFFF';
   const sectionHeaderColor = isDark ? '#8E8E93' : '#6D6D72';
@@ -219,6 +258,83 @@ export function OrganizationProjectsScreen({ organizationId }: OrganizationProje
             <Text style={{ color: sectionHeaderColor, fontSize: 13, marginTop: 8, marginBottom: 8 }}>
               {t('profile.organizations.projects.sectionList').toUpperCase()}
             </Text>
+            {isOrgOwner ? (
+              <View
+                style={{
+                  marginBottom: 12,
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                  backgroundColor: rowBg,
+                }}
+              >
+                <Text
+                  style={{
+                    color: sectionHeaderColor,
+                    fontSize: 13,
+                    marginHorizontal: 14,
+                    marginTop: 12,
+                    marginBottom: 8,
+                  }}
+                >
+                  {t('profile.organizations.projects.pendingInvitesSection').toUpperCase()}
+                </Text>
+                {pendingInvitesLoading ? (
+                  <View style={{ paddingVertical: 12, alignItems: 'center' }}>
+                    <ActivityIndicator color={colors.tint} />
+                  </View>
+                ) : pendingInviteRows.length === 0 ? (
+                  <Text style={{ color: colors.labelText, paddingHorizontal: 14, paddingBottom: 12 }}>
+                    {t('profile.organizations.projects.pendingInvitesEmpty')}
+                  </Text>
+                ) : (
+                  pendingInviteRows.map((row, idx) => (
+                    <View
+                      key={`${row.projectId}-${row.hostOrganizationId}`}
+                      style={{
+                        paddingHorizontal: 14,
+                        paddingVertical: 12,
+                        borderTopWidth: idx === 0 ? StyleSheet.hairlineWidth : 0,
+                        borderBottomWidth:
+                          idx < pendingInviteRows.length - 1 ? StyleSheet.hairlineWidth : 0,
+                        borderColor: isDark ? '#38383A' : '#C6C6C8',
+                        gap: 8,
+                      }}
+                    >
+                      <Text style={{ color: colors.bodyText, fontSize: 15, fontWeight: '600' }}>
+                        {row.projectName}
+                      </Text>
+                      <Text style={{ color: colors.labelText, fontSize: 13 }}>
+                        {t('profile.organizations.projects.acceptInviteSubtitle', {
+                          host: row.hostOrganizationName,
+                          project: row.projectName,
+                        })}
+                      </Text>
+                      <Pressable
+                        onPress={() => void acceptPendingInvite(row.projectId)}
+                        disabled={acceptingInviteProjectId === row.projectId}
+                        style={({ pressed }) => ({
+                          alignSelf: 'flex-start',
+                          borderRadius: 9,
+                          backgroundColor: colors.tint,
+                          paddingVertical: 9,
+                          paddingHorizontal: 12,
+                          opacity:
+                            acceptingInviteProjectId === row.projectId ? 0.6 : pressed ? 0.85 : 1,
+                        })}
+                      >
+                        {acceptingInviteProjectId === row.projectId ? (
+                          <ActivityIndicator size="small" color={onTint} />
+                        ) : (
+                          <Text style={{ color: onTint, fontWeight: '700', fontSize: 13 }}>
+                            {t('profile.organizations.projects.acceptInviteButton')}
+                          </Text>
+                        )}
+                      </Pressable>
+                    </View>
+                  ))
+                )}
+              </View>
+            ) : null}
             {projects.length === 0 ? (
               <View style={{ paddingVertical: 16 }}>
                 <Text style={{ color: colors.labelText }}>
@@ -311,7 +427,7 @@ export function OrganizationProjectsScreen({ organizationId }: OrganizationProje
           accessibilityRole="button"
           accessibilityLabel={t('profile.organizations.projects.createProject')}
         >
-          <Ionicons name="add" size={28} color="#fff" />
+          <Ionicons name="add" size={28} color={onTint} />
         </Pressable>
       ) : null}
 

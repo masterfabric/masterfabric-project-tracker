@@ -890,6 +890,10 @@
         "projectSettingsTitle": "Paylaşım ve davetler",
         "inviteParticipantOrgTitle": "Başka bir organizasyon davet et",
         "inviteParticipantOrgHint": "Hedef organizasyonun kimliğini yapıştırın (o organizasyonun detay sayfasından kopyalayın — önce birkaç karakter gösterilir, tamı için oraya dokunun). Sahibi bildirim alır (açıksa) ve buradan kabul edebilir.",
+        "inviteSelectOrgButton": "Organizasyon seç",
+        "inviteSelectOrgHint": "Kendi organizasyonlarınızdan seçin veya aşağıya kimlik yapıştırın.",
+        "inviteSelectOrgTitle": "Organizasyon seç",
+        "inviteNoOrgCandidates": "Bu hesaptan davet edilebilecek başka organizasyon bulunamadı.",
         "inviteParticipantOrgPlaceholder": "Katılımcı organizasyon UUID",
         "inviteCapabilitiesSection": "Erişebilecekleri",
         "inviteCapabilitiesHint": "Davetle birlikte kaydedilir. Sunucudaki ayrıntılı kurallar ürün matrisine göre ileride uygulanacaktır.",
@@ -903,8 +907,11 @@
         "acceptInviteButton": "Kabul et ve projeye katıl",
         "acceptInviteSuccess": "Projeye katıldınız.",
         "acceptInviteFailed": "Davet kabul edilemedi.",
+        "pendingInvitesSection": "Bekleyen proje davetleri",
+        "pendingInvitesEmpty": "Bekleyen proje daveti yok.",
         "noPendingInviteForProject": "Bu proje için bekleyen davet yok.",
-        "pendingInvitesLoadFailed": "Bekleyen davetler yüklenemedi."
+        "pendingInvitesLoadFailed": "Bekleyen davetler yüklenemedi.",
+        "inviteOrgCandidatesLoadFailed": "Organizasyon seçenekleri yüklenemedi."
       },
       "invite": {
         "title": "Kullanıcı Davet Et",

@@ -932,6 +932,10 @@
         "projectSettingsTitle": "Sharing & invites",
         "inviteParticipantOrgTitle": "Invite another organization",
         "inviteParticipantOrgHint": "Paste the target organization’s ID (copy it from that organization’s detail screen — first characters are shown, tap there for the full ID). Its owner gets a push when enabled and can accept here.",
+        "inviteSelectOrgButton": "Select an organization",
+        "inviteSelectOrgHint": "Pick from your organizations or paste an ID manually below.",
+        "inviteSelectOrgTitle": "Select organization",
+        "inviteNoOrgCandidates": "No other organization available to invite from this account.",
         "inviteParticipantOrgPlaceholder": "Participant organization UUID",
         "inviteCapabilitiesSection": "What they can access",
         "inviteCapabilitiesHint": "These are saved with the invite. Fine-grained enforcement on the server will follow the product matrix.",
@@ -945,8 +949,11 @@
         "acceptInviteButton": "Accept & join project",
         "acceptInviteSuccess": "You joined the project.",
         "acceptInviteFailed": "Could not accept the invite.",
+        "pendingInvitesSection": "Pending project invites",
+        "pendingInvitesEmpty": "No pending project invites.",
         "noPendingInviteForProject": "No pending invite for this project.",
-        "pendingInvitesLoadFailed": "Could not load pending invites."
+        "pendingInvitesLoadFailed": "Could not load pending invites.",
+        "inviteOrgCandidatesLoadFailed": "Could not load organization options."
       },
       "invite": {
         "title": "Invite User",

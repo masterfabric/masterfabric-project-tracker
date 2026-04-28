@@ -50,6 +50,7 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -168,7 +169,12 @@ export function OrganizationProjectDetailScreen({
   const [projectSubtasksBusy, setProjectSubtasksBusy] = useState(false);
   const [showProjectSettings, setShowProjectSettings] = useState(false);
   const [inviteParticipantOrgId, setInviteParticipantOrgId] = useState('');
-  const [inviteCapabilitiesJson, setInviteCapabilitiesJson] = useState('');
+  const [inviteOrgCandidates, setInviteOrgCandidates] = useState<OrganizationPayload[]>([]);
+  const [inviteOrgCandidatesLoading, setInviteOrgCandidatesLoading] = useState(false);
+  const [showInviteOrgPicker, setShowInviteOrgPicker] = useState(false);
+  /** Stored as JSON keys `todos` and `purchases` on mf-go participation capabilities. */
+  const [inviteCapTodos, setInviteCapTodos] = useState(true);
+  const [inviteCapPurchases, setInviteCapPurchases] = useState(true);
   const [inviteFlowBusy, setInviteFlowBusy] = useState(false);
   const [pendingInviteRows, setPendingInviteRows] = useState<OrganizationProjectOrgInvitePendingRowPayload[]>([]);
   const [pendingInvitesLoading, setPendingInvitesLoading] = useState(false);
@@ -345,15 +351,19 @@ export function OrganizationProjectDetailScreen({
     if (!trimmed) return;
     setInviteFlowBusy(true);
     try {
-      const caps = inviteCapabilitiesJson.trim();
+      const capabilitiesJson = JSON.stringify({
+        todos: inviteCapTodos,
+        purchases: inviteCapPurchases,
+      });
       await mfGoOrganizations.createOrganizationProjectOrgInvite({
         projectId,
         participantOrganizationId: trimmed,
-        capabilitiesJson: caps.length > 0 ? caps : undefined,
+        capabilitiesJson,
       });
       snackbarService.success(t('profile.organizations.projects.inviteSent'));
       setInviteParticipantOrgId('');
-      setInviteCapabilitiesJson('');
+      setInviteCapTodos(true);
+      setInviteCapPurchases(true);
       setShowProjectSettings(false);
     } catch {
       showErr(t('profile.organizations.projects.inviteFailed'));
@@ -362,11 +372,32 @@ export function OrganizationProjectDetailScreen({
     }
   }, [
     inviteParticipantOrgId,
-    inviteCapabilitiesJson,
+    inviteCapTodos,
+    inviteCapPurchases,
     projectId,
     showErr,
     t,
   ]);
+
+  const loadInviteOrgCandidates = useCallback(async () => {
+    if (!isHostProjectContext || !isAdminOrOwner) return;
+    setInviteOrgCandidatesLoading(true);
+    try {
+      const rows = await mfGoOrganizations.myOrganizations();
+      setInviteOrgCandidates(rows.filter((x) => x.id !== organizationId));
+    } catch {
+      setInviteOrgCandidates([]);
+      showErr(t('profile.organizations.projects.inviteOrgCandidatesLoadFailed'));
+    } finally {
+      setInviteOrgCandidatesLoading(false);
+    }
+  }, [isAdminOrOwner, isHostProjectContext, organizationId, showErr, t]);
+
+  const selectedInviteOrgName = useMemo(() => {
+    if (!inviteParticipantOrgId.trim()) return null;
+    const found = inviteOrgCandidates.find((x) => x.id === inviteParticipantOrgId.trim());
+    return found?.name ?? null;
+  }, [inviteOrgCandidates, inviteParticipantOrgId]);
 
   const acceptOrgProjectInvite = useCallback(async () => {
     setInviteFlowBusy(true);
@@ -710,6 +741,9 @@ export function OrganizationProjectDetailScreen({
                       setShowProjectSettings(true);
                       if (!isHostProjectContext && isParticipantOrgOwner) {
                         void loadPendingInvites();
+                      }
+                      if (isHostProjectContext && isAdminOrOwner) {
+                        void loadInviteOrgCandidates();
                       }
                     }}
                     hitSlop={8}
@@ -1380,7 +1414,7 @@ export function OrganizationProjectDetailScreen({
             justifyContent: 'center',
             padding: 20,
           }}
-          onPress={() => !inviteFlowBusy && setShowProjectSettings(false)}
+          onPress={() => setShowProjectSettings(false)}
         >
           <Pressable
             style={{
@@ -1404,6 +1438,28 @@ export function OrganizationProjectDetailScreen({
                   <Text style={{ color: colors.labelText, marginTop: 6, fontSize: 13 }}>
                     {t('profile.organizations.projects.inviteParticipantOrgHint')}
                   </Text>
+                  <Pressable
+                    onPress={() => setShowInviteOrgPicker(true)}
+                    style={{
+                      marginTop: 12,
+                      borderWidth: 1,
+                      borderColor: colors.surfaceBorder,
+                      borderRadius: 10,
+                      padding: 12,
+                      opacity: inviteOrgCandidatesLoading ? 0.7 : 1,
+                    }}
+                    disabled={inviteOrgCandidatesLoading}
+                  >
+                    <Text style={{ color: colors.bodyText, fontSize: 14, fontWeight: '600' }}>
+                      {selectedInviteOrgName ??
+                        t('profile.organizations.projects.inviteSelectOrgButton')}
+                    </Text>
+                    <Text style={{ color: colors.labelText, marginTop: 4, fontSize: 12 }}>
+                      {inviteOrgCandidatesLoading
+                        ? t('common.loading')
+                        : t('profile.organizations.projects.inviteSelectOrgHint')}
+                    </Text>
+                  </Pressable>
                   <TextInput
                     value={inviteParticipantOrgId}
                     onChangeText={setInviteParticipantOrgId}
@@ -1420,23 +1476,61 @@ export function OrganizationProjectDetailScreen({
                       color: colors.bodyText,
                     }}
                   />
-                  <TextInput
-                    value={inviteCapabilitiesJson}
-                    onChangeText={setInviteCapabilitiesJson}
-                    placeholder={t('profile.organizations.projects.inviteCapabilitiesPlaceholder')}
-                    placeholderTextColor={colors.labelText}
-                    multiline
+                  <Text style={{ color: colors.bodyText, marginTop: 14, fontSize: 15, fontWeight: '600' }}>
+                    {t('profile.organizations.projects.inviteCapabilitiesSection')}
+                  </Text>
+                  <Text style={{ color: colors.labelText, marginTop: 4, fontSize: 12 }}>
+                    {t('profile.organizations.projects.inviteCapabilitiesHint')}
+                  </Text>
+                  <View
                     style={{
+                      marginTop: 10,
                       borderWidth: 1,
                       borderColor: colors.surfaceBorder,
                       borderRadius: 10,
-                      padding: 12,
-                      marginTop: 10,
-                      minHeight: 72,
-                      color: colors.bodyText,
-                      textAlignVertical: 'top',
+                      paddingHorizontal: 12,
+                      paddingVertical: 4,
                     }}
-                  />
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        paddingVertical: 10,
+                        borderBottomWidth: StyleSheet.hairlineWidth,
+                        borderBottomColor: colors.surfaceBorder,
+                      }}
+                    >
+                      <Text style={{ color: colors.bodyText, fontSize: 15, flex: 1, paddingRight: 12 }}>
+                        {t('profile.organizations.projects.inviteCapabilityTodos')}
+                      </Text>
+                      <Switch
+                        value={inviteCapTodos}
+                        onValueChange={setInviteCapTodos}
+                        trackColor={{ false: isDark ? '#3A3A3C' : '#D1D1D6', true: colors.tint + '99' }}
+                        thumbColor={isDark ? '#F2F2F7' : '#FFF'}
+                      />
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        paddingVertical: 10,
+                      }}
+                    >
+                      <Text style={{ color: colors.bodyText, fontSize: 15, flex: 1, paddingRight: 12 }}>
+                        {t('profile.organizations.projects.inviteCapabilityPurchases')}
+                      </Text>
+                      <Switch
+                        value={inviteCapPurchases}
+                        onValueChange={setInviteCapPurchases}
+                        trackColor={{ false: isDark ? '#3A3A3C' : '#D1D1D6', true: colors.tint + '99' }}
+                        thumbColor={isDark ? '#F2F2F7' : '#FFF'}
+                      />
+                    </View>
+                  </View>
                   <Pressable
                     disabled={inviteFlowBusy || !inviteParticipantOrgId.trim()}
                     onPress={() => void submitOrgProjectInvite()}
@@ -1496,7 +1590,7 @@ export function OrganizationProjectDetailScreen({
                 </>
               ) : null}
 
-              <Pressable onPress={() => !inviteFlowBusy && setShowProjectSettings(false)} style={{ marginTop: 18 }}>
+              <Pressable onPress={() => setShowProjectSettings(false)} style={{ marginTop: 18 }}>
                 <Text style={{ color: colors.tint, textAlign: 'center', fontWeight: '600' }}>
                   {t('common.close')}
                 </Text>
@@ -1504,6 +1598,64 @@ export function OrganizationProjectDetailScreen({
             </ScrollView>
           </Pressable>
         </Pressable>
+      </Modal>
+
+      <Modal visible={showInviteOrgPicker} transparent animationType="slide">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
+          <View style={{ maxHeight: '72%', backgroundColor: rowBg, borderTopLeftRadius: 16, borderTopRightRadius: 16 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: 16,
+                borderBottomWidth: StyleSheet.hairlineWidth,
+                borderBottomColor: colors.surfaceBorder,
+              }}
+            >
+              <Text style={{ fontSize: 17, fontWeight: '600', color: colors.bodyText }}>
+                {t('profile.organizations.projects.inviteSelectOrgTitle')}
+              </Text>
+              <Pressable onPress={() => setShowInviteOrgPicker(false)}>
+                <Text style={{ color: colors.tint }}>{t('common.done')}</Text>
+              </Pressable>
+            </View>
+            <ScrollView>
+              {inviteOrgCandidates.length === 0 ? (
+                <Text style={{ color: colors.labelText, padding: 20 }}>
+                  {t('profile.organizations.projects.inviteNoOrgCandidates')}
+                </Text>
+              ) : (
+                inviteOrgCandidates.map((org) => {
+                  const selected = inviteParticipantOrgId.trim() === org.id;
+                  return (
+                    <Pressable
+                      key={org.id}
+                      onPress={() => {
+                        setInviteParticipantOrgId(org.id);
+                        setShowInviteOrgPicker(false);
+                      }}
+                      style={[
+                        styles.modalPickRow,
+                        {
+                          borderBottomColor: isDark ? '#38383A' : '#C6C6C8',
+                          backgroundColor: selected ? colors.tint + '18' : 'transparent',
+                        },
+                      ]}
+                    >
+                      <Text style={{ color: colors.bodyText, fontSize: 16, fontWeight: '600' }}>
+                        {org.name}
+                      </Text>
+                      <Text style={{ color: colors.labelText, fontSize: 12, marginTop: 4 }}>
+                        {org.id}
+                      </Text>
+                    </Pressable>
+                  );
+                })
+              )}
+            </ScrollView>
+          </View>
+        </View>
       </Modal>
 
       <Modal visible={showAddMember} transparent animationType="slide">
