@@ -9,6 +9,7 @@ func TestProjectVisibleInOrgDashboardScopeSQL_IncludesAcceptedParticipationPath(
 	sql := projectVisibleInOrgDashboardScopeSQL
 
 	required := []string{
+		"p.archived_at IS NULL",
 		"p.organization_id = $1",
 		"organization_project_org_participations",
 		"participant_organization_id = $1",

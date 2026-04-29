@@ -14,6 +14,8 @@ import (
 
 const projectVisibleInOrgDashboardScopeSQL = `
 	(
+		p.archived_at IS NULL
+		AND (
 		p.organization_id = $1
 		OR EXISTS (
 			SELECT 1
@@ -21,6 +23,7 @@ const projectVisibleInOrgDashboardScopeSQL = `
 			WHERE pop.project_id = p.id
 				AND pop.participant_organization_id = $1
 				AND pop.status = 'accepted'
+		)
 		)
 	)
 `
@@ -54,7 +57,7 @@ func (r *OrganizationRepo) ownerDashboardModeA(
 		SELECT
 			COALESCE(SUM(CASE WHEN NOT completed THEN 1 ELSE 0 END), 0)::int,
 			COALESCE(SUM(CASE WHEN completed THEN 1 ELSE 0 END), 0)::int
-		FROM user_todos WHERE organization_id = $1
+		FROM user_todos WHERE organization_id = $1 AND archived_at IS NULL
 	`, orgID).Scan(&uo, &ud)
 	if err != nil {
 		return nil, fmt.Errorf("ownerDash user roots: %w", err)
@@ -68,7 +71,7 @@ func (r *OrganizationRepo) ownerDashboardModeA(
 				COALESCE(SUM(CASE WHEN t.status = 'done' THEN 1 ELSE 0 END), 0)::int
 			FROM organization_project_todos t
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.project_id = ANY($2::uuid[])
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.project_id = ANY($2::uuid[])
 		`, orgID, projectFilter).Scan(&po, &pd)
 	} else {
 		err = db.QueryRow(ctx, `
@@ -77,7 +80,7 @@ func (r *OrganizationRepo) ownerDashboardModeA(
 				COALESCE(SUM(CASE WHEN t.status = 'done' THEN 1 ELSE 0 END), 0)::int
 			FROM organization_project_todos t
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+`
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL
 		`, orgID).Scan(&po, &pd)
 	}
 	if err != nil {
@@ -134,7 +137,7 @@ func countCompletionsUserRootsA(ctx context.Context, db *pgxpool.Pool, orgID uui
 	var n int
 	err := db.QueryRow(ctx, `
 		SELECT COUNT(*)::int FROM user_todos
-		WHERE organization_id = $1 AND completed
+		WHERE organization_id = $1 AND archived_at IS NULL AND completed
 		  AND updated_at >= $2 AND updated_at < $3
 	`, orgID, s, e).Scan(&n)
 	if err != nil {
@@ -151,7 +154,7 @@ func countCompletionsProjectRootsA(ctx context.Context, db *pgxpool.Pool, orgID 
 			SELECT COUNT(*)::int
 			FROM organization_project_todos t
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.status = 'done' AND t.project_id = ANY($2::uuid[])
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.status = 'done' AND t.project_id = ANY($2::uuid[])
 			  AND t.updated_at >= $3 AND t.updated_at < $4
 		`, orgID, projectFilter, s, e).Scan(&n)
 	} else {
@@ -159,7 +162,7 @@ func countCompletionsProjectRootsA(ctx context.Context, db *pgxpool.Pool, orgID 
 			SELECT COUNT(*)::int
 			FROM organization_project_todos t
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.status = 'done'
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.status = 'done'
 			  AND t.updated_at >= $2 AND t.updated_at < $3
 		`, orgID, s, e).Scan(&n)
 	}
@@ -184,7 +187,7 @@ func buildDailyA(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, project
 		LEFT JOIN (
 			SELECT (u.updated_at AT TIME ZONE 'UTC')::date AS day, COUNT(*)::int AS c
 			FROM user_todos u
-			WHERE u.organization_id = $3 AND u.completed
+			WHERE u.organization_id = $3 AND u.archived_at IS NULL AND u.completed
 			  AND u.updated_at >= $1 AND u.updated_at < $2
 			GROUP BY 1
 		) u ON u.day = d.d
@@ -201,7 +204,7 @@ func buildDailyA(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, project
 						AND pop.participant_organization_id = $3
 						AND pop.status = 'accepted'
 				)
-			) AND t.status = 'done'
+			) AND p.archived_at IS NULL AND t.archived_at IS NULL AND t.status = 'done'
 			  AND t.updated_at >= $1 AND t.updated_at < $2
 			  AND (NOT $4::bool OR t.project_id = ANY($5::uuid[]))
 			GROUP BY 1
@@ -237,7 +240,7 @@ func doneInPeriodByProjectA(ctx context.Context, db *pgxpool.Pool, orgID uuid.UU
 	var gen int
 	err := db.QueryRow(ctx, `
 		SELECT COUNT(*)::int FROM user_todos
-		WHERE organization_id = $1 AND completed
+		WHERE organization_id = $1 AND archived_at IS NULL AND completed
 		  AND updated_at >= $2 AND updated_at < $3
 	`, orgID, s, e).Scan(&gen)
 	if err != nil {
@@ -250,7 +253,7 @@ func doneInPeriodByProjectA(ctx context.Context, db *pgxpool.Pool, orgID uuid.UU
 			SELECT t.project_id, p.name, COUNT(*)::int
 			FROM organization_project_todos t
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.status = 'done' AND t.project_id = ANY($2::uuid[])
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.status = 'done' AND t.project_id = ANY($2::uuid[])
 			  AND t.updated_at >= $3 AND t.updated_at < $4
 			GROUP BY t.project_id, p.name
 			ORDER BY p.name
@@ -260,7 +263,7 @@ func doneInPeriodByProjectA(ctx context.Context, db *pgxpool.Pool, orgID uuid.UU
 			SELECT t.project_id, p.name, COUNT(*)::int
 			FROM organization_project_todos t
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.status = 'done'
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.status = 'done'
 			  AND t.updated_at >= $2 AND t.updated_at < $3
 			GROUP BY t.project_id, p.name
 			ORDER BY p.name
@@ -298,7 +301,7 @@ func openByAssigneeA(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, pro
 	rows, err := db.Query(ctx, `
 		SELECT assigned_to_user_id, COUNT(*)::int
 		FROM user_todos
-		WHERE organization_id = $1 AND NOT completed
+		WHERE organization_id = $1 AND archived_at IS NULL AND NOT completed
 		GROUP BY assigned_to_user_id
 	`, orgID)
 	if err != nil {
@@ -331,7 +334,7 @@ func openByAssigneeA(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, pro
 			SELECT t.assigned_to_user_id, COUNT(*)::int
 			FROM organization_project_todos t
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.status = 'open' AND t.project_id = ANY($2::uuid[])
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.status = 'open' AND t.project_id = ANY($2::uuid[])
 			GROUP BY t.assigned_to_user_id
 		`, orgID, projectFilter)
 	} else {
@@ -339,7 +342,7 @@ func openByAssigneeA(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, pro
 			SELECT t.assigned_to_user_id, COUNT(*)::int
 			FROM organization_project_todos t
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.status = 'open'
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.status = 'open'
 			GROUP BY t.assigned_to_user_id
 		`, orgID)
 	}
@@ -424,7 +427,7 @@ func (r *OrganizationRepo) ownerDashboardModeB(
 		SELECT
 			COALESCE(SUM(CASE WHEN NOT completed THEN 1 ELSE 0 END), 0)::int,
 			COALESCE(SUM(CASE WHEN completed THEN 1 ELSE 0 END), 0)::int
-		FROM user_todos WHERE organization_id = $1
+		FROM user_todos WHERE organization_id = $1 AND archived_at IS NULL
 	`, orgID).Scan(&uo, &ud)
 	if err != nil {
 		return nil, fmt.Errorf("ownerDashB user roots: %w", err)
@@ -437,7 +440,7 @@ func (r *OrganizationRepo) ownerDashboardModeB(
 			COALESCE(SUM(CASE WHEN s.completed THEN 1 ELSE 0 END), 0)::int
 		FROM user_todo_subtasks s
 		INNER JOIN user_todos u ON u.id = s.user_todo_id
-		WHERE u.organization_id = $1
+		WHERE u.organization_id = $1 AND u.archived_at IS NULL
 	`, orgID).Scan(&so, &sd)
 	if err != nil {
 		return nil, fmt.Errorf("ownerDashB user subs: %w", err)
@@ -452,7 +455,7 @@ func (r *OrganizationRepo) ownerDashboardModeB(
 				COALESCE(SUM(CASE WHEN t.status = 'done' THEN 1 ELSE 0 END), 0)::int
 			FROM organization_project_todos t
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.project_id = ANY($2::uuid[])
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.project_id = ANY($2::uuid[])
 		`, orgID, projectFilter).Scan(&po, &pd)
 	} else {
 		err = db.QueryRow(ctx, `
@@ -461,7 +464,7 @@ func (r *OrganizationRepo) ownerDashboardModeB(
 				COALESCE(SUM(CASE WHEN t.status = 'done' THEN 1 ELSE 0 END), 0)::int
 			FROM organization_project_todos t
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+`
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL
 		`, orgID).Scan(&po, &pd)
 	}
 	if err != nil {
@@ -478,7 +481,7 @@ func (r *OrganizationRepo) ownerDashboardModeB(
 			FROM organization_project_todo_subtasks s
 			INNER JOIN organization_project_todos t ON t.id = s.project_todo_id
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.project_id = ANY($2::uuid[])
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.project_id = ANY($2::uuid[])
 		`, orgID, projectFilter).Scan(&pso, &psd)
 	} else {
 		err = db.QueryRow(ctx, `
@@ -488,7 +491,7 @@ func (r *OrganizationRepo) ownerDashboardModeB(
 			FROM organization_project_todo_subtasks s
 			INNER JOIN organization_project_todos t ON t.id = s.project_todo_id
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+`
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL
 		`, orgID).Scan(&pso, &psd)
 	}
 	if err != nil {
@@ -550,11 +553,11 @@ func countCompUserB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, s, e
 	err := db.QueryRow(ctx, `
 		SELECT
 			(SELECT COUNT(*)::int FROM user_todos
-			 WHERE organization_id = $1 AND completed AND updated_at >= $2 AND updated_at < $3)
+			 WHERE organization_id = $1 AND archived_at IS NULL AND completed AND updated_at >= $2 AND updated_at < $3)
 			+ (SELECT COUNT(*)::int
 			   FROM user_todo_subtasks s
 			   INNER JOIN user_todos u ON u.id = s.user_todo_id
-			   WHERE u.organization_id = $1 AND s.completed AND s.updated_at >= $2 AND s.updated_at < $3)
+			   WHERE u.organization_id = $1 AND u.archived_at IS NULL AND s.completed AND s.updated_at >= $2 AND s.updated_at < $3)
 	`, orgID, s, e).Scan(&n)
 	if err != nil {
 		return 0, fmt.Errorf("countCompUserB: %w", err)
@@ -571,13 +574,13 @@ func countCompProjectB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, p
 				(SELECT COUNT(*)::int
 				 FROM organization_project_todos t
 				 INNER JOIN organization_projects p ON p.id = t.project_id
-				 WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.status = 'done' AND t.project_id = ANY($2::uuid[])
+				 WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.status = 'done' AND t.project_id = ANY($2::uuid[])
 				   AND t.updated_at >= $3 AND t.updated_at < $4)
 				+ (SELECT COUNT(*)::int
 				   FROM organization_project_todo_subtasks s
 				   INNER JOIN organization_project_todos t ON t.id = s.project_todo_id
 				   INNER JOIN organization_projects p ON p.id = t.project_id
-				   WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.project_id = ANY($2::uuid[]) AND s.completed
+				   WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.project_id = ANY($2::uuid[]) AND s.completed
 				     AND s.updated_at >= $3 AND s.updated_at < $4)
 		`, orgID, projectFilter, s, e).Scan(&n)
 	} else {
@@ -586,13 +589,13 @@ func countCompProjectB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, p
 				(SELECT COUNT(*)::int
 				 FROM organization_project_todos t
 				 INNER JOIN organization_projects p ON p.id = t.project_id
-				 WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.status = 'done'
+				 WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.status = 'done'
 				   AND t.updated_at >= $2 AND t.updated_at < $3)
 				+ (SELECT COUNT(*)::int
 				   FROM organization_project_todo_subtasks s
 				   INNER JOIN organization_project_todos t ON t.id = s.project_todo_id
 				   INNER JOIN organization_projects p ON p.id = t.project_id
-				   WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND s.completed
+				   WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND s.completed
 				     AND s.updated_at >= $2 AND s.updated_at < $3)
 		`, orgID, s, e).Scan(&n)
 	}
@@ -618,7 +621,7 @@ func buildDailyB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, project
 		LEFT JOIN (
 			SELECT (u.updated_at AT TIME ZONE 'UTC')::date AS day, COUNT(*)::int AS c
 			FROM user_todos u
-			WHERE u.organization_id = $3 AND u.completed
+			WHERE u.organization_id = $3 AND u.archived_at IS NULL AND u.completed
 			  AND u.updated_at >= $1 AND u.updated_at < $2
 			GROUP BY 1
 		) u ON u.day = d.d
@@ -626,7 +629,7 @@ func buildDailyB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, project
 			SELECT (s.updated_at AT TIME ZONE 'UTC')::date AS day, COUNT(*)::int AS c
 			FROM user_todo_subtasks s
 			INNER JOIN user_todos u ON u.id = s.user_todo_id
-			WHERE u.organization_id = $3 AND s.completed
+			WHERE u.organization_id = $3 AND u.archived_at IS NULL AND s.completed
 			  AND s.updated_at >= $1 AND s.updated_at < $2
 			GROUP BY 1
 		) ut ON ut.day = d.d
@@ -643,7 +646,7 @@ func buildDailyB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, project
 						AND pop.participant_organization_id = $3
 						AND pop.status = 'accepted'
 				)
-			) AND t.status = 'done'
+			) AND p.archived_at IS NULL AND t.archived_at IS NULL AND t.status = 'done'
 			  AND t.updated_at >= $1 AND t.updated_at < $2
 			  AND (NOT $4::bool OR t.project_id = ANY($5::uuid[]))
 			GROUP BY 1
@@ -662,7 +665,7 @@ func buildDailyB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, project
 						AND pop.participant_organization_id = $3
 						AND pop.status = 'accepted'
 				)
-			) AND s.completed
+			) AND p.archived_at IS NULL AND t.archived_at IS NULL AND s.completed
 			  AND s.updated_at >= $1 AND s.updated_at < $2
 			  AND (NOT $4::bool OR t.project_id = ANY($5::uuid[]))
 			GROUP BY 1
@@ -697,11 +700,11 @@ func doneInPeriodByProjectB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UU
 	err := db.QueryRow(ctx, `
 		SELECT
 			(SELECT COUNT(*)::int FROM user_todos
-			 WHERE organization_id = $1 AND completed AND updated_at >= $2 AND updated_at < $3)
+			 WHERE organization_id = $1 AND archived_at IS NULL AND completed AND updated_at >= $2 AND updated_at < $3)
 			+ (SELECT COUNT(*)::int
 			   FROM user_todo_subtasks s
 			   INNER JOIN user_todos u ON u.id = s.user_todo_id
-			   WHERE u.organization_id = $1 AND s.completed AND s.updated_at >= $2 AND s.updated_at < $3)
+			   WHERE u.organization_id = $1 AND u.archived_at IS NULL AND s.completed AND s.updated_at >= $2 AND s.updated_at < $3)
 	`, orgID, s, e).Scan(&gen)
 	if err != nil {
 		return nil, fmt.Errorf("doneInPeriodByProjectB general: %w", err)
@@ -726,7 +729,7 @@ func doneInPeriodByProjectB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UU
 			SELECT t.project_id, p.name, COUNT(*)::int
 			FROM organization_project_todos t
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.status = 'done' AND t.project_id = ANY($2::uuid[])
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.status = 'done' AND t.project_id = ANY($2::uuid[])
 			  AND t.updated_at >= $3 AND t.updated_at < $4
 			GROUP BY t.project_id, p.name
 		`, orgID, projectFilter, s, e)
@@ -735,7 +738,7 @@ func doneInPeriodByProjectB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UU
 			SELECT t.project_id, p.name, COUNT(*)::int
 			FROM organization_project_todos t
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.status = 'done'
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.status = 'done'
 			  AND t.updated_at >= $2 AND t.updated_at < $3
 			GROUP BY t.project_id, p.name
 		`, orgID, s, e)
@@ -762,7 +765,7 @@ func doneInPeriodByProjectB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UU
 			FROM organization_project_todo_subtasks s
 			INNER JOIN organization_project_todos t ON t.id = s.project_todo_id
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND s.completed AND t.project_id = ANY($2::uuid[])
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND s.completed AND t.project_id = ANY($2::uuid[])
 			  AND s.updated_at >= $3 AND s.updated_at < $4
 			GROUP BY t.project_id, p.name
 		`, orgID, projectFilter, s, e)
@@ -772,7 +775,7 @@ func doneInPeriodByProjectB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UU
 			FROM organization_project_todo_subtasks s
 			INNER JOIN organization_project_todos t ON t.id = s.project_todo_id
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND s.completed
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND s.completed
 			  AND s.updated_at >= $2 AND s.updated_at < $3
 			GROUP BY t.project_id, p.name
 		`, orgID, s, e)
@@ -819,7 +822,7 @@ func openByAssigneeB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, pro
 	ur, err := db.Query(ctx, `
 		SELECT assigned_to_user_id, COUNT(*)::int
 		FROM user_todos
-		WHERE organization_id = $1 AND NOT completed
+		WHERE organization_id = $1 AND archived_at IS NULL AND NOT completed
 		GROUP BY assigned_to_user_id
 	`, orgID)
 	if err != nil {
@@ -849,7 +852,7 @@ func openByAssigneeB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, pro
 		SELECT u.assigned_to_user_id, COUNT(*)::int
 		FROM user_todo_subtasks s
 		INNER JOIN user_todos u ON u.id = s.user_todo_id
-		WHERE u.organization_id = $1 AND NOT s.completed
+		WHERE u.organization_id = $1 AND u.archived_at IS NULL AND NOT s.completed
 		GROUP BY u.assigned_to_user_id
 	`, orgID)
 	if err != nil {
@@ -881,7 +884,7 @@ func openByAssigneeB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, pro
 			SELECT t.assigned_to_user_id, COUNT(*)::int
 			FROM organization_project_todos t
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.status = 'open' AND t.project_id = ANY($2::uuid[])
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.status = 'open' AND t.project_id = ANY($2::uuid[])
 			GROUP BY t.assigned_to_user_id
 		`, orgID, projectFilter)
 	} else {
@@ -889,7 +892,7 @@ func openByAssigneeB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, pro
 			SELECT t.assigned_to_user_id, COUNT(*)::int
 			FROM organization_project_todos t
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.status = 'open'
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND t.status = 'open'
 			GROUP BY t.assigned_to_user_id
 		`, orgID)
 	}
@@ -922,7 +925,7 @@ func openByAssigneeB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, pro
 			FROM organization_project_todo_subtasks s
 			INNER JOIN organization_project_todos t ON t.id = s.project_todo_id
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND NOT s.completed AND t.project_id = ANY($2::uuid[])
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND NOT s.completed AND t.project_id = ANY($2::uuid[])
 			GROUP BY t.assigned_to_user_id
 		`, orgID, projectFilter)
 	} else {
@@ -931,7 +934,7 @@ func openByAssigneeB(ctx context.Context, db *pgxpool.Pool, orgID uuid.UUID, pro
 			FROM organization_project_todo_subtasks s
 			INNER JOIN organization_project_todos t ON t.id = s.project_todo_id
 			INNER JOIN organization_projects p ON p.id = t.project_id
-			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND NOT s.completed
+			WHERE `+projectVisibleInOrgDashboardScopeSQL+` AND t.archived_at IS NULL AND NOT s.completed
 			GROUP BY t.assigned_to_user_id
 		`, orgID)
 	}
