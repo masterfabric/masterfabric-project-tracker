@@ -26,7 +26,7 @@ Supplement for **debug identifiers, ingest endpoints, or default dev logins** (n
 
 ### Fixed
 
-- **mf-go:** **GFG-189** dashboard archived-row exclusion patch was **reverted** pending real end-to-end experience validation. The previous update was verified only with package-level `go test` and needs integration/runtime confirmation before re-landing.
+- **mf-go:** **GFG-189** — organization owner dashboard aggregates now fully exclude archived rows across open/done totals, selected/previous completion windows, daily buckets, project donut breakdowns, and assignee slices (for both user and project todos/subtasks).
 
 - **mf-go:** **GFG-181** — `organizationOwnerTodoDashboard` project-side aggregates now include projects visible in the selected org context via either host ownership or **accepted** cross-org participation (`organization_project_org_participations`). Scope checks use dedupe-safe visibility predicates (no join fan-out), preventing double counting while keeping shared projects visible for participant org owners.
 - **mf-expo:** **GFG-184** — project org-invite submit flow no longer freezes UI: invite settings modal now guards close actions while submit is busy, shows inline submit loading state, closes picker deterministically, and refreshes detail data after successful invite. Organization projects screen also refreshes on focus so participant-owner pending invites appear without requiring a full app refresh.
