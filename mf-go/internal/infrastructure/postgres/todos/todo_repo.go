@@ -34,23 +34,27 @@ const (
 		WHERE user_id = $1 AND membership_status = 'active'`
 
 	sqlListTodosByUserID = `
-		SELECT id, user_id, title, completed, organization_id, assigned_to_user_id, due_at, created_at, updated_at
+		SELECT id, user_id, title, completed, archived_at, organization_id, assigned_to_user_id, due_at, created_at, updated_at
 		FROM user_todos
 		WHERE
-		  (user_id = $1 AND (organization_id IS NULL OR organization_id IN (` + sqlActiveOrgIDsForUser + `)))
-		  OR (assigned_to_user_id = $1 AND (organization_id IS NULL OR organization_id IN (` + sqlActiveOrgIDsForUser + `)))
-		  OR (organization_id IS NOT NULL AND organization_id IN (` + sqlActiveOrgIDsForUser + `))
+		  archived_at IS NULL
+		  AND (
+		    (user_id = $1 AND (organization_id IS NULL OR organization_id IN (` + sqlActiveOrgIDsForUser + `)))
+		    OR (assigned_to_user_id = $1 AND (organization_id IS NULL OR organization_id IN (` + sqlActiveOrgIDsForUser + `)))
+		    OR (organization_id IS NOT NULL AND organization_id IN (` + sqlActiveOrgIDsForUser + `))
+		  )
 		ORDER BY created_at DESC`
 
 	sqlListOwnedTodosByUserID = `
-		SELECT id, user_id, title, completed, organization_id, assigned_to_user_id, due_at, created_at, updated_at
+		SELECT id, user_id, title, completed, archived_at, organization_id, assigned_to_user_id, due_at, created_at, updated_at
 		FROM user_todos
 		WHERE user_id = $1
+		  AND archived_at IS NULL
 		  AND (organization_id IS NULL OR organization_id IN (` + sqlActiveOrgIDsForUser + `))
 		ORDER BY created_at DESC`
 
 	sqlAdminGetTodoByID = `
-		SELECT id, user_id, title, completed, organization_id, assigned_to_user_id, due_at, created_at, updated_at
+		SELECT id, user_id, title, completed, archived_at, organization_id, assigned_to_user_id, due_at, created_at, updated_at
 		FROM user_todos WHERE id = $1`
 
 	sqlAdminUpdateTodo = `
@@ -61,9 +65,10 @@ const (
 	sqlAdminDeleteTodoByID = `DELETE FROM user_todos WHERE id = $1`
 
 	sqlGetTodoByID = `
-		SELECT id, user_id, title, completed, organization_id, assigned_to_user_id, due_at, created_at, updated_at
+		SELECT id, user_id, title, completed, archived_at, organization_id, assigned_to_user_id, due_at, created_at, updated_at
 		FROM user_todos
 		WHERE id = $1 AND (
+			archived_at IS NULL AND (
 			(user_id = $2 AND (organization_id IS NULL OR organization_id IN (
 				SELECT organization_id FROM organization_members WHERE user_id = $2 AND membership_status = 'active'
 			)))
@@ -73,6 +78,7 @@ const (
 			OR (organization_id IN (
 				SELECT organization_id FROM organization_members WHERE user_id = $2 AND membership_status = 'active'
 			))
+			)
 		)`
 
 	sqlUpdateTodo = `
@@ -106,14 +112,34 @@ const (
 
 	sqlListUserTodoSubtasks = `
 		SELECT id, user_todo_id, title, completed, sort_order, created_at, updated_at
-		FROM user_todo_subtasks WHERE user_todo_id = $1 ORDER BY sort_order ASC, created_at ASC`
+		FROM user_todo_subtasks
+		WHERE user_todo_id = $1
+		  AND EXISTS (
+			SELECT 1 FROM user_todos ut
+			WHERE ut.id = user_todo_subtasks.user_todo_id
+			  AND ut.archived_at IS NULL
+		  )
+		ORDER BY sort_order ASC, created_at ASC`
 
 	sqlGetUserTodoSubtaskByID = `
 		SELECT id, user_todo_id, title, completed, sort_order, created_at, updated_at
-		FROM user_todo_subtasks WHERE id = $1`
+		FROM user_todo_subtasks
+		WHERE id = $1
+		  AND EXISTS (
+			SELECT 1 FROM user_todos ut
+			WHERE ut.id = user_todo_subtasks.user_todo_id
+			  AND ut.archived_at IS NULL
+		  )`
 
 	sqlCountUserTodoSubtasks = `
-		SELECT COUNT(*) FROM user_todo_subtasks WHERE user_todo_id = $1`
+		SELECT COUNT(*)
+		FROM user_todo_subtasks
+		WHERE user_todo_id = $1
+		  AND EXISTS (
+			SELECT 1 FROM user_todos ut
+			WHERE ut.id = user_todo_subtasks.user_todo_id
+			  AND ut.archived_at IS NULL
+		  )`
 
 	sqlInsertUserTodoSubtask = `
 		INSERT INTO user_todo_subtasks (id, user_todo_id, title, completed, sort_order, created_at, updated_at)
@@ -125,7 +151,14 @@ const (
 	sqlDeleteUserTodoSubtask = `DELETE FROM user_todo_subtasks WHERE id = $1 AND user_todo_id = $2`
 
 	sqlNextUserTodoSubtaskSort = `
-		SELECT COALESCE(MAX(sort_order), -1) + 1 FROM user_todo_subtasks WHERE user_todo_id = $1`
+		SELECT COALESCE(MAX(sort_order), -1) + 1
+		FROM user_todo_subtasks
+		WHERE user_todo_id = $1
+		  AND EXISTS (
+			SELECT 1 FROM user_todos ut
+			WHERE ut.id = user_todo_subtasks.user_todo_id
+			  AND ut.archived_at IS NULL
+		  )`
 )
 
 // Create inserts a new todo.
@@ -258,9 +291,10 @@ func (r *TodoRepo) Delete(ctx context.Context, id, userID uuid.UUID) error {
 
 func scanTodo(row pgx.Row) (*model.UserTodo, error) {
 	var t model.UserTodo
+	var archivedAt sql.NullTime
 	var dueAt sql.NullTime
 	err := row.Scan(
-		&t.ID, &t.UserID, &t.Title, &t.Completed,
+		&t.ID, &t.UserID, &t.Title, &t.Completed, &archivedAt,
 		&t.OrganizationID, &t.AssignedToUserID,
 		&dueAt,
 		&t.CreatedAt, &t.UpdatedAt,
@@ -271,6 +305,10 @@ func scanTodo(row pgx.Row) (*model.UserTodo, error) {
 	if dueAt.Valid {
 		u := dueAt.Time.UTC()
 		t.DueAt = &u
+	}
+	if archivedAt.Valid {
+		u := archivedAt.Time.UTC()
+		t.ArchivedAt = &u
 	}
 	return &t, nil
 }

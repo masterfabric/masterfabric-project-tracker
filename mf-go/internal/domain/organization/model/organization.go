@@ -148,6 +148,7 @@ type OrganizationProject struct {
 	Name            string
 	Description     string
 	CreatedByUserID uuid.UUID
+	ArchivedAt      *time.Time
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -176,6 +177,7 @@ type OrganizationProjectTodo struct {
 	Status           OrganizationProjectTodoStatus
 	CreatedByUserID  uuid.UUID
 	AssignedToUserID *uuid.UUID // optional; set when admin/owner delegates
+	ArchivedAt       *time.Time
 	DueAt            *time.Time
 	CreatedAt        time.Time
 	UpdatedAt        time.Time

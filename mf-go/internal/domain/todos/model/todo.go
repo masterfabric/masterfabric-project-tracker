@@ -12,6 +12,7 @@ type UserTodo struct {
 	UserID           uuid.UUID
 	Title            string
 	Completed        bool
+	ArchivedAt       *time.Time
 	OrganizationID   *uuid.UUID
 	AssignedToUserID *uuid.UUID
 	DueAt            *time.Time

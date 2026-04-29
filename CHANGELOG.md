@@ -8,6 +8,8 @@ Supplement for **debug identifiers, ingest endpoints, or default dev logins** (n
 
 ### Added
 
+- **mf-go:** **GFG-187** — migration **`026_todo_archive_columns`** adds nullable **`archived_at`** to **`user_todos`**, **`organization_project_todos`**, and **`organization_projects`** (with indexes). Repository read paths now exclude archived rows by default, and project/user todo subtask queries enforce parent-based archive visibility so archived parent todos hide subtasks without changing hard-delete behavior.
+
 - **mf-go + mf-expo:** **GFG-186** — Project-level shared-organization **management surface** after invite: host-side linked org list with status visibility, capability switch updates (**todos / purchases**) persisted via GraphQL mutation, and guarded ownership transfer to an **accepted** participant org with confirmation flow. Added audit events for permission updates and ownership transfer, plus EN + TR copy for management UX in project settings.
 
 - **mf-go:** **GFG-172 / GFG-179** — migration **`025_organization_project_org_participation`**: **`organization_project_org_participations`** (canonical project row unchanged; **`pending` \| `accepted` \| `declined` \| `revoked`**, JSON **`capabilities`**, invite metadata, optional **`leave_clear_partner_attribution_display`**) and append-only **`organization_project_org_audit_events`** (indexed **`project_id`**, **`created_at`**). **`organizationProjects`** queries union **accepted** shared projects for the org; GraphQL **read** paths use **`ensureProjectReader`** (participant-org members with an accepted link). **Todo / purchase / roster mutations** stay **host org + project roster** until invite and capability mutations land.

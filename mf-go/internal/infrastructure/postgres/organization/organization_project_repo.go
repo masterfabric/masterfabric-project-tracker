@@ -14,38 +14,40 @@ import (
 
 const (
 	sqlGetOrgProjectByID = `
-		SELECT id, organization_id, name, description, created_by_user_id, created_at, updated_at
-		FROM organization_projects WHERE id = $1`
+		SELECT id, organization_id, name, description, created_by_user_id, archived_at, created_at, updated_at
+		FROM organization_projects WHERE id = $1 AND archived_at IS NULL`
 
 	sqlListOrgProjectsByOrg = `
-		SELECT id, organization_id, name, description, created_by_user_id, created_at, updated_at
+		SELECT id, organization_id, name, description, created_by_user_id, archived_at, created_at, updated_at
 		FROM (
-			SELECT id, organization_id, name, description, created_by_user_id, created_at, updated_at
-			FROM organization_projects WHERE organization_id = $1
+			SELECT id, organization_id, name, description, created_by_user_id, archived_at, created_at, updated_at
+			FROM organization_projects WHERE organization_id = $1 AND archived_at IS NULL
 			UNION
-			SELECT p.id, p.organization_id, p.name, p.description, p.created_by_user_id, p.created_at, p.updated_at
+			SELECT p.id, p.organization_id, p.name, p.description, p.created_by_user_id, p.archived_at, p.created_at, p.updated_at
 			FROM organization_projects p
 			INNER JOIN organization_project_org_participations pop
 				ON pop.project_id = p.id
 				AND pop.participant_organization_id = $1
 				AND pop.status = 'accepted'
+			WHERE p.archived_at IS NULL
 		) u
 		ORDER BY u.created_at DESC`
 
 	sqlListOrgProjectsForMember = `
-		SELECT id, organization_id, name, description, created_by_user_id, created_at, updated_at
+		SELECT id, organization_id, name, description, created_by_user_id, archived_at, created_at, updated_at
 		FROM (
-			SELECT p.id, p.organization_id, p.name, p.description, p.created_by_user_id, p.created_at, p.updated_at
+			SELECT p.id, p.organization_id, p.name, p.description, p.created_by_user_id, p.archived_at, p.created_at, p.updated_at
 			FROM organization_projects p
 			INNER JOIN organization_project_members m ON m.project_id = p.id AND m.user_id = $2
-			WHERE p.organization_id = $1
+			WHERE p.organization_id = $1 AND p.archived_at IS NULL
 			UNION
-			SELECT p.id, p.organization_id, p.name, p.description, p.created_by_user_id, p.created_at, p.updated_at
+			SELECT p.id, p.organization_id, p.name, p.description, p.created_by_user_id, p.archived_at, p.created_at, p.updated_at
 			FROM organization_projects p
 			INNER JOIN organization_project_org_participations pop
 				ON pop.project_id = p.id
 				AND pop.participant_organization_id = $1
 				AND pop.status = 'accepted'
+			WHERE p.archived_at IS NULL
 		) u
 		ORDER BY u.created_at DESC`
 
@@ -175,13 +177,13 @@ const (
 		WHERE project_id = $1 AND user_id = $2 LIMIT 1`
 
 	sqlListProjectTodos = `
-		SELECT id, project_id, title, status, created_by_user_id, assigned_to_user_id, due_at, created_at, updated_at
-		FROM organization_project_todos WHERE project_id = $1
+		SELECT id, project_id, title, status, created_by_user_id, assigned_to_user_id, archived_at, due_at, created_at, updated_at
+		FROM organization_project_todos WHERE project_id = $1 AND archived_at IS NULL
 		ORDER BY created_at DESC`
 
 	sqlGetProjectTodoByID = `
-		SELECT id, project_id, title, status, created_by_user_id, assigned_to_user_id, due_at, created_at, updated_at
-		FROM organization_project_todos WHERE id = $1`
+		SELECT id, project_id, title, status, created_by_user_id, assigned_to_user_id, archived_at, due_at, created_at, updated_at
+		FROM organization_project_todos WHERE id = $1 AND archived_at IS NULL`
 
 	sqlInsertProjectTodo = `
 		INSERT INTO organization_project_todos (id, project_id, title, status, created_by_user_id, assigned_to_user_id, due_at, created_at, updated_at)
@@ -196,18 +198,44 @@ const (
 
 	sqlListProjectTodoSubtasks = `
 		SELECT id, project_todo_id, title, completed, sort_order, created_at, updated_at
-		FROM organization_project_todo_subtasks WHERE project_todo_id = $1
+		FROM organization_project_todo_subtasks
+		WHERE project_todo_id = $1
+		  AND EXISTS (
+			SELECT 1 FROM organization_project_todos opt
+			WHERE opt.id = organization_project_todo_subtasks.project_todo_id
+			  AND opt.archived_at IS NULL
+		  )
 		ORDER BY sort_order ASC, created_at ASC`
 
 	sqlGetProjectTodoSubtaskByID = `
 		SELECT id, project_todo_id, title, completed, sort_order, created_at, updated_at
-		FROM organization_project_todo_subtasks WHERE id = $1`
+		FROM organization_project_todo_subtasks
+		WHERE id = $1
+		  AND EXISTS (
+			SELECT 1 FROM organization_project_todos opt
+			WHERE opt.id = organization_project_todo_subtasks.project_todo_id
+			  AND opt.archived_at IS NULL
+		  )`
 
 	sqlCountProjectTodoSubtasks = `
-		SELECT COUNT(*) FROM organization_project_todo_subtasks WHERE project_todo_id = $1`
+		SELECT COUNT(*)
+		FROM organization_project_todo_subtasks
+		WHERE project_todo_id = $1
+		  AND EXISTS (
+			SELECT 1 FROM organization_project_todos opt
+			WHERE opt.id = organization_project_todo_subtasks.project_todo_id
+			  AND opt.archived_at IS NULL
+		  )`
 
 	sqlNextProjectTodoSubtaskSort = `
-		SELECT COALESCE(MAX(sort_order), -1) + 1 FROM organization_project_todo_subtasks WHERE project_todo_id = $1`
+		SELECT COALESCE(MAX(sort_order), -1) + 1
+		FROM organization_project_todo_subtasks
+		WHERE project_todo_id = $1
+		  AND EXISTS (
+			SELECT 1 FROM organization_project_todos opt
+			WHERE opt.id = organization_project_todo_subtasks.project_todo_id
+			  AND opt.archived_at IS NULL
+		  )`
 
 	sqlInsertProjectTodoSubtask = `
 		INSERT INTO organization_project_todo_subtasks (id, project_todo_id, title, completed, sort_order, created_at, updated_at)
@@ -855,9 +883,14 @@ func scanOrganizationProjectOrgParticipation(row pgx.Row) (*model.OrganizationPr
 
 func scanOrganizationProject(row pgx.Row) (*model.OrganizationProject, error) {
 	var p model.OrganizationProject
-	err := row.Scan(&p.ID, &p.OrganizationID, &p.Name, &p.Description, &p.CreatedByUserID, &p.CreatedAt, &p.UpdatedAt)
+	var archivedAt sql.NullTime
+	err := row.Scan(&p.ID, &p.OrganizationID, &p.Name, &p.Description, &p.CreatedByUserID, &archivedAt, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		return nil, err
+	}
+	if archivedAt.Valid {
+		u := archivedAt.Time.UTC()
+		p.ArchivedAt = &u
 	}
 	return &p, nil
 }
@@ -892,8 +925,9 @@ func scanOrganizationProjectTodo(row pgx.Row) (*model.OrganizationProjectTodo, e
 	var t model.OrganizationProjectTodo
 	var status string
 	var assigned pgtype.UUID
+	var archivedAt sql.NullTime
 	var dueAt sql.NullTime
-	err := row.Scan(&t.ID, &t.ProjectID, &t.Title, &status, &t.CreatedByUserID, &assigned, &dueAt, &t.CreatedAt, &t.UpdatedAt)
+	err := row.Scan(&t.ID, &t.ProjectID, &t.Title, &status, &t.CreatedByUserID, &assigned, &archivedAt, &dueAt, &t.CreatedAt, &t.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -905,6 +939,10 @@ func scanOrganizationProjectTodo(row pgx.Row) (*model.OrganizationProjectTodo, e
 	if dueAt.Valid {
 		u := dueAt.Time.UTC()
 		t.DueAt = &u
+	}
+	if archivedAt.Valid {
+		u := archivedAt.Time.UTC()
+		t.ArchivedAt = &u
 	}
 	return &t, nil
 }
