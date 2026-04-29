@@ -1238,6 +1238,16 @@ const DELETE_ORGANIZATION_PROJECT = /* GraphQL */ `
     deleteOrganizationProject(projectId: $projectId)
   }
 `;
+const ARCHIVE_ORGANIZATION_PROJECT = /* GraphQL */ `
+  mutation ArchiveOrganizationProject($projectId: UUID!) {
+    archiveOrganizationProject(projectId: $projectId)
+  }
+`;
+const UNARCHIVE_ORGANIZATION_PROJECT = /* GraphQL */ `
+  mutation UnarchiveOrganizationProject($projectId: UUID!) {
+    unarchiveOrganizationProject(projectId: $projectId)
+  }
+`;
 
 const ADD_ORGANIZATION_PROJECT_MEMBER = /* GraphQL */ `
   mutation AddOrganizationProjectMember($projectId: UUID!, $userId: UUID!) {
@@ -1287,6 +1297,16 @@ const UPDATE_ORGANIZATION_PROJECT_TODO_NO_DUE = /* GraphQL */ `
 const DELETE_ORGANIZATION_PROJECT_TODO = /* GraphQL */ `
   mutation DeleteOrganizationProjectTodo($todoId: UUID!) {
     deleteOrganizationProjectTodo(todoId: $todoId)
+  }
+`;
+const ARCHIVE_ORGANIZATION_PROJECT_TODO = /* GraphQL */ `
+  mutation ArchiveOrganizationProjectTodo($todoId: UUID!) {
+    archiveOrganizationProjectTodo(todoId: $todoId)
+  }
+`;
+const UNARCHIVE_ORGANIZATION_PROJECT_TODO = /* GraphQL */ `
+  mutation UnarchiveOrganizationProjectTodo($todoId: UUID!) {
+    unarchiveOrganizationProjectTodo(todoId: $todoId)
   }
 `;
 
@@ -1768,6 +1788,14 @@ export const mfGoOrganizations = {
     graphqlRequest<{ deleteOrganizationProject: boolean }>(DELETE_ORGANIZATION_PROJECT, {
       projectId,
     }).then((r) => r.deleteOrganizationProject),
+  archiveOrganizationProject: (projectId: string) =>
+    graphqlRequest<{ archiveOrganizationProject: boolean }>(ARCHIVE_ORGANIZATION_PROJECT, {
+      projectId,
+    }).then((r) => r.archiveOrganizationProject),
+  unarchiveOrganizationProject: (projectId: string) =>
+    graphqlRequest<{ unarchiveOrganizationProject: boolean }>(UNARCHIVE_ORGANIZATION_PROJECT, {
+      projectId,
+    }).then((r) => r.unarchiveOrganizationProject),
 
   pendingOrganizationProjectOrgInvites: (organizationId: string) =>
     graphqlRequest<{
@@ -1924,6 +1952,15 @@ export const mfGoOrganizations = {
     graphqlRequest<{ deleteOrganizationProjectTodo: boolean }>(DELETE_ORGANIZATION_PROJECT_TODO, {
       todoId,
     }).then((r) => r.deleteOrganizationProjectTodo),
+  archiveOrganizationProjectTodo: (todoId: string) =>
+    graphqlRequest<{ archiveOrganizationProjectTodo: boolean }>(ARCHIVE_ORGANIZATION_PROJECT_TODO, {
+      todoId,
+    }).then((r) => r.archiveOrganizationProjectTodo),
+  unarchiveOrganizationProjectTodo: (todoId: string) =>
+    graphqlRequest<{ unarchiveOrganizationProjectTodo: boolean }>(
+      UNARCHIVE_ORGANIZATION_PROJECT_TODO,
+      { todoId }
+    ).then((r) => r.unarchiveOrganizationProjectTodo),
 
   createOrganizationProjectTodoSubtask: (input: {
     projectTodoId: string;
@@ -2278,6 +2315,16 @@ const DELETE_TODO = /* GraphQL */ `
     deleteTodo(id: $id)
   }
 `;
+const ARCHIVE_TODO = /* GraphQL */ `
+  mutation ArchiveTodo($id: UUID!) {
+    archiveTodo(id: $id)
+  }
+`;
+const UNARCHIVE_TODO = /* GraphQL */ `
+  mutation UnarchiveTodo($id: UUID!) {
+    unarchiveTodo(id: $id)
+  }
+`;
 
 const CREATE_USER_TODO_SUBTASK = /* GraphQL */ `
   mutation CreateUserTodoSubtask($input: CreateUserTodoSubtaskInput!) {
@@ -2386,6 +2433,10 @@ export const mfGoTodos = {
     graphqlRequest<{ deleteTodo: boolean }>(DELETE_TODO, { id }).then(
       (r) => r.deleteTodo
     ),
+  archiveTodo: (id: string) =>
+    graphqlRequest<{ archiveTodo: boolean }>(ARCHIVE_TODO, { id }).then((r) => r.archiveTodo),
+  unarchiveTodo: (id: string) =>
+    graphqlRequest<{ unarchiveTodo: boolean }>(UNARCHIVE_TODO, { id }).then((r) => r.unarchiveTodo),
 
   createUserTodoSubtask: (input: { userTodoId: string; title: string; completed?: boolean }) =>
     graphqlRequest<{ createUserTodoSubtask: UserTodoSubtaskPayload }>(CREATE_USER_TODO_SUBTASK, {

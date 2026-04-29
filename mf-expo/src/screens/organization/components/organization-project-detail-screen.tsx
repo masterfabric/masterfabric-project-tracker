@@ -59,6 +59,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 
 const styles = StyleSheet.create({
   section: { fontSize: 13, marginTop: 20, marginBottom: 8 },
@@ -718,6 +719,43 @@ export function OrganizationProjectDetailScreen({
     [canEditTodos, showErr, t]
   );
 
+  const archiveProjectTodoWithUndo = useCallback(
+    async (item: OrganizationProjectTodoPayload) => {
+      if (!canEditTodos) {
+        snackbarService.info(t('profile.organizations.projects.noTodoPermission'));
+        return;
+      }
+      const snapshot = item;
+      setTodos((prev) => prev.filter((x) => x.id !== item.id));
+      try {
+        await mfGoOrganizations.archiveOrganizationProjectTodo(item.id);
+      } catch {
+        setTodos((prev) => [snapshot, ...prev]);
+        snackbarService.error(t('home.todos.archiveFailed'));
+        return;
+      }
+      snackbarService.show({
+        message: t('home.todos.archivedUndoHint'),
+        type: 'info',
+        duration: 5000,
+        action: {
+          label: t('common.undo'),
+          onPress: () => {
+            void (async () => {
+              try {
+                await mfGoOrganizations.unarchiveOrganizationProjectTodo(item.id);
+                setTodos((prev) => [snapshot, ...prev]);
+              } catch {
+                snackbarService.error(t('home.todos.undoArchiveFailed'));
+              }
+            })();
+          },
+        },
+      });
+    },
+    [canEditTodos, t]
+  );
+
   const addMember = useCallback(
     async (userId: string) => {
       try {
@@ -1215,8 +1253,32 @@ export function OrganizationProjectDetailScreen({
                         opacity: done ? 0.6 : 1,
                       };
                       return (
-                        <View
+                        <Swipeable
                           key={item.id}
+                          friction={2}
+                          rightThreshold={40}
+                          renderRightActions={() =>
+                            canEditTodos ? (
+                              <View
+                                style={{
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                  width: 92,
+                                  marginLeft: 8,
+                                  borderRadius: 12,
+                                  backgroundColor: colors.warningColor ?? '#FF9500',
+                                }}
+                              >
+                                <Ionicons name="archive-outline" size={20} color="#fff" />
+                                <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', marginTop: 4 }}>
+                                  {t('home.todos.archive')}
+                                </Text>
+                              </View>
+                            ) : null
+                          }
+                          onSwipeableOpen={() => void archiveProjectTodoWithUndo(item)}
+                        >
+                        <View
                           style={
                             i < filteredTodos.length - 1
                               ? {
@@ -1440,6 +1502,7 @@ export function OrganizationProjectDetailScreen({
                             </View>
                           ) : null}
                         </View>
+                        </Swipeable>
                       );
                     })
                   )}

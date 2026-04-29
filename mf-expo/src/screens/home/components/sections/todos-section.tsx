@@ -36,6 +36,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import DraggableFlatList, {
@@ -72,6 +73,7 @@ interface TodosSectionProps {
   onEditTodo: (todo: TodoItemType) => void;
   onToggleComplete: (todo: TodoItemType) => void;
   onReorderTodos: (ordered: TodoItemType[]) => void;
+  onArchiveTodo?: (todo: TodoItemType) => void;
   /** Called when todo reorder drag starts / ends (end includes cancel). Parent can disable outer scroll. */
   onReorderDragActiveChange?: (dragging: boolean) => void;
   /** Signed-in user id (for “me” assignee filter). */
@@ -102,6 +104,7 @@ interface TodoRowProps {
   isDragging: boolean;
   /** When true, hide reorder handle (filtered / project list). */
   dragDisabled?: boolean;
+  onArchive?: (todo: TodoItemType) => void;
 }
 
 const TodoRow = React.memo(function TodoRow({
@@ -115,8 +118,10 @@ const TodoRow = React.memo(function TodoRow({
   onDragHandleLongPress,
   isDragging,
   dragDisabled,
+  onArchive,
 }: TodoRowProps) {
   const { locale } = useLocale();
+  const onTint = foregroundOnTint(isDark);
   const { emoji, text } = parseTodoTitle(todo.title);
   const dueLine = useMemo(() => {
     if (!('dueAt' in todo) || !todo.dueAt) return null;
@@ -160,7 +165,7 @@ const TodoRow = React.memo(function TodoRow({
   const dueA11y = dueLine ? `${t('home.todos.dueDateLabel')}: ${dueLine}` : '';
   const metaA11y = [orgA11y, assignA11y, dueA11y].filter(Boolean).join('. ');
 
-  return (
+  const body = (
     <View style={itemStyle}>
       <Pressable
         onPress={handleToggle}
@@ -266,6 +271,33 @@ const TodoRow = React.memo(function TodoRow({
       )}
     </View>
   );
+  if (!onArchive) return body;
+  return (
+    <Swipeable
+      friction={2}
+      rightThreshold={40}
+      renderRightActions={() => (
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: 92,
+            marginLeft: 8,
+            borderRadius: 12,
+            backgroundColor: colors.warningColor ?? '#FF9500',
+          }}
+        >
+          <Ionicons name="archive-outline" size={20} color={onTint} />
+          <Text style={{ color: onTint, fontSize: 12, fontWeight: '700', marginTop: 4 }}>
+            {t('home.todos.archive')}
+          </Text>
+        </View>
+      )}
+      onSwipeableOpen={() => onArchive(todo)}
+    >
+      {body}
+    </Swipeable>
+  );
 });
 
 type HomeListEntry =
@@ -312,6 +344,7 @@ interface ProjectTodoRowProps {
   assignedDisplay: string;
   onToggle: (todo: OrganizationProjectTodoPayload) => void;
   onLongPressEdit?: () => void;
+  onArchive?: (todo: OrganizationProjectTodoPayload) => void;
 }
 
 const ProjectTodoRow = React.memo(function ProjectTodoRow({
@@ -321,6 +354,7 @@ const ProjectTodoRow = React.memo(function ProjectTodoRow({
   assignedDisplay,
   onToggle,
   onLongPressEdit,
+  onArchive,
 }: ProjectTodoRowProps) {
   const { locale } = useLocale();
   const { emoji, text } = parseTodoTitle(entry.todo.title);
@@ -371,7 +405,7 @@ const ProjectTodoRow = React.memo(function ProjectTodoRow({
 
   const successTone = colors.successColor ?? '#34C759';
 
-  return (
+  const body = (
     <View style={cardStyle}>
       <View style={todosSectionStyles.projectTodoMainRow}>
         <Pressable
@@ -491,6 +525,33 @@ const ProjectTodoRow = React.memo(function ProjectTodoRow({
       ) : null}
     </View>
   );
+  if (!onArchive) return body;
+  return (
+    <Swipeable
+      friction={2}
+      rightThreshold={40}
+      renderRightActions={() => (
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: 92,
+            marginLeft: 8,
+            borderRadius: 12,
+            backgroundColor: colors.warningColor ?? '#FF9500',
+          }}
+        >
+          <Ionicons name="archive-outline" size={20} color="#fff" />
+          <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', marginTop: 4 }}>
+            {t('home.todos.archive')}
+          </Text>
+        </View>
+      )}
+      onSwipeableOpen={() => onArchive(entry.todo)}
+    >
+      {body}
+    </Swipeable>
+  );
 });
 
 export const TodosSection = React.memo(function TodosSection({
@@ -503,6 +564,7 @@ export const TodosSection = React.memo(function TodosSection({
   onEditTodo,
   onToggleComplete,
   onReorderTodos,
+  onArchiveTodo,
   onReorderDragActiveChange,
   currentUserId,
   projectFiltersEnabled = false,
@@ -759,6 +821,39 @@ export const TodosSection = React.memo(function TodosSection({
     }
   }, []);
 
+  const handleArchiveProjectTodo = useCallback(
+    async (todo: OrganizationProjectTodoPayload) => {
+      const snapshot = todo;
+      setProjectTodos((prev) => prev.filter((x) => x.id !== todo.id));
+      try {
+        await mfGoOrganizations.archiveOrganizationProjectTodo(todo.id);
+      } catch {
+        setProjectTodos((prev) => [snapshot, ...prev]);
+        snackbarService.error(t('home.todos.archiveFailed'));
+        return;
+      }
+      snackbarService.show({
+        message: t('home.todos.archivedUndoHint'),
+        type: 'info',
+        duration: 5000,
+        action: {
+          label: t('common.undo'),
+          onPress: () => {
+            void (async () => {
+              try {
+                await mfGoOrganizations.unarchiveOrganizationProjectTodo(todo.id);
+                setProjectTodos((prev) => [snapshot, ...prev]);
+              } catch {
+                snackbarService.error(t('home.todos.undoArchiveFailed'));
+              }
+            })();
+          },
+        },
+      });
+    },
+    []
+  );
+
   const renderTodoItem = useCallback(
     ({ item, drag, isActive }: RenderItemParams<TodoItemType>) => (
       <ShadowDecorator
@@ -780,6 +875,7 @@ export const TodosSection = React.memo(function TodosSection({
             onDragHandleLongPress={drag}
             isDragging={isActive}
             dragDisabled={false}
+            onArchive={onArchiveTodo}
           />
         </ScaleDecorator>
       </ShadowDecorator>
@@ -812,6 +908,7 @@ export const TodosSection = React.memo(function TodosSection({
             onDragHandleLongPress={() => {}}
             isDragging={false}
             dragDisabled
+            onArchive={onArchiveTodo}
           />
         );
       }
@@ -823,6 +920,7 @@ export const TodosSection = React.memo(function TodosSection({
           colors={colors}
           assignedDisplay={aid ? getAssignedDisplay(aid) : ''}
           onToggle={handleToggleProjectTodo}
+          onArchive={handleArchiveProjectTodo}
           onLongPressEdit={() =>
             onEditProjectTodo?.({
               todo: entry.todo,

@@ -32,6 +32,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { snackbarService } from '@/src/shared/services/snackbar-service';
 
 const styles = StyleSheet.create({
@@ -249,6 +250,39 @@ export function OrganizationProjectsScreen({ organizationId }: OrganizationProje
   const rowBg = isDark ? '#1C1C1E' : '#FFFFFF';
   const sectionHeaderColor = isDark ? '#8E8E93' : '#6D6D72';
 
+  const handleArchiveProject = useCallback(
+    async (project: OrganizationProjectPayload) => {
+      const snapshot = project;
+      setProjects((prev) => prev.filter((x) => x.id !== project.id));
+      try {
+        await mfGoOrganizations.archiveOrganizationProject(project.id);
+      } catch {
+        setProjects((prev) => [snapshot, ...prev]);
+        snackbarService.error(t('profile.organizations.projects.archiveFailed'));
+        return;
+      }
+      snackbarService.show({
+        message: t('profile.organizations.projects.archivedUndoHint'),
+        type: 'info',
+        duration: 5000,
+        action: {
+          label: t('common.undo'),
+          onPress: () => {
+            void (async () => {
+              try {
+                await mfGoOrganizations.unarchiveOrganizationProject(project.id);
+                setProjects((prev) => [snapshot, ...prev]);
+              } catch {
+                snackbarService.error(t('profile.organizations.projects.undoArchiveFailed'));
+              }
+            })();
+          },
+        },
+      });
+    },
+    []
+  );
+
   if (!user) return null;
 
   return (
@@ -449,48 +483,75 @@ export function OrganizationProjectsScreen({ organizationId }: OrganizationProje
                 {projects.map((p, i) => {
                   const isSharedProject = p.organizationId !== organizationId;
                   return (
-                    <Pressable
+                    <Swipeable
                       key={p.id}
-                      onPress={() => openProject(p.id)}
-                      style={({ pressed }) => [
-                        styles.row,
-                        i < projects.length - 1 && {
-                          borderBottomWidth: StyleSheet.hairlineWidth,
-                          borderBottomColor: isDark ? '#38383A' : '#C6C6C8',
-                        },
-                        { opacity: pressed ? 0.7 : 1 },
-                      ]}
+                      friction={2}
+                      rightThreshold={40}
+                      renderRightActions={() =>
+                        isAdminOrOwner ? (
+                          <View
+                            style={{
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              width: 100,
+                              marginLeft: 8,
+                              borderRadius: 12,
+                              backgroundColor: colors.warningColor ?? '#FF9500',
+                            }}
+                          >
+                            <Ionicons name="archive-outline" size={20} color="#fff" />
+                            <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', marginTop: 4 }}>
+                              {t('home.todos.archive')}
+                            </Text>
+                          </View>
+                        ) : null
+                      }
+                      onSwipeableOpen={() => {
+                        if (isAdminOrOwner) void handleArchiveProject(p);
+                      }}
                     >
-                      <Ionicons name="folder-outline" size={22} color={colors.tint} />
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                          <Text style={[styles.rowText, { color: colors.bodyText }]}>{p.name}</Text>
-                          {isSharedProject ? (
-                            <View
-                              style={{
-                                paddingHorizontal: 8,
-                                paddingVertical: 3,
-                                borderRadius: 6,
-                                backgroundColor: isDark ? '#3A3A3C' : '#E8E8ED',
-                              }}
+                      <Pressable
+                        onPress={() => openProject(p.id)}
+                        style={({ pressed }) => [
+                          styles.row,
+                          i < projects.length - 1 && {
+                            borderBottomWidth: StyleSheet.hairlineWidth,
+                            borderBottomColor: isDark ? '#38383A' : '#C6C6C8',
+                          },
+                          { opacity: pressed ? 0.7 : 1 },
+                        ]}
+                      >
+                        <Ionicons name="folder-outline" size={22} color={colors.tint} />
+                        <View style={{ flex: 1 }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <Text style={[styles.rowText, { color: colors.bodyText }]}>{p.name}</Text>
+                            {isSharedProject ? (
+                              <View
+                                style={{
+                                  paddingHorizontal: 8,
+                                  paddingVertical: 3,
+                                  borderRadius: 6,
+                                  backgroundColor: isDark ? '#3A3A3C' : '#E8E8ED',
+                                }}
+                              >
+                                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.tint }}>
+                                  {t('profile.organizations.projects.sharedProjectBadge')}
+                                </Text>
+                              </View>
+                            ) : null}
+                          </View>
+                          {p.description?.trim() ? (
+                            <Text
+                              style={{ color: colors.labelText, fontSize: 13, marginTop: 2 }}
+                              numberOfLines={2}
                             >
-                              <Text style={{ fontSize: 11, fontWeight: '700', color: colors.tint }}>
-                                {t('profile.organizations.projects.sharedProjectBadge')}
-                              </Text>
-                            </View>
+                              {p.description}
+                            </Text>
                           ) : null}
                         </View>
-                        {p.description?.trim() ? (
-                          <Text
-                            style={{ color: colors.labelText, fontSize: 13, marginTop: 2 }}
-                            numberOfLines={2}
-                          >
-                            {p.description}
-                          </Text>
-                        ) : null}
-                      </View>
-                      <Ionicons name="chevron-forward" size={Sizing.icon.s} color={colors.icon} />
-                    </Pressable>
+                        <Ionicons name="chevron-forward" size={Sizing.icon.s} color={colors.icon} />
+                      </Pressable>
+                    </Swipeable>
                   );
                 })}
               </View>

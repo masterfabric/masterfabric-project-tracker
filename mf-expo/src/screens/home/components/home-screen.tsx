@@ -102,6 +102,7 @@ function HomeScreenContent() {
   const [homeScrollEnabled, setHomeScrollEnabled] = useState(true);
   /** Bumps so TodosSection refetches `organizationProjectTodos` when home is focused or refreshed. */
   const [projectTodosSyncKey, setProjectTodosSyncKey] = useState(0);
+  const [archivedTodoIds, setArchivedTodoIds] = useState<Set<string>>(new Set());
 
   useFocusEffect(
     useCallback(() => {
@@ -151,6 +152,56 @@ function HomeScreenContent() {
     setEditingTodo(null);
     setEditingHomeProjectTodo(null);
   }, []);
+
+  const handleArchiveTodo = useCallback(
+    async (todo: UserTodoPayload | LocalTodoPayload) => {
+      if (!isMfGoAuthenticated || todo.id.startsWith('local-')) {
+        snackbarService.info(t('home.todos.archiveRequiresAccount'));
+        return;
+      }
+      const todoId = todo.id;
+      setArchivedTodoIds((prev) => new Set(prev).add(todoId));
+      try {
+        await mfGoTodos.archiveTodo(todoId);
+      } catch (err) {
+        setArchivedTodoIds((prev) => {
+          const next = new Set(prev);
+          next.delete(todoId);
+          return next;
+        });
+        snackbarService.error(getGraphQLErrorMessage(err));
+        return;
+      }
+      snackbarService.show({
+        message: t('home.todos.archivedUndoHint'),
+        type: 'info',
+        duration: 5000,
+        action: {
+          label: t('common.undo'),
+          onPress: () => {
+            void (async () => {
+              try {
+                await mfGoTodos.unarchiveTodo(todoId);
+                setArchivedTodoIds((prev) => {
+                  const next = new Set(prev);
+                  next.delete(todoId);
+                  return next;
+                });
+              } catch {
+                snackbarService.error(t('home.todos.undoArchiveFailed'));
+              }
+            })();
+          },
+        },
+      });
+    },
+    [isMfGoAuthenticated]
+  );
+
+  const visibleTodos = useMemo(
+    () => todos.filter((row) => !archivedTodoIds.has(row.id)),
+    [todos, archivedTodoIds]
+  );
 
   const organizationProjectEditLock = useMemo(
     () =>
@@ -346,7 +397,7 @@ function HomeScreenContent() {
             )}
             {!isMfGoAuthenticated && <AuthBanner />}
             <TodosSection
-              todos={todos}
+              todos={visibleTodos}
               organizations={organizations}
               assignedUserNames={assignedUserNames}
               isLoading={todosLoading}
@@ -356,6 +407,7 @@ function HomeScreenContent() {
               onEditProjectTodo={handleEditProjectTodoFromHomeFilter}
               onToggleComplete={handleToggleComplete}
               onReorderTodos={handleReorderTodos}
+              onArchiveTodo={handleArchiveTodo}
               onReorderDragActiveChange={handleTodosReorderDragChange}
               currentUserId={user?.id ?? null}
               projectFiltersEnabled={isMfGoAuthenticated && organizations.length > 0}

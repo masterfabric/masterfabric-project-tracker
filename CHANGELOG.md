@@ -8,6 +8,8 @@ Supplement for **debug identifiers, ingest endpoints, or default dev logins** (n
 
 ### Added
 
+- **mf-expo:** **GFG-190** — swipe-left archive UX shipped across home todo rows, organization project todo rows (home + project detail), and organization project rows, with a bottom snackbar Undo action for **5 seconds**. Added GraphQL client bindings for `archive/unarchive` on user todos, project todos, and projects; EN + TR archive/undo copy included.
+
 - **mf-go:** **GFG-188** — GraphQL archive workflow for todos/projects: `archiveTodo` / `unarchiveTodo`, `archiveOrganizationProjectTodo` / `unarchiveOrganizationProjectTodo`, `archiveOrganizationProject` / `unarchiveOrganizationProject`, plus dedicated archived list queries (`myArchivedTodos`, `archivedOrganizationProjectTodos`, `archivedOrganizationProjects`). Default active-list queries continue to exclude archived rows.
 
 - **mf-go:** **GFG-187** — migration **`026_todo_archive_columns`** adds nullable **`archived_at`** to **`user_todos`**, **`organization_project_todos`**, and **`organization_projects`** (with indexes). Repository read paths exclude archived rows by default, and project/user todo subtask queries enforce parent-based archive visibility so archived parent todos hide subtasks while unarchive restores visibility. This slice is DB/domain groundwork only (no new GraphQL archive mutation contract in this commit).
