@@ -61,11 +61,8 @@ type Resolver struct {
 	// Todos
 	CreateTodoUC *todosUC.CreateTodoUseCase
 	ListTodosUC  *todosUC.ListTodosUseCase
-	ListArchivedTodosUC *todosUC.ListArchivedTodosUseCase
 	UpdateTodoUC *todosUC.UpdateTodoUseCase
 	DeleteTodoUC *todosUC.DeleteTodoUseCase
-	ArchiveTodoUC *todosUC.ArchiveTodoUseCase
-	UnarchiveTodoUC *todosUC.UnarchiveTodoUseCase
 	ListUserTodoSubtasksUC   *todosUC.ListUserTodoSubtasksUseCase
 	CreateUserTodoSubtaskUC  *todosUC.CreateUserTodoSubtaskUseCase
 	UpdateUserTodoSubtaskUC  *todosUC.UpdateUserTodoSubtaskUseCase
@@ -96,24 +93,18 @@ type Resolver struct {
 	OrganizationMessageBroadcaster *broadcaster.OrganizationMessageBroadcaster
 	// Organization projects (GFG-92)
 	ListOrganizationProjectsUC         *organizationUC.ListOrganizationProjectsUseCase
-	ListArchivedOrganizationProjectsUC *organizationUC.ListArchivedOrganizationProjectsUseCase
 	GetOrganizationProjectUC         *organizationUC.GetOrganizationProjectUseCase
 	ListOrganizationProjectMembersUC *organizationUC.ListOrganizationProjectMembersUseCase
 	ListOrganizationProjectTodosUC   *organizationUC.ListOrganizationProjectTodosUseCase
-	ListArchivedOrganizationProjectTodosUC *organizationUC.ListArchivedOrganizationProjectTodosUseCase
 	GetOrganizationProjectMyCapabilitiesUC *organizationUC.GetOrganizationProjectMyCapabilitiesUseCase
 	CreateOrganizationProjectUC      *organizationUC.CreateOrganizationProjectUseCase
 	UpdateOrganizationProjectUC      *organizationUC.UpdateOrganizationProjectUseCase
 	DeleteOrganizationProjectUC      *organizationUC.DeleteOrganizationProjectUseCase
-	ArchiveOrganizationProjectUC     *organizationUC.ArchiveOrganizationProjectUseCase
-	UnarchiveOrganizationProjectUC   *organizationUC.UnarchiveOrganizationProjectUseCase
 	AddOrganizationProjectMemberUC   *organizationUC.AddOrganizationProjectMemberUseCase
 	RemoveOrganizationProjectMemberUC *organizationUC.RemoveOrganizationProjectMemberUseCase
 	CreateOrganizationProjectTodoUC  *organizationUC.CreateOrganizationProjectTodoUseCase
 	UpdateOrganizationProjectTodoUC  *organizationUC.UpdateOrganizationProjectTodoUseCase
 	DeleteOrganizationProjectTodoUC  *organizationUC.DeleteOrganizationProjectTodoUseCase
-	ArchiveOrganizationProjectTodoUC *organizationUC.ArchiveOrganizationProjectTodoUseCase
-	UnarchiveOrganizationProjectTodoUC *organizationUC.UnarchiveOrganizationProjectTodoUseCase
 	ListOrganizationProjectTodoSubtasksUC   *organizationUC.ListOrganizationProjectTodoSubtasksUseCase
 	CreateOrganizationProjectTodoSubtaskUC *organizationUC.CreateOrganizationProjectTodoSubtaskUseCase
 	UpdateOrganizationProjectTodoSubtaskUC *organizationUC.UpdateOrganizationProjectTodoSubtaskUseCase

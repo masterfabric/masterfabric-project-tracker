@@ -31,15 +31,3 @@ func TestUserTodoSubtaskQueries_RespectParentArchiveVisibility(t *testing.T) {
 		}
 	}
 }
-
-func TestUserTodoArchivedQueriesAndMutationsUseArchiveState(t *testing.T) {
-	if !strings.Contains(sqlListArchivedTodosByUserID, "archived_at IS NOT NULL") {
-		t.Fatalf("archived list query must filter archived rows")
-	}
-	if !strings.Contains(sqlArchiveTodo, "archived_at IS NULL") {
-		t.Fatalf("archive query must only archive active rows")
-	}
-	if !strings.Contains(sqlUnarchiveTodo, "archived_at IS NOT NULL") {
-		t.Fatalf("unarchive query must only unarchive archived rows")
-	}
-}

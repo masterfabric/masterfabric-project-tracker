@@ -13,10 +13,6 @@ import (
 )
 
 const (
-	sqlGetOrgProjectByIDAnyState = `
-		SELECT id, organization_id, name, description, created_by_user_id, archived_at, created_at, updated_at
-		FROM organization_projects WHERE id = $1`
-
 	sqlGetOrgProjectByID = `
 		SELECT id, organization_id, name, description, created_by_user_id, archived_at, created_at, updated_at
 		FROM organization_projects WHERE id = $1 AND archived_at IS NULL`
@@ -54,40 +50,6 @@ const (
 			WHERE p.archived_at IS NULL
 		) u
 		ORDER BY u.created_at DESC`
-
-	sqlListArchivedOrgProjectsByOrg = `
-		SELECT id, organization_id, name, description, created_by_user_id, archived_at, created_at, updated_at
-		FROM (
-			SELECT id, organization_id, name, description, created_by_user_id, archived_at, created_at, updated_at
-			FROM organization_projects WHERE organization_id = $1 AND archived_at IS NOT NULL
-			UNION
-			SELECT p.id, p.organization_id, p.name, p.description, p.created_by_user_id, p.archived_at, p.created_at, p.updated_at
-			FROM organization_projects p
-			INNER JOIN organization_project_org_participations pop
-				ON pop.project_id = p.id
-				AND pop.participant_organization_id = $1
-				AND pop.status = 'accepted'
-			WHERE p.archived_at IS NOT NULL
-		) u
-		ORDER BY u.updated_at DESC`
-
-	sqlListArchivedOrgProjectsForMember = `
-		SELECT id, organization_id, name, description, created_by_user_id, archived_at, created_at, updated_at
-		FROM (
-			SELECT p.id, p.organization_id, p.name, p.description, p.created_by_user_id, p.archived_at, p.created_at, p.updated_at
-			FROM organization_projects p
-			INNER JOIN organization_project_members m ON m.project_id = p.id AND m.user_id = $2
-			WHERE p.organization_id = $1 AND p.archived_at IS NOT NULL
-			UNION
-			SELECT p.id, p.organization_id, p.name, p.description, p.created_by_user_id, p.archived_at, p.created_at, p.updated_at
-			FROM organization_projects p
-			INNER JOIN organization_project_org_participations pop
-				ON pop.project_id = p.id
-				AND pop.participant_organization_id = $1
-				AND pop.status = 'accepted'
-			WHERE p.archived_at IS NOT NULL
-		) u
-		ORDER BY u.updated_at DESC`
 
 	sqlUserMayViewProjectViaParticipation = `
 		SELECT EXISTS (
@@ -196,8 +158,6 @@ const (
 		WHERE id = $1`
 
 	sqlDeleteOrgProject = `DELETE FROM organization_projects WHERE id = $1`
-	sqlArchiveOrgProject = `UPDATE organization_projects SET archived_at = NOW(), updated_at = NOW() WHERE id = $1 AND archived_at IS NULL`
-	sqlUnarchiveOrgProject = `UPDATE organization_projects SET archived_at = NULL, updated_at = NOW() WHERE id = $1 AND archived_at IS NOT NULL`
 
 	sqlInsertProjectMember = `
 		INSERT INTO organization_project_members (id, project_id, user_id, added_at)
@@ -225,15 +185,6 @@ const (
 		SELECT id, project_id, title, status, created_by_user_id, assigned_to_user_id, archived_at, due_at, created_at, updated_at
 		FROM organization_project_todos WHERE id = $1 AND archived_at IS NULL`
 
-	sqlGetProjectTodoByIDAnyState = `
-		SELECT id, project_id, title, status, created_by_user_id, assigned_to_user_id, archived_at, due_at, created_at, updated_at
-		FROM organization_project_todos WHERE id = $1`
-
-	sqlListArchivedProjectTodos = `
-		SELECT id, project_id, title, status, created_by_user_id, assigned_to_user_id, archived_at, due_at, created_at, updated_at
-		FROM organization_project_todos WHERE project_id = $1 AND archived_at IS NOT NULL
-		ORDER BY archived_at DESC, created_at DESC`
-
 	sqlInsertProjectTodo = `
 		INSERT INTO organization_project_todos (id, project_id, title, status, created_by_user_id, assigned_to_user_id, due_at, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
@@ -244,8 +195,6 @@ const (
 		WHERE id = $1`
 
 	sqlDeleteProjectTodo = `DELETE FROM organization_project_todos WHERE id = $1`
-	sqlArchiveProjectTodo = `UPDATE organization_project_todos SET archived_at = NOW(), updated_at = NOW() WHERE id = $1 AND archived_at IS NULL`
-	sqlUnarchiveProjectTodo = `UPDATE organization_project_todos SET archived_at = NULL, updated_at = NOW() WHERE id = $1 AND archived_at IS NOT NULL`
 
 	sqlListProjectTodoSubtasks = `
 		SELECT id, project_todo_id, title, completed, sort_order, created_at, updated_at
@@ -529,19 +478,6 @@ func (r *OrganizationRepo) GetOrganizationProjectByID(ctx context.Context, id uu
 	return p, nil
 }
 
-// GetOrganizationProjectByIDAnyState returns a project or nil, including archived rows.
-func (r *OrganizationRepo) GetOrganizationProjectByIDAnyState(ctx context.Context, id uuid.UUID) (*model.OrganizationProject, error) {
-	row := r.db.QueryRow(ctx, sqlGetOrgProjectByIDAnyState, id)
-	p, err := scanOrganizationProject(row)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("organizationRepo.GetOrganizationProjectByIDAnyState: %w", err)
-	}
-	return p, nil
-}
-
 // ListOrganizationProjectsByOrgID lists projects in an organization.
 func (r *OrganizationRepo) ListOrganizationProjectsByOrgID(ctx context.Context, orgID uuid.UUID) ([]*model.OrganizationProject, error) {
 	rows, err := r.db.Query(ctx, sqlListOrgProjectsByOrg, orgID)
@@ -559,24 +495,6 @@ func (r *OrganizationRepo) ListOrganizationProjectsByOrgID(ctx context.Context, 
 		out = append(out, p)
 	}
 	return out, nil
-}
-
-// ListArchivedOrganizationProjectsByOrgID lists archived projects in an organization.
-func (r *OrganizationRepo) ListArchivedOrganizationProjectsByOrgID(ctx context.Context, orgID uuid.UUID) ([]*model.OrganizationProject, error) {
-	rows, err := r.db.Query(ctx, sqlListArchivedOrgProjectsByOrg, orgID)
-	if err != nil {
-		return nil, fmt.Errorf("organizationRepo.ListArchivedOrganizationProjectsByOrgID: %w", err)
-	}
-	defer rows.Close()
-	var out []*model.OrganizationProject
-	for rows.Next() {
-		p, err := scanOrganizationProject(rows)
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, p)
-	}
-	return out, rows.Err()
 }
 
 // ListOrganizationProjectsForOrgMember returns projects the user is assigned to in the org.
@@ -598,24 +516,6 @@ func (r *OrganizationRepo) ListOrganizationProjectsForOrgMember(ctx context.Cont
 	return out, nil
 }
 
-// ListArchivedOrganizationProjectsForOrgMember returns archived projects visible to a member.
-func (r *OrganizationRepo) ListArchivedOrganizationProjectsForOrgMember(ctx context.Context, orgID, userID uuid.UUID) ([]*model.OrganizationProject, error) {
-	rows, err := r.db.Query(ctx, sqlListArchivedOrgProjectsForMember, orgID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("organizationRepo.ListArchivedOrganizationProjectsForOrgMember: %w", err)
-	}
-	defer rows.Close()
-	var out []*model.OrganizationProject
-	for rows.Next() {
-		p, err := scanOrganizationProject(rows)
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, p)
-	}
-	return out, rows.Err()
-}
-
 // CreateOrganizationProject inserts a project row.
 func (r *OrganizationRepo) CreateOrganizationProject(ctx context.Context, p *model.OrganizationProject) error {
 	_, err := r.db.Exec(ctx, sqlInsertOrgProject,
@@ -635,28 +535,6 @@ func (r *OrganizationRepo) UpdateOrganizationProject(ctx context.Context, p *mod
 	}
 	if res.RowsAffected() == 0 {
 		return fmt.Errorf("organizationRepo.UpdateOrganizationProject: not found")
-	}
-	return nil
-}
-
-func (r *OrganizationRepo) ArchiveOrganizationProjectByID(ctx context.Context, id uuid.UUID) error {
-	res, err := r.db.Exec(ctx, sqlArchiveOrgProject, id)
-	if err != nil {
-		return fmt.Errorf("organizationRepo.ArchiveOrganizationProjectByID: %w", err)
-	}
-	if res.RowsAffected() == 0 {
-		return fmt.Errorf("organizationRepo.ArchiveOrganizationProjectByID: not found")
-	}
-	return nil
-}
-
-func (r *OrganizationRepo) UnarchiveOrganizationProjectByID(ctx context.Context, id uuid.UUID) error {
-	res, err := r.db.Exec(ctx, sqlUnarchiveOrgProject, id)
-	if err != nil {
-		return fmt.Errorf("organizationRepo.UnarchiveOrganizationProjectByID: %w", err)
-	}
-	if res.RowsAffected() == 0 {
-		return fmt.Errorf("organizationRepo.UnarchiveOrganizationProjectByID: not found")
 	}
 	return nil
 }
@@ -770,35 +648,6 @@ func (r *OrganizationRepo) GetOrganizationProjectTodoByID(ctx context.Context, i
 	return t, nil
 }
 
-func (r *OrganizationRepo) GetOrganizationProjectTodoByIDAnyState(ctx context.Context, id uuid.UUID) (*model.OrganizationProjectTodo, error) {
-	row := r.db.QueryRow(ctx, sqlGetProjectTodoByIDAnyState, id)
-	t, err := scanOrganizationProjectTodo(row)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("organizationRepo.GetOrganizationProjectTodoByIDAnyState: %w", err)
-	}
-	return t, nil
-}
-
-func (r *OrganizationRepo) ListArchivedOrganizationProjectTodos(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectTodo, error) {
-	rows, err := r.db.Query(ctx, sqlListArchivedProjectTodos, projectID)
-	if err != nil {
-		return nil, fmt.Errorf("organizationRepo.ListArchivedOrganizationProjectTodos: %w", err)
-	}
-	defer rows.Close()
-	var out []*model.OrganizationProjectTodo
-	for rows.Next() {
-		t, err := scanOrganizationProjectTodo(rows)
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, t)
-	}
-	return out, rows.Err()
-}
-
 // CreateOrganizationProjectTodo inserts a todo.
 func (r *OrganizationRepo) CreateOrganizationProjectTodo(ctx context.Context, t *model.OrganizationProjectTodo) error {
 	assignee := pgtype.UUID{Valid: false}
@@ -823,28 +672,6 @@ func (r *OrganizationRepo) UpdateOrganizationProjectTodo(ctx context.Context, t 
 	}
 	if res.RowsAffected() == 0 {
 		return fmt.Errorf("organizationRepo.UpdateOrganizationProjectTodo: not found")
-	}
-	return nil
-}
-
-func (r *OrganizationRepo) ArchiveOrganizationProjectTodoByID(ctx context.Context, id uuid.UUID) error {
-	res, err := r.db.Exec(ctx, sqlArchiveProjectTodo, id)
-	if err != nil {
-		return fmt.Errorf("organizationRepo.ArchiveOrganizationProjectTodoByID: %w", err)
-	}
-	if res.RowsAffected() == 0 {
-		return fmt.Errorf("organizationRepo.ArchiveOrganizationProjectTodoByID: not found")
-	}
-	return nil
-}
-
-func (r *OrganizationRepo) UnarchiveOrganizationProjectTodoByID(ctx context.Context, id uuid.UUID) error {
-	res, err := r.db.Exec(ctx, sqlUnarchiveProjectTodo, id)
-	if err != nil {
-		return fmt.Errorf("organizationRepo.UnarchiveOrganizationProjectTodoByID: %w", err)
-	}
-	if res.RowsAffected() == 0 {
-		return fmt.Errorf("organizationRepo.UnarchiveOrganizationProjectTodoByID: not found")
 	}
 	return nil
 }

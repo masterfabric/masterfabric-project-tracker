@@ -3,16 +3,12 @@
 extend type Query {
   """Projects in an organization (active org members)."""
   organizationProjects(organizationId: UUID!): [OrganizationProject!]!
-  """Archived projects in an organization (active org members)."""
-  archivedOrganizationProjects(organizationId: UUID!): [OrganizationProject!]!
   """Single project (org member on roster, or org admin/owner)."""
   organizationProject(projectId: UUID!): OrganizationProject!
   """People assigned to the project (same visibility as organizationProject)."""
   organizationProjectMembers(projectId: UUID!): [OrganizationProjectMember!]!
   """Todos on the project (same visibility as organizationProject)."""
   organizationProjectTodos(projectId: UUID!): [OrganizationProjectTodo!]!
-  """Archived todos on the project (same visibility as organizationProject)."""
-  archivedOrganizationProjectTodos(projectId: UUID!): [OrganizationProjectTodo!]!
   """Purchase line items on the project (same visibility as organizationProject)."""
   organizationProjectPurchases(projectId: UUID!): [OrganizationProjectPurchase!]!
   """Current caller write capabilities in this project context."""
@@ -33,10 +29,6 @@ extend type Mutation {
   updateOrganizationProject(input: UpdateOrganizationProjectInput!): OrganizationProject!
   """Delete a project and its roster/todos (org admin or owner)."""
   deleteOrganizationProject(projectId: UUID!): Boolean!
-  """Archive a project (org admin or owner)."""
-  archiveOrganizationProject(projectId: UUID!): Boolean!
-  """Unarchive a project (org admin or owner)."""
-  unarchiveOrganizationProject(projectId: UUID!): Boolean!
   """Add an organization member to the project roster (org admin or owner)."""
   addOrganizationProjectMember(projectId: UUID!, userId: UUID!): Boolean!
   """Remove someone from the project roster (org admin or owner)."""
@@ -47,10 +39,6 @@ extend type Mutation {
   updateOrganizationProjectTodo(input: UpdateOrganizationProjectTodoInput!): OrganizationProjectTodo!
   """Delete a todo (project roster member or org admin/owner)."""
   deleteOrganizationProjectTodo(todoId: UUID!): Boolean!
-  """Archive a project todo (project roster member or org admin/owner)."""
-  archiveOrganizationProjectTodo(todoId: UUID!): Boolean!
-  """Unarchive a project todo (project roster member or org admin/owner)."""
-  unarchiveOrganizationProjectTodo(todoId: UUID!): Boolean!
   """Add a checklist item under a project todo (GFG-117)."""
   createOrganizationProjectTodoSubtask(input: CreateOrganizationProjectTodoSubtaskInput!): OrganizationProjectTodoSubtask!
   """Update a project todo subtask."""

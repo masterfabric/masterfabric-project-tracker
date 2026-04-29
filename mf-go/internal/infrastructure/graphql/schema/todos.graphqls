@@ -3,8 +3,6 @@
 extend type Query {
   """List all todos for the authenticated user."""
   myTodos: [UserTodo!]!
-  """List archived todos for the authenticated user."""
-  myArchivedTodos: [UserTodo!]!
 }
 
 extend type Mutation {
@@ -16,10 +14,6 @@ extend type Mutation {
 
   """Delete a todo."""
   deleteTodo(id: UUID!): Boolean!
-  """Archive a todo without deleting it."""
-  archiveTodo(id: UUID!): Boolean!
-  """Restore a previously archived todo."""
-  unarchiveTodo(id: UUID!): Boolean!
 
   """Add a checklist item under a user todo (GFG-117). Same access as the parent task."""
   createUserTodoSubtask(input: CreateUserTodoSubtaskInput!): UserTodoSubtask!

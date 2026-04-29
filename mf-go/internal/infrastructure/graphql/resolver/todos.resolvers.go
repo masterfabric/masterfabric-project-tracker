@@ -99,30 +99,6 @@ func (r *mutationResolver) DeleteTodo(ctx context.Context, id uuid.UUID) (bool, 
 	return true, nil
 }
 
-// ArchiveTodo is the resolver for the archiveTodo field.
-func (r *mutationResolver) ArchiveTodo(ctx context.Context, id uuid.UUID) (bool, error) {
-	userID := middleware.UserIDFromContext(ctx)
-	if userID == uuid.Nil {
-		return false, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
-	}
-	if err := r.ArchiveTodoUC.Execute(ctx, userID, id); err != nil {
-		return false, mapErr(err)
-	}
-	return true, nil
-}
-
-// UnarchiveTodo is the resolver for the unarchiveTodo field.
-func (r *mutationResolver) UnarchiveTodo(ctx context.Context, id uuid.UUID) (bool, error) {
-	userID := middleware.UserIDFromContext(ctx)
-	if userID == uuid.Nil {
-		return false, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
-	}
-	if err := r.UnarchiveTodoUC.Execute(ctx, userID, id); err != nil {
-		return false, mapErr(err)
-	}
-	return true, nil
-}
-
 // CreateUserTodoSubtask is the resolver for the createUserTodoSubtask field.
 func (r *mutationResolver) CreateUserTodoSubtask(ctx context.Context, input model.CreateUserTodoSubtaskInput) (*model.UserTodoSubtask, error) {
 	userID := middleware.UserIDFromContext(ctx)
@@ -173,23 +149,6 @@ func (r *queryResolver) MyTodos(ctx context.Context) ([]*model.UserTodo, error) 
 		return nil, mapErr(err)
 	}
 
-	result := make([]*model.UserTodo, 0, len(todos))
-	for _, t := range todos {
-		result = append(result, todoRespToModel(t))
-	}
-	return result, nil
-}
-
-// MyArchivedTodos is the resolver for the myArchivedTodos field.
-func (r *queryResolver) MyArchivedTodos(ctx context.Context) ([]*model.UserTodo, error) {
-	userID := middleware.UserIDFromContext(ctx)
-	if userID == uuid.Nil {
-		return nil, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
-	}
-	todos, err := r.ListArchivedTodosUC.Execute(ctx, userID)
-	if err != nil {
-		return nil, mapErr(err)
-	}
 	result := make([]*model.UserTodo, 0, len(todos))
 	for _, t := range todos {
 		result = append(result, todoRespToModel(t))
