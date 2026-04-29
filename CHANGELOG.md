@@ -73,6 +73,8 @@ Supplement for **debug identifiers, ingest endpoints, or default dev logins** (n
 
 ### Changed
 
+- **docs (cursor):** `.cursor/rules/agent-no-git-commits.mdc` now requires temporary/exploratory test files to stay out of GitHub unless explicitly requested, asks agents to record non-committed test outcomes in Linear, and requires commit-time test status (`passed` / `failed` / `not run`).
+
 - **docs:** Public **`CHANGELOG.md`** no longer embeds **debug session ids**, **Cursor ingest** details, or **pgAdmin dev passwords**; those notes live in repo-root **`SECRETCHANGELOG.md`** (**gitignored** — create/maintain locally). **`CHANGELOG`** intro and affected bullets point to the supplement; **`.gitignore`** lists **`SECRETCHANGELOG.md`**.
 
 - **docs (cursor):** **`.cursor/AGENTS.md`** — **`AGENTS_BASE_VERSION` 1.1.1**; quick start covers **`npm run start-all`** and the two-terminal mf-go / mf-expo flow; GraphQL regeneration documents **`make generate`** then **`make generate-all`**; repo layout uses **`<repo-root>`**. **`.cursor/rules/monorepo-overview.mdc`** and commands **`dev-fullstack`**, **`build`**, **`regenerate-sdk`** updated to match. Removed **`.cursor/commands/repo-scope.md`**. **`pr-reviews`**, **`org-todo-dashboard`**, **`create-service`**, **`create-view`** copy trimmed to prior scope.
