@@ -331,6 +331,10 @@ export function useProfileViewModel() {
     });
   }, [profile?.email, user?.email]);
 
+  const navigateToArchivedItems = useCallback(() => {
+    router.push('/profile/archived-items');
+  }, []);
+
   const navigateToOrganization = useCallback((org: OrganizationPayload) => {
     router.push(`/organization/${org.id}`);
   }, []);
@@ -389,6 +393,7 @@ export function useProfileViewModel() {
     navigateBack,
     navigateToSettings,
     navigateToResetPassword,
+    navigateToArchivedItems,
     navigateToOrganization,
     navigateToSharedProject,
     deleteAccount,

@@ -38,6 +38,7 @@ export function ProfileScreen() {
     declineInvitation,
     navigateBack,
     navigateToSettings,
+    navigateToArchivedItems,
     navigateToResetPassword,
     navigateToOrganization,
     navigateToSharedProject,
@@ -109,6 +110,7 @@ export function ProfileScreen() {
           onAcceptInvitation={acceptInvitation}
           onDeclineInvitation={declineInvitation}
           onSettingsPress={navigateToSettings}
+          onArchivedItemsPress={navigateToArchivedItems}
           onResetPasswordPress={navigateToResetPassword}
           onOrganizationPress={navigateToOrganization}
           onSharedProjectPress={navigateToSharedProject}

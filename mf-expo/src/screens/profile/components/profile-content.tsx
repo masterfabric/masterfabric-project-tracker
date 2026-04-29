@@ -132,6 +132,7 @@ interface ProfileContentProps {
   onAcceptInvitation: (invitationId: string) => Promise<string | null>;
   onDeclineInvitation: (invitationId: string) => Promise<string | null>;
   onSettingsPress: () => void;
+  onArchivedItemsPress: () => void;
   onResetPasswordPress: () => void;
   onOrganizationPress: (org: OrganizationPayload) => void;
   onSharedProjectPress: (contextOrganizationId: string, projectId: string) => void;
@@ -166,6 +167,7 @@ export function ProfileContent({
   onAcceptInvitation,
   onDeclineInvitation,
   onSettingsPress,
+  onArchivedItemsPress,
   onResetPasswordPress,
   onOrganizationPress,
   onSharedProjectPress,
@@ -696,6 +698,34 @@ export function ProfileContent({
             <Ionicons name="chevron-forward" size={Sizing.icon.s} color={colors.icon} style={{ marginTop: 2 }} />
           </Pressable>
         ) : null}
+        <Pressable
+          onPress={onArchivedItemsPress}
+          style={({ pressed }) => [
+            styles.row,
+            {
+              opacity: pressed ? 0.6 : 1,
+              borderTopWidth: 1,
+              borderTopColor: isDark ? '#38383A' : '#C6C6C8',
+              alignItems: 'flex-start',
+            },
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel={t('profile.archivedItems.openA11y')}
+        >
+          <Ionicons name="archive-outline" size={20} color={colors.labelText} style={styles.infoIcon} />
+          <View style={{ flex: 1, paddingRight: 8 }}>
+            <Text style={[styles.rowTitle, { color: colors.text }]}>
+              {t('profile.archivedItems.rowTitle')}
+            </Text>
+            <Text
+              style={[styles.infoLabel, { color: colors.labelText, marginTop: 4, fontSize: 13, fontWeight: '400' }]}
+              numberOfLines={2}
+            >
+              {t('profile.archivedItems.rowSubtitle')}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={Sizing.icon.s} color={colors.icon} style={{ marginTop: 2 }} />
+        </Pressable>
         <Pressable
           onPress={onSettingsPress}
           style={({ pressed }) => [

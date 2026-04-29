@@ -707,6 +707,32 @@
       "settingsRowSubtitle": "Language, appearance, notifications, and more",
       "settingsA11y": "Open settings"
     },
+    "archivedItems": {
+      "rowTitle": "Archived items",
+      "rowSubtitle": "Review and restore archived todos and projects",
+      "openA11y": "Open archived items",
+      "title": "Archived items",
+      "subtitle": "Personal, organization, and project archives",
+      "loading": "Loading archived items...",
+      "empty": "No archived items found.",
+      "unarchiveSuccess": "Item restored.",
+      "sections": {
+        "todos": "Archived todos",
+        "projectTodos": "Archived project todos",
+        "projects": "Archived projects"
+      },
+      "actions": {
+        "unarchive": "Unarchive"
+      },
+      "source": {
+        "personal": "Personal",
+        "org": "Organization: {{org}}",
+        "orgProject": "Project in {{org}}",
+        "sharedProject": "Shared via {{org}} (host: {{host}})",
+        "orgProjectTodo": "{{project}} in {{org}}",
+        "sharedProjectTodo": "{{project}} shared via {{org}}"
+      }
+    },
     "deleteAccount": {
       "sectionTitle": "Delete account",
       "sectionSummary": "This permanently removes your login and related data. Counts below are from the server; open full details for the complete list.",

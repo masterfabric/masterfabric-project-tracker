@@ -665,6 +665,32 @@
       "resetPasswordRowSubtitle": "Bu adrese kod e-postası gönderilir, ardından yeni parolanızı belirlersiniz. İşlem sonunda yeniden oturum açmanız gerekir.",
       "resetPasswordA11y": "E-posta kodu ile parola sıfırla"
     },
+    "archivedItems": {
+      "rowTitle": "Arşivlenmiş öğeler",
+      "rowSubtitle": "Arşivlenmiş görev ve projeleri görüntüleyin, geri yükleyin",
+      "openA11y": "Arşivlenmiş öğeleri aç",
+      "title": "Arşivlenmiş öğeler",
+      "subtitle": "Kişisel, organizasyon ve proje arşivleri",
+      "loading": "Arşivlenmiş öğeler yükleniyor...",
+      "empty": "Arşivlenmiş öğe bulunamadı.",
+      "unarchiveSuccess": "Öğe geri yüklendi.",
+      "sections": {
+        "todos": "Arşivlenmiş görevler",
+        "projectTodos": "Arşivlenmiş proje görevleri",
+        "projects": "Arşivlenmiş projeler"
+      },
+      "actions": {
+        "unarchive": "Arşivden çıkar"
+      },
+      "source": {
+        "personal": "Kişisel",
+        "org": "Organizasyon: {{org}}",
+        "orgProject": "{{org}} içinde proje",
+        "sharedProject": "{{org}} üzerinden paylaşılan (sunucu: {{host}})",
+        "orgProjectTodo": "{{org}} içinde {{project}}",
+        "sharedProjectTodo": "{{org}} üzerinden paylaşılan {{project}}"
+      }
+    },
     "deleteAccount": {
       "sectionTitle": "Hesabı sil",
       "sectionSummary": "Oturumunuz ve ilgili veriler kalıcı olarak kaldırılır. Aşağıdaki sayılar sunucudadır; tüm liste için ayrıntıları açın.",

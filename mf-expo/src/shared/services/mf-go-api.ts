@@ -1173,6 +1173,14 @@ const ORGANIZATION_PROJECTS = /* GraphQL */ `
   }
 `;
 
+const ARCHIVED_ORGANIZATION_PROJECTS = /* GraphQL */ `
+  query ArchivedOrganizationProjects($organizationId: UUID!) {
+    archivedOrganizationProjects(organizationId: $organizationId) {
+      id organizationId name description createdByUserId createdAt updatedAt
+    }
+  }
+`;
+
 const ORGANIZATION_PROJECT = /* GraphQL */ `
   query OrganizationProject($projectId: UUID!) {
     organizationProject(projectId: $projectId) {
@@ -1212,6 +1220,14 @@ const ORGANIZATION_PROJECT_TODOS = /* GraphQL */ `
 const ORGANIZATION_PROJECT_TODOS_NO_SUBTASKS = /* GraphQL */ `
   query OrganizationProjectTodosNoSubtasks($projectId: UUID!) {
     organizationProjectTodos(projectId: $projectId) {
+      id projectId title status createdByUserId assignedToUserId dueAt createdAt updatedAt
+    }
+  }
+`;
+
+const ARCHIVED_ORGANIZATION_PROJECT_TODOS = /* GraphQL */ `
+  query ArchivedOrganizationProjectTodos($projectId: UUID!) {
+    archivedOrganizationProjectTodos(projectId: $projectId) {
       id projectId title status createdByUserId assignedToUserId dueAt createdAt updatedAt
     }
   }
@@ -1711,6 +1727,12 @@ export const mfGoOrganizations = {
       organizationId,
     }).then((r) => r.organizationProjects),
 
+  archivedOrganizationProjects: (organizationId: string) =>
+    graphqlRequest<{ archivedOrganizationProjects: OrganizationProjectPayload[] }>(
+      ARCHIVED_ORGANIZATION_PROJECTS,
+      { organizationId }
+    ).then((r) => r.archivedOrganizationProjects),
+
   organizationProject: (projectId: string) =>
     graphqlRequest<{ organizationProject: OrganizationProjectPayload }>(ORGANIZATION_PROJECT, {
       projectId,
@@ -1745,6 +1767,12 @@ export const mfGoOrganizations = {
       return r.organizationProjectTodos;
     }
   },
+
+  archivedOrganizationProjectTodos: (projectId: string) =>
+    graphqlRequest<{ archivedOrganizationProjectTodos: OrganizationProjectTodoPayload[] }>(
+      ARCHIVED_ORGANIZATION_PROJECT_TODOS,
+      { projectId }
+    ).then((r) => r.archivedOrganizationProjectTodos),
 
   organizationProjectPurchases: (projectId: string) =>
     graphqlRequest<{ organizationProjectPurchases: OrganizationProjectPurchasePayload[] }>(
@@ -2277,6 +2305,17 @@ const MY_TODOS_WITH_SUBTASKS = /* GraphQL */ `
   }
 `;
 
+const MY_ARCHIVED_TODOS = /* GraphQL */ `
+  query MyArchivedTodos {
+    myArchivedTodos {
+      id userID title completed organizationID assignedToUserID dueAt createdAt updatedAt
+      subtasks {
+        id userTodoId title completed sortOrder createdAt updatedAt
+      }
+    }
+  }
+`;
+
 const CREATE_TODO = /* GraphQL */ `
   mutation CreateTodo($input: CreateTodoInput!) {
     createTodo(input: $input) {
@@ -2359,6 +2398,11 @@ export const mfGoTodos = {
       return r.myTodos;
     }
   },
+
+  myArchivedTodos: () =>
+    graphqlRequest<{ myArchivedTodos: UserTodoPayload[] }>(MY_ARCHIVED_TODOS).then(
+      (r) => r.myArchivedTodos
+    ),
 
   createTodo: async (input: {
     title: string;
