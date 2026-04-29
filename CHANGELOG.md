@@ -8,6 +8,8 @@ Supplement for **debug identifiers, ingest endpoints, or default dev logins** (n
 
 ### Added
 
+- **mf-go:** **GFG-188** — GraphQL archive workflow for todos/projects: `archiveTodo` / `unarchiveTodo`, `archiveOrganizationProjectTodo` / `unarchiveOrganizationProjectTodo`, `archiveOrganizationProject` / `unarchiveOrganizationProject`, plus dedicated archived list queries (`myArchivedTodos`, `archivedOrganizationProjectTodos`, `archivedOrganizationProjects`). Default active-list queries continue to exclude archived rows.
+
 - **mf-go:** **GFG-187** — migration **`026_todo_archive_columns`** adds nullable **`archived_at`** to **`user_todos`**, **`organization_project_todos`**, and **`organization_projects`** (with indexes). Repository read paths exclude archived rows by default, and project/user todo subtask queries enforce parent-based archive visibility so archived parent todos hide subtasks while unarchive restores visibility. This slice is DB/domain groundwork only (no new GraphQL archive mutation contract in this commit).
 
 - **mf-go + mf-expo:** **GFG-186** — Project-level shared-organization **management surface** after invite: host-side linked org list with status visibility, capability switch updates (**todos / purchases**) persisted via GraphQL mutation, and guarded ownership transfer to an **accepted** participant org with confirmation flow. Added audit events for permission updates and ownership transfer, plus EN + TR copy for management UX in project settings.
@@ -23,8 +25,6 @@ Supplement for **debug identifiers, ingest endpoints, or default dev logins** (n
 - **mf-expo:** **Org owner dashboard (dark)** — project filter **Done** uses **`activeButton` / `activeButtonText`** (readable contrast; dark `tint` is light off-white and must not be paired with white label text). **Home/Profile** dashboard entry card: org row **aligns** with the title row (icon-width **lead** spacer); org name **bodyText** in dark for readability. (**GFG-177**)
 
 ### Fixed
-
-- **mf-go:** **GFG-188** archive/unarchive GraphQL surface was reverted; archived mutations/queries for todos and organization projects are intentionally deferred and are not part of the current Unreleased API slice.
 
 - **mf-go:** **GFG-189** dashboard archived-row exclusion patch was **reverted** pending real end-to-end experience validation. The previous update was verified only with package-level `go test` and needs integration/runtime confirmation before re-landing.
 

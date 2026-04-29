@@ -230,6 +230,9 @@ type ComplexityRoot struct {
 		AdminUpdateProductRelease                             func(childComplexity int, input model.AdminProductReleaseInput) int
 		AdminUpdateUserTodo                                   func(childComplexity int, input model.AdminUpdateUserTodoInput) int
 		AdminUpsertAppSetting                                 func(childComplexity int, input model.AdminAppSettingInput) int
+		ArchiveOrganizationProject                            func(childComplexity int, projectID uuid.UUID) int
+		ArchiveOrganizationProjectTodo                        func(childComplexity int, todoID uuid.UUID) int
+		ArchiveTodo                                           func(childComplexity int, id uuid.UUID) int
 		CreateOrganization                                    func(childComplexity int, input model.CreateOrganizationInput) int
 		CreateOrganizationNews                                func(childComplexity int, input model.CreateOrganizationNewsInput) int
 		CreateOrganizationProject                             func(childComplexity int, input model.CreateOrganizationProjectInput) int
@@ -273,6 +276,9 @@ type ComplexityRoot struct {
 		SetOrganizationMemberSuspended                        func(childComplexity int, organizationID uuid.UUID, userID uuid.UUID, suspended bool) int
 		SubmitFeedback                                        func(childComplexity int, input model.SubmitFeedbackInput) int
 		TransferOrganizationProjectOwnership                  func(childComplexity int, projectID uuid.UUID, newHostOrganizationID uuid.UUID) int
+		UnarchiveOrganizationProject                          func(childComplexity int, projectID uuid.UUID) int
+		UnarchiveOrganizationProjectTodo                      func(childComplexity int, todoID uuid.UUID) int
+		UnarchiveTodo                                         func(childComplexity int, id uuid.UUID) int
 		UpdateMySettings                                      func(childComplexity int, input model.UserSettingsInput) int
 		UpdateOrganization                                    func(childComplexity int, input model.UpdateOrganizationInput) int
 		UpdateOrganizationNews                                func(childComplexity int, input model.UpdateOrganizationNewsInput) int
@@ -556,9 +562,12 @@ type ComplexityRoot struct {
 		AdminUserSessions                    func(childComplexity int, userID *uuid.UUID, limit *int) int
 		AdminUsers                           func(childComplexity int, page *int, pageSize *int) int
 		AppSettings                          func(childComplexity int) int
+		ArchivedOrganizationProjectTodos     func(childComplexity int, projectID uuid.UUID) int
+		ArchivedOrganizationProjects         func(childComplexity int, organizationID uuid.UUID) int
 		Me                                   func(childComplexity int) int
 		MyAccountDeletionImpact              func(childComplexity int) int
 		MyAddresses                          func(childComplexity int) int
+		MyArchivedTodos                      func(childComplexity int) int
 		MyDevices                            func(childComplexity int) int
 		MyFeedbackThreads                    func(childComplexity int) int
 		MyOrganizations                      func(childComplexity int) int
@@ -735,11 +744,15 @@ type MutationResolver interface {
 	CreateOrganizationProject(ctx context.Context, input model.CreateOrganizationProjectInput) (*model.OrganizationProject, error)
 	UpdateOrganizationProject(ctx context.Context, input model.UpdateOrganizationProjectInput) (*model.OrganizationProject, error)
 	DeleteOrganizationProject(ctx context.Context, projectID uuid.UUID) (bool, error)
+	ArchiveOrganizationProject(ctx context.Context, projectID uuid.UUID) (bool, error)
+	UnarchiveOrganizationProject(ctx context.Context, projectID uuid.UUID) (bool, error)
 	AddOrganizationProjectMember(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (bool, error)
 	RemoveOrganizationProjectMember(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (bool, error)
 	CreateOrganizationProjectTodo(ctx context.Context, input model.CreateOrganizationProjectTodoInput) (*model.OrganizationProjectTodo, error)
 	UpdateOrganizationProjectTodo(ctx context.Context, input model.UpdateOrganizationProjectTodoInput) (*model.OrganizationProjectTodo, error)
 	DeleteOrganizationProjectTodo(ctx context.Context, todoID uuid.UUID) (bool, error)
+	ArchiveOrganizationProjectTodo(ctx context.Context, todoID uuid.UUID) (bool, error)
+	UnarchiveOrganizationProjectTodo(ctx context.Context, todoID uuid.UUID) (bool, error)
 	CreateOrganizationProjectTodoSubtask(ctx context.Context, input model.CreateOrganizationProjectTodoSubtaskInput) (*model.OrganizationProjectTodoSubtask, error)
 	UpdateOrganizationProjectTodoSubtask(ctx context.Context, input model.UpdateOrganizationProjectTodoSubtaskInput) (*model.OrganizationProjectTodoSubtask, error)
 	DeleteOrganizationProjectTodoSubtask(ctx context.Context, id uuid.UUID) (bool, error)
@@ -774,6 +787,8 @@ type MutationResolver interface {
 	CreateTodo(ctx context.Context, input model.CreateTodoInput) (*model.UserTodo, error)
 	UpdateTodo(ctx context.Context, input model.UpdateTodoInput) (*model.UserTodo, error)
 	DeleteTodo(ctx context.Context, id uuid.UUID) (bool, error)
+	ArchiveTodo(ctx context.Context, id uuid.UUID) (bool, error)
+	UnarchiveTodo(ctx context.Context, id uuid.UUID) (bool, error)
 	CreateUserTodoSubtask(ctx context.Context, input model.CreateUserTodoSubtaskInput) (*model.UserTodoSubtask, error)
 	UpdateUserTodoSubtask(ctx context.Context, input model.UpdateUserTodoSubtaskInput) (*model.UserTodoSubtask, error)
 	DeleteUserTodoSubtask(ctx context.Context, id uuid.UUID) (bool, error)
@@ -804,9 +819,11 @@ type QueryResolver interface {
 	Notifications(ctx context.Context, language *string, limit *int) ([]*model.NotificationPayload, error)
 	OrganizationOwnerTodoDashboard(ctx context.Context, input model.OrganizationOwnerTodoDashboardInput) (*model.OrganizationOwnerTodoDashboard, error)
 	OrganizationProjects(ctx context.Context, organizationID uuid.UUID) ([]*model.OrganizationProject, error)
+	ArchivedOrganizationProjects(ctx context.Context, organizationID uuid.UUID) ([]*model.OrganizationProject, error)
 	OrganizationProject(ctx context.Context, projectID uuid.UUID) (*model.OrganizationProject, error)
 	OrganizationProjectMembers(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectMember, error)
 	OrganizationProjectTodos(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectTodo, error)
+	ArchivedOrganizationProjectTodos(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectTodo, error)
 	OrganizationProjectPurchases(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectPurchase, error)
 	OrganizationProjectMyCapabilities(ctx context.Context, projectID uuid.UUID) (*model.OrganizationProjectMyCapabilities, error)
 	PendingOrganizationProjectOrgInvites(ctx context.Context, organizationID uuid.UUID) ([]*model.OrganizationProjectOrgInvitePendingRow, error)
@@ -824,6 +841,7 @@ type QueryResolver interface {
 	MySettings(ctx context.Context) (*model.UserSettingsPayload, error)
 	AppSettings(ctx context.Context) ([]*model.AppSetting, error)
 	MyTodos(ctx context.Context) ([]*model.UserTodo, error)
+	MyArchivedTodos(ctx context.Context) ([]*model.UserTodo, error)
 	Me(ctx context.Context) (*model.UserProfile, error)
 	MyAccountDeletionImpact(ctx context.Context) (*model.MyAccountDeletionImpact, error)
 	NicknameAvailable(ctx context.Context, nickname string) (bool, error)
@@ -1888,6 +1906,42 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.AdminUpsertAppSetting(childComplexity, args["input"].(model.AdminAppSettingInput)), true
 
+	case "Mutation.archiveOrganizationProject":
+		if e.complexity.Mutation.ArchiveOrganizationProject == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_archiveOrganizationProject_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ArchiveOrganizationProject(childComplexity, args["projectId"].(uuid.UUID)), true
+
+	case "Mutation.archiveOrganizationProjectTodo":
+		if e.complexity.Mutation.ArchiveOrganizationProjectTodo == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_archiveOrganizationProjectTodo_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ArchiveOrganizationProjectTodo(childComplexity, args["todoId"].(uuid.UUID)), true
+
+	case "Mutation.archiveTodo":
+		if e.complexity.Mutation.ArchiveTodo == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_archiveTodo_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ArchiveTodo(childComplexity, args["id"].(uuid.UUID)), true
+
 	case "Mutation.createOrganization":
 		if e.complexity.Mutation.CreateOrganization == nil {
 			break
@@ -2393,6 +2447,42 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.TransferOrganizationProjectOwnership(childComplexity, args["projectId"].(uuid.UUID), args["newHostOrganizationId"].(uuid.UUID)), true
+
+	case "Mutation.unarchiveOrganizationProject":
+		if e.complexity.Mutation.UnarchiveOrganizationProject == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_unarchiveOrganizationProject_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UnarchiveOrganizationProject(childComplexity, args["projectId"].(uuid.UUID)), true
+
+	case "Mutation.unarchiveOrganizationProjectTodo":
+		if e.complexity.Mutation.UnarchiveOrganizationProjectTodo == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_unarchiveOrganizationProjectTodo_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UnarchiveOrganizationProjectTodo(childComplexity, args["todoId"].(uuid.UUID)), true
+
+	case "Mutation.unarchiveTodo":
+		if e.complexity.Mutation.UnarchiveTodo == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_unarchiveTodo_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UnarchiveTodo(childComplexity, args["id"].(uuid.UUID)), true
 
 	case "Mutation.updateMySettings":
 		if e.complexity.Mutation.UpdateMySettings == nil {
@@ -3944,6 +4034,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.AppSettings(childComplexity), true
 
+	case "Query.archivedOrganizationProjectTodos":
+		if e.complexity.Query.ArchivedOrganizationProjectTodos == nil {
+			break
+		}
+
+		args, err := ec.field_Query_archivedOrganizationProjectTodos_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ArchivedOrganizationProjectTodos(childComplexity, args["projectId"].(uuid.UUID)), true
+
+	case "Query.archivedOrganizationProjects":
+		if e.complexity.Query.ArchivedOrganizationProjects == nil {
+			break
+		}
+
+		args, err := ec.field_Query_archivedOrganizationProjects_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ArchivedOrganizationProjects(childComplexity, args["organizationId"].(uuid.UUID)), true
+
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
 			break
@@ -3964,6 +4078,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.MyAddresses(childComplexity), true
+
+	case "Query.myArchivedTodos":
+		if e.complexity.Query.MyArchivedTodos == nil {
+			break
+		}
+
+		return e.complexity.Query.MyArchivedTodos(childComplexity), true
 
 	case "Query.myDevices":
 		if e.complexity.Query.MyDevices == nil {
@@ -5642,12 +5763,16 @@ type OrganizationOwnerAssigneeSlice {
 extend type Query {
   """Projects in an organization (active org members)."""
   organizationProjects(organizationId: UUID!): [OrganizationProject!]!
+  """Archived projects in an organization (active org members)."""
+  archivedOrganizationProjects(organizationId: UUID!): [OrganizationProject!]!
   """Single project (org member on roster, or org admin/owner)."""
   organizationProject(projectId: UUID!): OrganizationProject!
   """People assigned to the project (same visibility as organizationProject)."""
   organizationProjectMembers(projectId: UUID!): [OrganizationProjectMember!]!
   """Todos on the project (same visibility as organizationProject)."""
   organizationProjectTodos(projectId: UUID!): [OrganizationProjectTodo!]!
+  """Archived todos on the project (same visibility as organizationProject)."""
+  archivedOrganizationProjectTodos(projectId: UUID!): [OrganizationProjectTodo!]!
   """Purchase line items on the project (same visibility as organizationProject)."""
   organizationProjectPurchases(projectId: UUID!): [OrganizationProjectPurchase!]!
   """Current caller write capabilities in this project context."""
@@ -5668,6 +5793,10 @@ extend type Mutation {
   updateOrganizationProject(input: UpdateOrganizationProjectInput!): OrganizationProject!
   """Delete a project and its roster/todos (org admin or owner)."""
   deleteOrganizationProject(projectId: UUID!): Boolean!
+  """Archive a project (org admin or owner)."""
+  archiveOrganizationProject(projectId: UUID!): Boolean!
+  """Unarchive a project (org admin or owner)."""
+  unarchiveOrganizationProject(projectId: UUID!): Boolean!
   """Add an organization member to the project roster (org admin or owner)."""
   addOrganizationProjectMember(projectId: UUID!, userId: UUID!): Boolean!
   """Remove someone from the project roster (org admin or owner)."""
@@ -5678,6 +5807,10 @@ extend type Mutation {
   updateOrganizationProjectTodo(input: UpdateOrganizationProjectTodoInput!): OrganizationProjectTodo!
   """Delete a todo (project roster member or org admin/owner)."""
   deleteOrganizationProjectTodo(todoId: UUID!): Boolean!
+  """Archive a project todo (project roster member or org admin/owner)."""
+  archiveOrganizationProjectTodo(todoId: UUID!): Boolean!
+  """Unarchive a project todo (project roster member or org admin/owner)."""
+  unarchiveOrganizationProjectTodo(todoId: UUID!): Boolean!
   """Add a checklist item under a project todo (GFG-117)."""
   createOrganizationProjectTodoSubtask(input: CreateOrganizationProjectTodoSubtaskInput!): OrganizationProjectTodoSubtask!
   """Update a project todo subtask."""
@@ -6272,6 +6405,8 @@ enum Theme {
 extend type Query {
   """List all todos for the authenticated user."""
   myTodos: [UserTodo!]!
+  """List archived todos for the authenticated user."""
+  myArchivedTodos: [UserTodo!]!
 }
 
 extend type Mutation {
@@ -6283,6 +6418,10 @@ extend type Mutation {
 
   """Delete a todo."""
   deleteTodo(id: UUID!): Boolean!
+  """Archive a todo without deleting it."""
+  archiveTodo(id: UUID!): Boolean!
+  """Restore a previously archived todo."""
+  unarchiveTodo(id: UUID!): Boolean!
 
   """Add a checklist item under a user todo (GFG-117). Same access as the parent task."""
   createUserTodoSubtask(input: CreateUserTodoSubtaskInput!): UserTodoSubtask!
@@ -7446,6 +7585,102 @@ func (ec *executionContext) field_Mutation_adminUpsertAppSetting_argsInput(
 	}
 
 	var zeroVal model.AdminAppSettingInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_archiveOrganizationProjectTodo_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_archiveOrganizationProjectTodo_argsTodoID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["todoId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_archiveOrganizationProjectTodo_argsTodoID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["todoId"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("todoId"))
+	if tmp, ok := rawArgs["todoId"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_archiveOrganizationProject_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_archiveOrganizationProject_argsProjectID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["projectId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_archiveOrganizationProject_argsProjectID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["projectId"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("projectId"))
+	if tmp, ok := rawArgs["projectId"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_archiveTodo_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_archiveTodo_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_archiveTodo_argsID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["id"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
 	return zeroVal, nil
 }
 
@@ -8977,6 +9212,102 @@ func (ec *executionContext) field_Mutation_transferOrganizationProjectOwnership_
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_Mutation_unarchiveOrganizationProjectTodo_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_unarchiveOrganizationProjectTodo_argsTodoID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["todoId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_unarchiveOrganizationProjectTodo_argsTodoID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["todoId"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("todoId"))
+	if tmp, ok := rawArgs["todoId"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_unarchiveOrganizationProject_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_unarchiveOrganizationProject_argsProjectID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["projectId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_unarchiveOrganizationProject_argsProjectID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["projectId"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("projectId"))
+	if tmp, ok := rawArgs["projectId"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_unarchiveTodo_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_unarchiveTodo_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_unarchiveTodo_argsID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["id"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Mutation_updateMySettings_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -9931,6 +10262,70 @@ func (ec *executionContext) field_Query_adminUsers_argsPageSize(
 	}
 
 	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_archivedOrganizationProjectTodos_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Query_archivedOrganizationProjectTodos_argsProjectID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["projectId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_archivedOrganizationProjectTodos_argsProjectID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["projectId"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("projectId"))
+	if tmp, ok := rawArgs["projectId"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_archivedOrganizationProjects_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Query_archivedOrganizationProjects_argsOrganizationID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["organizationId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_archivedOrganizationProjects_argsOrganizationID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (uuid.UUID, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["organizationId"]
+	if !ok {
+		var zeroVal uuid.UUID
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("organizationId"))
+	if tmp, ok := rawArgs["organizationId"]; ok {
+		return ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	}
+
+	var zeroVal uuid.UUID
 	return zeroVal, nil
 }
 
@@ -17562,6 +17957,116 @@ func (ec *executionContext) fieldContext_Mutation_deleteOrganizationProject(ctx 
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_archiveOrganizationProject(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_archiveOrganizationProject(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ArchiveOrganizationProject(rctx, fc.Args["projectId"].(uuid.UUID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_archiveOrganizationProject(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_archiveOrganizationProject_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_unarchiveOrganizationProject(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_unarchiveOrganizationProject(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UnarchiveOrganizationProject(rctx, fc.Args["projectId"].(uuid.UUID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_unarchiveOrganizationProject(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_unarchiveOrganizationProject_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_addOrganizationProjectMember(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_addOrganizationProjectMember(ctx, field)
 	if err != nil {
@@ -17875,6 +18380,116 @@ func (ec *executionContext) fieldContext_Mutation_deleteOrganizationProjectTodo(
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteOrganizationProjectTodo_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_archiveOrganizationProjectTodo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_archiveOrganizationProjectTodo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ArchiveOrganizationProjectTodo(rctx, fc.Args["todoId"].(uuid.UUID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_archiveOrganizationProjectTodo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_archiveOrganizationProjectTodo_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_unarchiveOrganizationProjectTodo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_unarchiveOrganizationProjectTodo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UnarchiveOrganizationProjectTodo(rctx, fc.Args["todoId"].(uuid.UUID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_unarchiveOrganizationProjectTodo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_unarchiveOrganizationProjectTodo_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -20223,6 +20838,116 @@ func (ec *executionContext) fieldContext_Mutation_deleteTodo(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteTodo_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_archiveTodo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_archiveTodo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ArchiveTodo(rctx, fc.Args["id"].(uuid.UUID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_archiveTodo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_archiveTodo_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_unarchiveTodo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_unarchiveTodo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UnarchiveTodo(rctx, fc.Args["id"].(uuid.UUID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_unarchiveTodo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_unarchiveTodo_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -29815,6 +30540,77 @@ func (ec *executionContext) fieldContext_Query_organizationProjects(ctx context.
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_archivedOrganizationProjects(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_archivedOrganizationProjects(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ArchivedOrganizationProjects(rctx, fc.Args["organizationId"].(uuid.UUID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.OrganizationProject)
+	fc.Result = res
+	return ec.marshalNOrganizationProject2ᚕᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProjectᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_archivedOrganizationProjects(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_OrganizationProject_id(ctx, field)
+			case "organizationId":
+				return ec.fieldContext_OrganizationProject_organizationId(ctx, field)
+			case "name":
+				return ec.fieldContext_OrganizationProject_name(ctx, field)
+			case "description":
+				return ec.fieldContext_OrganizationProject_description(ctx, field)
+			case "createdByUserId":
+				return ec.fieldContext_OrganizationProject_createdByUserId(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_OrganizationProject_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_OrganizationProject_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OrganizationProject", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_archivedOrganizationProjects_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_organizationProject(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_organizationProject(ctx, field)
 	if err != nil {
@@ -30024,6 +30820,83 @@ func (ec *executionContext) fieldContext_Query_organizationProjectTodos(ctx cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_organizationProjectTodos_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_archivedOrganizationProjectTodos(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_archivedOrganizationProjectTodos(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ArchivedOrganizationProjectTodos(rctx, fc.Args["projectId"].(uuid.UUID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.OrganizationProjectTodo)
+	fc.Result = res
+	return ec.marshalNOrganizationProjectTodo2ᚕᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐOrganizationProjectTodoᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_archivedOrganizationProjectTodos(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_OrganizationProjectTodo_id(ctx, field)
+			case "projectId":
+				return ec.fieldContext_OrganizationProjectTodo_projectId(ctx, field)
+			case "title":
+				return ec.fieldContext_OrganizationProjectTodo_title(ctx, field)
+			case "status":
+				return ec.fieldContext_OrganizationProjectTodo_status(ctx, field)
+			case "createdByUserId":
+				return ec.fieldContext_OrganizationProjectTodo_createdByUserId(ctx, field)
+			case "assignedToUserId":
+				return ec.fieldContext_OrganizationProjectTodo_assignedToUserId(ctx, field)
+			case "dueAt":
+				return ec.fieldContext_OrganizationProjectTodo_dueAt(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_OrganizationProjectTodo_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_OrganizationProjectTodo_updatedAt(ctx, field)
+			case "subtasks":
+				return ec.fieldContext_OrganizationProjectTodo_subtasks(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OrganizationProjectTodo", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_archivedOrganizationProjectTodos_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -31173,6 +32046,72 @@ func (ec *executionContext) _Query_myTodos(ctx context.Context, field graphql.Co
 }
 
 func (ec *executionContext) fieldContext_Query_myTodos(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_UserTodo_id(ctx, field)
+			case "userID":
+				return ec.fieldContext_UserTodo_userID(ctx, field)
+			case "title":
+				return ec.fieldContext_UserTodo_title(ctx, field)
+			case "completed":
+				return ec.fieldContext_UserTodo_completed(ctx, field)
+			case "organizationID":
+				return ec.fieldContext_UserTodo_organizationID(ctx, field)
+			case "assignedToUserID":
+				return ec.fieldContext_UserTodo_assignedToUserID(ctx, field)
+			case "dueAt":
+				return ec.fieldContext_UserTodo_dueAt(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_UserTodo_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_UserTodo_updatedAt(ctx, field)
+			case "subtasks":
+				return ec.fieldContext_UserTodo_subtasks(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type UserTodo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_myArchivedTodos(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_myArchivedTodos(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().MyArchivedTodos(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.UserTodo)
+	fc.Result = res
+	return ec.marshalNUserTodo2ᚕᚖgithubᚗcomᚋmasterfabricᚋmasterfabric_go_basicᚋinternalᚋinfrastructureᚋgraphqlᚋmodelᚐUserTodoᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_myArchivedTodos(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -41257,6 +42196,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "archiveOrganizationProject":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_archiveOrganizationProject(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "unarchiveOrganizationProject":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_unarchiveOrganizationProject(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "addOrganizationProjectMember":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_addOrganizationProjectMember(ctx, field)
@@ -41288,6 +42241,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteOrganizationProjectTodo":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteOrganizationProjectTodo(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "archiveOrganizationProjectTodo":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_archiveOrganizationProjectTodo(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "unarchiveOrganizationProjectTodo":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_unarchiveOrganizationProjectTodo(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -41526,6 +42493,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteTodo":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteTodo(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "archiveTodo":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_archiveTodo(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "unarchiveTodo":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_unarchiveTodo(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -43680,6 +44661,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "archivedOrganizationProjects":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_archivedOrganizationProjects(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "organizationProject":
 			field := field
 
@@ -43734,6 +44737,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_organizationProjectTodos(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "archivedOrganizationProjectTodos":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_archivedOrganizationProjectTodos(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -44108,6 +45133,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_myTodos(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "myArchivedTodos":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_myArchivedTodos(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

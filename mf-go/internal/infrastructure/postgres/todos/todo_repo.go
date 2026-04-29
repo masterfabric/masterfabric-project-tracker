@@ -53,6 +53,14 @@ const (
 		  AND (organization_id IS NULL OR organization_id IN (` + sqlActiveOrgIDsForUser + `))
 		ORDER BY created_at DESC`
 
+	sqlListArchivedTodosByUserID = `
+		SELECT id, user_id, title, completed, archived_at, organization_id, assigned_to_user_id, due_at, created_at, updated_at
+		FROM user_todos
+		WHERE user_id = $1
+		  AND archived_at IS NOT NULL
+		  AND (organization_id IS NULL OR organization_id IN (` + sqlActiveOrgIDsForUser + `))
+		ORDER BY archived_at DESC, created_at DESC`
+
 	sqlAdminGetTodoByID = `
 		SELECT id, user_id, title, completed, archived_at, organization_id, assigned_to_user_id, due_at, created_at, updated_at
 		FROM user_todos WHERE id = $1`
@@ -99,6 +107,36 @@ const (
 	sqlDeleteTodo = `
 		DELETE FROM user_todos
 		WHERE id = $1 AND (
+			(user_id = $2 AND (organization_id IS NULL OR organization_id IN (
+				SELECT organization_id FROM organization_members WHERE user_id = $2 AND membership_status = 'active'
+			)))
+			OR (assigned_to_user_id = $2 AND (organization_id IS NULL OR organization_id IN (
+				SELECT organization_id FROM organization_members WHERE user_id = $2 AND membership_status = 'active'
+			)))
+			OR (organization_id IN (
+				SELECT organization_id FROM organization_members WHERE user_id = $2 AND membership_status = 'active'
+			))
+		)`
+
+	sqlArchiveTodo = `
+		UPDATE user_todos
+		SET archived_at = NOW(), updated_at = NOW()
+		WHERE id = $1 AND archived_at IS NULL AND (
+			(user_id = $2 AND (organization_id IS NULL OR organization_id IN (
+				SELECT organization_id FROM organization_members WHERE user_id = $2 AND membership_status = 'active'
+			)))
+			OR (assigned_to_user_id = $2 AND (organization_id IS NULL OR organization_id IN (
+				SELECT organization_id FROM organization_members WHERE user_id = $2 AND membership_status = 'active'
+			)))
+			OR (organization_id IN (
+				SELECT organization_id FROM organization_members WHERE user_id = $2 AND membership_status = 'active'
+			))
+		)`
+
+	sqlUnarchiveTodo = `
+		UPDATE user_todos
+		SET archived_at = NULL, updated_at = NOW()
+		WHERE id = $1 AND archived_at IS NOT NULL AND (
 			(user_id = $2 AND (organization_id IS NULL OR organization_id IN (
 				SELECT organization_id FROM organization_members WHERE user_id = $2 AND membership_status = 'active'
 			)))
@@ -211,6 +249,24 @@ func (r *TodoRepo) ListOwnedByUserID(ctx context.Context, userID uuid.UUID) ([]*
 	return results, rows.Err()
 }
 
+// ListArchivedByUserID returns archived todos owned by user_id (creator).
+func (r *TodoRepo) ListArchivedByUserID(ctx context.Context, userID uuid.UUID) ([]*model.UserTodo, error) {
+	rows, err := r.db.Query(ctx, sqlListArchivedTodosByUserID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("todoRepo.ListArchivedByUserID: %w", err)
+	}
+	defer rows.Close()
+	var results []*model.UserTodo
+	for rows.Next() {
+		t, err := scanTodo(rows)
+		if err != nil {
+			return nil, fmt.Errorf("todoRepo.ListArchivedByUserID scan: %w", err)
+		}
+		results = append(results, t)
+	}
+	return results, rows.Err()
+}
+
 // AdminGetByID returns a todo by primary key (admin; no membership check).
 func (r *TodoRepo) AdminGetByID(ctx context.Context, id uuid.UUID) (*model.UserTodo, error) {
 	row := r.db.QueryRow(ctx, sqlAdminGetTodoByID, id)
@@ -285,6 +341,30 @@ func (r *TodoRepo) Delete(ctx context.Context, id, userID uuid.UUID) error {
 	}
 	if result.RowsAffected() == 0 {
 		return fmt.Errorf("todoRepo.Delete: %w", domainErr.ErrTodoNotFound)
+	}
+	return nil
+}
+
+// ArchiveByID soft-archives a todo visible to user.
+func (r *TodoRepo) ArchiveByID(ctx context.Context, id, userID uuid.UUID) error {
+	result, err := r.db.Exec(ctx, sqlArchiveTodo, id, userID)
+	if err != nil {
+		return fmt.Errorf("todoRepo.ArchiveByID: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("todoRepo.ArchiveByID: %w", domainErr.ErrTodoNotFound)
+	}
+	return nil
+}
+
+// UnarchiveByID restores an archived todo visible to user.
+func (r *TodoRepo) UnarchiveByID(ctx context.Context, id, userID uuid.UUID) error {
+	result, err := r.db.Exec(ctx, sqlUnarchiveTodo, id, userID)
+	if err != nil {
+		return fmt.Errorf("todoRepo.UnarchiveByID: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("todoRepo.UnarchiveByID: %w", domainErr.ErrTodoNotFound)
 	}
 	return nil
 }
