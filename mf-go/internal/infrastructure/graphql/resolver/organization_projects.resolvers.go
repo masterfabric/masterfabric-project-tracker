@@ -57,6 +57,30 @@ func (r *mutationResolver) DeleteOrganizationProject(ctx context.Context, projec
 	return true, nil
 }
 
+// ArchiveOrganizationProject is the resolver for the archiveOrganizationProject field.
+func (r *mutationResolver) ArchiveOrganizationProject(ctx context.Context, projectID uuid.UUID) (bool, error) {
+	userID := middleware.UserIDFromContext(ctx)
+	if userID == uuid.Nil {
+		return false, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
+	}
+	if err := r.ArchiveOrganizationProjectUC.Execute(ctx, projectID, userID); err != nil {
+		return false, mapErr(err)
+	}
+	return true, nil
+}
+
+// UnarchiveOrganizationProject is the resolver for the unarchiveOrganizationProject field.
+func (r *mutationResolver) UnarchiveOrganizationProject(ctx context.Context, projectID uuid.UUID) (bool, error) {
+	userID := middleware.UserIDFromContext(ctx)
+	if userID == uuid.Nil {
+		return false, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
+	}
+	if err := r.UnarchiveOrganizationProjectUC.Execute(ctx, projectID, userID); err != nil {
+		return false, mapErr(err)
+	}
+	return true, nil
+}
+
 // AddOrganizationProjectMember is the resolver for the addOrganizationProjectMember field.
 func (r *mutationResolver) AddOrganizationProjectMember(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (bool, error) {
 	actorID := middleware.UserIDFromContext(ctx)
@@ -129,6 +153,30 @@ func (r *mutationResolver) DeleteOrganizationProjectTodo(ctx context.Context, to
 		return false, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
 	}
 	if err := r.DeleteOrganizationProjectTodoUC.Execute(ctx, todoID, userID); err != nil {
+		return false, mapErr(err)
+	}
+	return true, nil
+}
+
+// ArchiveOrganizationProjectTodo is the resolver for the archiveOrganizationProjectTodo field.
+func (r *mutationResolver) ArchiveOrganizationProjectTodo(ctx context.Context, todoID uuid.UUID) (bool, error) {
+	userID := middleware.UserIDFromContext(ctx)
+	if userID == uuid.Nil {
+		return false, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
+	}
+	if err := r.ArchiveOrganizationProjectTodoUC.Execute(ctx, todoID, userID); err != nil {
+		return false, mapErr(err)
+	}
+	return true, nil
+}
+
+// UnarchiveOrganizationProjectTodo is the resolver for the unarchiveOrganizationProjectTodo field.
+func (r *mutationResolver) UnarchiveOrganizationProjectTodo(ctx context.Context, todoID uuid.UUID) (bool, error) {
+	userID := middleware.UserIDFromContext(ctx)
+	if userID == uuid.Nil {
+		return false, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
+	}
+	if err := r.UnarchiveOrganizationProjectTodoUC.Execute(ctx, todoID, userID); err != nil {
 		return false, mapErr(err)
 	}
 	return true, nil
@@ -350,6 +398,23 @@ func (r *queryResolver) OrganizationProjects(ctx context.Context, organizationID
 	return out, nil
 }
 
+// ArchivedOrganizationProjects is the resolver for the archivedOrganizationProjects field.
+func (r *queryResolver) ArchivedOrganizationProjects(ctx context.Context, organizationID uuid.UUID) ([]*model.OrganizationProject, error) {
+	userID := middleware.UserIDFromContext(ctx)
+	if userID == uuid.Nil {
+		return nil, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
+	}
+	rows, err := r.ListArchivedOrganizationProjectsUC.Execute(ctx, organizationID, userID)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	out := make([]*model.OrganizationProject, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, orgProjectRespToModel(row))
+	}
+	return out, nil
+}
+
 // OrganizationProject is the resolver for the organizationProject field.
 func (r *queryResolver) OrganizationProject(ctx context.Context, projectID uuid.UUID) (*model.OrganizationProject, error) {
 	userID := middleware.UserIDFromContext(ctx)
@@ -387,6 +452,23 @@ func (r *queryResolver) OrganizationProjectTodos(ctx context.Context, projectID 
 		return nil, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
 	}
 	rows, err := r.ListOrganizationProjectTodosUC.Execute(ctx, projectID, userID)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	out := make([]*model.OrganizationProjectTodo, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, orgProjectTodoRespToModel(row))
+	}
+	return out, nil
+}
+
+// ArchivedOrganizationProjectTodos is the resolver for the archivedOrganizationProjectTodos field.
+func (r *queryResolver) ArchivedOrganizationProjectTodos(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectTodo, error) {
+	userID := middleware.UserIDFromContext(ctx)
+	if userID == uuid.Nil {
+		return nil, domainErr.New("UNAUTHENTICATED", "authentication required", nil)
+	}
+	rows, err := r.ListArchivedOrganizationProjectTodosUC.Execute(ctx, projectID, userID)
 	if err != nil {
 		return nil, mapErr(err)
 	}

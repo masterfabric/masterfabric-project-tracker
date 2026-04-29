@@ -51,6 +51,7 @@ type OrganizationRepository interface {
 
 	// Organization projects (GFG-92)
 	GetOrganizationProjectByID(ctx context.Context, id uuid.UUID) (*model.OrganizationProject, error)
+	GetOrganizationProjectByIDAnyState(ctx context.Context, id uuid.UUID) (*model.OrganizationProject, error)
 	// UserMayViewProjectViaAcceptedParticipation is true when the user is an active member of a participant org
 	// with an accepted link to the project (GFG-172 / GFG-179 cross-org read path).
 	UserMayViewProjectViaAcceptedParticipation(ctx context.Context, projectID, userID uuid.UUID) (bool, error)
@@ -70,10 +71,14 @@ type OrganizationRepository interface {
 	InsertOrganizationProjectOrgAuditEvent(ctx context.Context, projectID uuid.UUID, actorUserID *uuid.UUID, eventType string, metadataJSON []byte) error
 	ListPendingOrganizationProjectOrgInvitesForParticipantOrg(ctx context.Context, participantOrganizationID uuid.UUID) ([]*model.OrganizationProjectOrgInvitePending, error)
 	ListOrganizationProjectsByOrgID(ctx context.Context, orgID uuid.UUID) ([]*model.OrganizationProject, error)
+	ListArchivedOrganizationProjectsByOrgID(ctx context.Context, orgID uuid.UUID) ([]*model.OrganizationProject, error)
 	// ListOrganizationProjectsForOrgMember lists projects the user is on the roster for (within org).
 	ListOrganizationProjectsForOrgMember(ctx context.Context, orgID, userID uuid.UUID) ([]*model.OrganizationProject, error)
+	ListArchivedOrganizationProjectsForOrgMember(ctx context.Context, orgID, userID uuid.UUID) ([]*model.OrganizationProject, error)
 	CreateOrganizationProject(ctx context.Context, p *model.OrganizationProject) error
 	UpdateOrganizationProject(ctx context.Context, p *model.OrganizationProject) error
+	ArchiveOrganizationProjectByID(ctx context.Context, id uuid.UUID) error
+	UnarchiveOrganizationProjectByID(ctx context.Context, id uuid.UUID) error
 	DeleteOrganizationProject(ctx context.Context, id uuid.UUID) error
 	AddOrganizationProjectMember(ctx context.Context, m *model.OrganizationProjectMember) error
 	RemoveOrganizationProjectMember(ctx context.Context, projectID, userID uuid.UUID) error
@@ -81,8 +86,12 @@ type OrganizationRepository interface {
 	IsOrganizationProjectMember(ctx context.Context, projectID, userID uuid.UUID) (bool, error)
 	ListOrganizationProjectTodos(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectTodo, error)
 	GetOrganizationProjectTodoByID(ctx context.Context, id uuid.UUID) (*model.OrganizationProjectTodo, error)
+	GetOrganizationProjectTodoByIDAnyState(ctx context.Context, id uuid.UUID) (*model.OrganizationProjectTodo, error)
+	ListArchivedOrganizationProjectTodos(ctx context.Context, projectID uuid.UUID) ([]*model.OrganizationProjectTodo, error)
 	CreateOrganizationProjectTodo(ctx context.Context, t *model.OrganizationProjectTodo) error
 	UpdateOrganizationProjectTodo(ctx context.Context, t *model.OrganizationProjectTodo) error
+	ArchiveOrganizationProjectTodoByID(ctx context.Context, id uuid.UUID) error
+	UnarchiveOrganizationProjectTodoByID(ctx context.Context, id uuid.UUID) error
 	DeleteOrganizationProjectTodo(ctx context.Context, id uuid.UUID) error
 
 	// Organization project todo subtasks (GFG-117); caller must verify project todo editor access.

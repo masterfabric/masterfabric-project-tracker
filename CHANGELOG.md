@@ -8,6 +8,8 @@ Supplement for **debug identifiers, ingest endpoints, or default dev logins** (n
 
 ### Added
 
+- **mf-go:** **GFG-188** — GraphQL archive workflow for todos/projects: `archiveTodo` / `unarchiveTodo`, `archiveOrganizationProjectTodo` / `unarchiveOrganizationProjectTodo`, `archiveOrganizationProject` / `unarchiveOrganizationProject`, plus dedicated archived list queries (`myArchivedTodos`, `archivedOrganizationProjectTodos`, `archivedOrganizationProjects`). Default active-list queries continue to exclude archived rows.
+
 - **mf-go:** **GFG-187** — migration **`026_todo_archive_columns`** adds nullable **`archived_at`** to **`user_todos`**, **`organization_project_todos`**, and **`organization_projects`** (with indexes). Repository read paths now exclude archived rows by default, and project/user todo subtask queries enforce parent-based archive visibility so archived parent todos hide subtasks without changing hard-delete behavior.
 
 - **mf-go + mf-expo:** **GFG-186** — Project-level shared-organization **management surface** after invite: host-side linked org list with status visibility, capability switch updates (**todos / purchases**) persisted via GraphQL mutation, and guarded ownership transfer to an **accepted** participant org with confirmation flow. Added audit events for permission updates and ownership transfer, plus EN + TR copy for management UX in project settings.

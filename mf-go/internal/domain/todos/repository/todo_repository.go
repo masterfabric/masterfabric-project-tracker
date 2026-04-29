@@ -11,10 +11,13 @@ import (
 type TodoRepository interface {
 	Create(ctx context.Context, t *model.UserTodo) error
 	ListByUserID(ctx context.Context, userID uuid.UUID) ([]*model.UserTodo, error)
+	ListArchivedByUserID(ctx context.Context, userID uuid.UUID) ([]*model.UserTodo, error)
 	// ListOwnedByUserID returns todos owned by user_id (creator), for admin views.
 	ListOwnedByUserID(ctx context.Context, userID uuid.UUID) ([]*model.UserTodo, error)
 	GetByID(ctx context.Context, id, userID uuid.UUID) (*model.UserTodo, error)
 	Update(ctx context.Context, t *model.UserTodo, actorUserID uuid.UUID) error
+	ArchiveByID(ctx context.Context, id, userID uuid.UUID) error
+	UnarchiveByID(ctx context.Context, id, userID uuid.UUID) error
 	Delete(ctx context.Context, id, userID uuid.UUID) error
 	// AdminGetByID returns a todo by id without access checks (admin only).
 	AdminGetByID(ctx context.Context, id uuid.UUID) (*model.UserTodo, error)
