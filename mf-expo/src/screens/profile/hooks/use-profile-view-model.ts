@@ -21,6 +21,7 @@ export type ProfileSharedProjectEntry = {
   contextOrganizationId: string;
   contextOrganizationName: string;
   project: OrganizationProjectPayload;
+  isArchived: boolean;
   /** Host org name when it is also one of the user’s organizations; otherwise null. */
   hostOrganizationName: string | null;
 };
@@ -117,18 +118,33 @@ export function useProfileViewModel() {
       if (orgs.length > 0) {
         const settled = await Promise.allSettled(
           orgs.map((org) =>
-            mfGoOrganizations.organizationProjects(org.id).then((list) => ({ org, list }))
+            Promise.all([
+              mfGoOrganizations.organizationProjects(org.id),
+              mfGoOrganizations.archivedOrganizationProjects(org.id),
+            ]).then(([active, archived]) => ({ org, active, archived }))
           )
         );
         for (const s of settled) {
           if (s.status !== 'fulfilled') continue;
-          const { org, list } = s.value;
-          for (const p of list) {
+          const { org, active, archived } = s.value;
+          for (const p of active) {
             if (p.organizationId !== org.id) {
               rows.push({
                 contextOrganizationId: org.id,
                 contextOrganizationName: org.name,
                 project: p,
+                isArchived: false,
+                hostOrganizationName: nameById.get(p.organizationId) ?? null,
+              });
+            }
+          }
+          for (const p of archived) {
+            if (p.organizationId !== org.id) {
+              rows.push({
+                contextOrganizationId: org.id,
+                contextOrganizationName: org.name,
+                project: p,
+                isArchived: true,
                 hostOrganizationName: nameById.get(p.organizationId) ?? null,
               });
             }

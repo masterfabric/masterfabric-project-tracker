@@ -8,7 +8,7 @@ Supplement for **debug identifiers, ingest endpoints, or default dev logins** (n
 
 ### Added
 
-- **mf-expo:** **GFG-191** — Profile now includes an **Archived items** screen (`/profile/archived-items`) with a dedicated account entry. The screen lists archived personal todos, organization/shared-project todos, and archived projects visible to the signed-in user, with in-place **Unarchive** actions and loading/empty/error states. Added GraphQL client bindings for `myArchivedTodos`, `archivedOrganizationProjects`, and `archivedOrganizationProjectTodos`, plus EN + TR i18n copy.
+- **mf-expo:** **GFG-192** — Shared-project archive propagation is now visible in Profile: **Shared projects** includes archived cross-org projects with an explicit archived label, and `/profile/archived-items` continues to list archived personal, organization, and shared-project todos/projects with in-place **Unarchive** actions. Added/updated EN + TR copy for archived shared-project state.
 
 - **mf-expo:** **GFG-190** — swipe-left archive UX shipped across home todo rows, organization project todo rows (home + project detail), and organization project rows, with a bottom snackbar Undo action for **5 seconds**. Added GraphQL client bindings for `archive/unarchive` on user todos, project todos, and projects; EN + TR archive/undo copy included.
 

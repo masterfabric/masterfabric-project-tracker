@@ -799,7 +799,9 @@
       "decline": "Decline",
       "sharedProjectsTitle": "Shared projects",
       "sharedProjectsEmpty": "No projects from other organizations are linked to yours yet.",
+      "sharedProjectsArchived": "Archived",
       "sharedProjectsViaOrg": "In {{org}}",
+      "sharedProjectsViaOrgArchived": "Archived in {{org}}",
       "sharedProjectsHostLabel": "Hosted by {{host}}",
       "sharedProjectsHostUnknown": "Another organization",
       "create": {

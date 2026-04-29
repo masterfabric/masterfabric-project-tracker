@@ -757,7 +757,9 @@
       "decline": "Reddet",
       "sharedProjectsTitle": "Ortak projeler",
       "sharedProjectsEmpty": "Henüz başka bir organizasyondan organizasyonunuza bağlı proje yok.",
+      "sharedProjectsArchived": "Arşivde",
       "sharedProjectsViaOrg": "{{org}} içinde",
+      "sharedProjectsViaOrgArchived": "{{org}} içinde arşivde",
       "sharedProjectsHostLabel": "Sunan: {{host}}",
       "sharedProjectsHostUnknown": "Başka bir organizasyon",
       "create": {

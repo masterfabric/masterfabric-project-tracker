@@ -612,13 +612,28 @@ export function ProfileContent({
                       <Text style={[styles.rowTitle, { color: colors.text }]} numberOfLines={2}>
                         {row.project.name}
                       </Text>
+                      {row.isArchived ? (
+                        <Text
+                          style={[
+                            styles.infoLabel,
+                            { color: colors.errorColor ?? '#FF3B30', marginTop: 2, fontSize: 12 },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {t('profile.organizations.sharedProjectsArchived')}
+                        </Text>
+                      ) : null}
                       <Text
                         style={[styles.infoLabel, { color: colors.labelText, marginTop: 4, fontSize: 13 }]}
                         numberOfLines={2}
                       >
-                        {t('profile.organizations.sharedProjectsViaOrg', {
-                          org: row.contextOrganizationName,
-                        })}
+                        {row.isArchived
+                          ? t('profile.organizations.sharedProjectsViaOrgArchived', {
+                              org: row.contextOrganizationName,
+                            })
+                          : t('profile.organizations.sharedProjectsViaOrg', {
+                              org: row.contextOrganizationName,
+                            })}
                       </Text>
                       <Text
                         style={[styles.infoLabel, { color: colors.labelText, marginTop: 2, fontSize: 12 }]}
