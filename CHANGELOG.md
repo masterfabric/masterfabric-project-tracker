@@ -30,6 +30,9 @@ Supplement for **debug identifiers, ingest endpoints, or default dev logins** (n
 
 ### Fixed
 
+- **mf-expo:** **GFG-194** — archived items flow now degrades safely under partial permissions: `myArchivedTodos` falls back to a no-subtasks query when `subtasks` returns `FORBIDDEN` without noisy recoverable console errors, archived org/project fetches skip unauthorized slices instead of blanking the page, and organization archives now use a folder-style drilldown (**select folder → select project/general → list todos**) with stable org-folder deduplication so each organization appears once. The screen still always renders a **Personal** section. Added EN + TR copy updates, including `common.undo` Turkish action text.
+- **mf-expo:** **GFG-194** — Home todo list now refreshes on Home focus (`fetchTodos(false)`), so items restored from Archive are visible immediately when returning to Home without manual pull-to-refresh.
+
 - **mf-go:** **GFG-189** — organization owner dashboard aggregates now fully exclude archived rows across open/done totals, selected/previous completion windows, daily buckets, project donut breakdowns, and assignee slices (for both user and project todos/subtasks).
 
 - **mf-go:** **GFG-181** — `organizationOwnerTodoDashboard` project-side aggregates now include projects visible in the selected org context via either host ownership or **accepted** cross-org participation (`organization_project_org_participations`). Scope checks use dedupe-safe visibility predicates (no join fan-out), preventing double counting while keeping shared projects visible for participant org owners.

@@ -2316,6 +2316,27 @@ const MY_ARCHIVED_TODOS = /* GraphQL */ `
   }
 `;
 
+const MY_ARCHIVED_TODOS_NO_SUBTASKS = /* GraphQL */ `
+  query MyArchivedTodosNoSubtasks {
+    myArchivedTodos {
+      id userID title completed organizationID assignedToUserID dueAt createdAt updatedAt
+    }
+  }
+`;
+
+function isArchivedSubtasksForbiddenError(error: unknown): boolean {
+  const response = (error as { response?: { errors?: Array<Record<string, unknown>> } } | null)?.response;
+  const errors = response?.errors;
+  if (!Array.isArray(errors) || errors.length === 0) return false;
+  return errors.some((item) => {
+    const code = (item.extensions as { code?: string } | undefined)?.code;
+    const message = typeof item.message === 'string' ? item.message.toLowerCase() : '';
+    const path = Array.isArray(item.path) ? item.path.map(String) : [];
+    const hasSubtasksPath = path.some((segment) => segment.toLowerCase() === 'subtasks');
+    return code === 'FORBIDDEN' && hasSubtasksPath && /access denied|forbidden|not found/.test(message);
+  });
+}
+
 const CREATE_TODO = /* GraphQL */ `
   mutation CreateTodo($input: CreateTodoInput!) {
     createTodo(input: $input) {
@@ -2399,10 +2420,24 @@ export const mfGoTodos = {
     }
   },
 
-  myArchivedTodos: () =>
-    graphqlRequest<{ myArchivedTodos: UserTodoPayload[] }>(MY_ARCHIVED_TODOS).then(
-      (r) => r.myArchivedTodos
-    ),
+  myArchivedTodos: async () => {
+    try {
+      const r = await graphqlRequest<{ myArchivedTodos: UserTodoPayload[] }>(
+        MY_ARCHIVED_TODOS,
+        undefined,
+        { silent: true }
+      );
+      return r.myArchivedTodos;
+    } catch (e) {
+      if (!isArchivedSubtasksForbiddenError(e) && !isSubtasksSchemaMismatchError(e)) throw e;
+      const r = await graphqlRequest<{ myArchivedTodos: UserTodoPayload[] }>(
+        MY_ARCHIVED_TODOS_NO_SUBTASKS,
+        {},
+        { silent: true }
+      );
+      return r.myArchivedTodos;
+    }
+  },
 
   createTodo: async (input: {
     title: string;

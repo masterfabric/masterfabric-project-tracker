@@ -42,6 +42,7 @@
     "no": "No",
     "back": "Back",
     "confirm": "Confirm",
+    "undo": "Undo",
     "done": "Done",
     "select": "Select...",
     "selectOption": "Select an option",
@@ -715,8 +716,12 @@
       "subtitle": "Personal, organization, and project archives",
       "loading": "Loading archived items...",
       "empty": "No archived items found.",
+      "emptyPersonal": "No archived personal items.",
       "unarchiveSuccess": "Item restored.",
       "sections": {
+        "personal": "Personal",
+        "organizations": "Organization and project archives",
+        "general": "General",
         "todos": "Archived todos",
         "projectTodos": "Archived project todos",
         "projects": "Archived projects"
@@ -724,9 +729,18 @@
       "actions": {
         "unarchive": "Unarchive"
       },
+      "folder": {
+        "selectOrganization": "Select a folder",
+        "selectProject": "Select a project",
+        "backToFolders": "Back to folders",
+        "backToProjects": "Back to projects",
+        "itemsCount": "{{count}} archived item(s)"
+      },
       "source": {
         "personal": "Personal",
         "org": "Organization: {{org}}",
+        "orgGeneral": "{{org}} / {{general}}",
+        "orgProjectGroup": "{{org}} / {{project}}",
         "orgProject": "Project in {{org}}",
         "sharedProject": "Shared via {{org}} (host: {{host}})",
         "orgProjectTodo": "{{project}} in {{org}}",

@@ -106,8 +106,9 @@ function HomeScreenContent() {
 
   useFocusEffect(
     useCallback(() => {
+      fetchTodos(false);
       setProjectTodosSyncKey((k) => k + 1);
-    }, [])
+    }, [fetchTodos])
   );
 
   const handleHomeTodosRefresh = useCallback(() => {

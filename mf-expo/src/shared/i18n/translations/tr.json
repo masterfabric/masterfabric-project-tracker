@@ -42,6 +42,7 @@
     "no": "Hayır",
     "back": "Geri",
     "confirm": "Onayla",
+    "undo": "Geri Al",
     "done": "Tamam",
     "select": "Seç...",
     "selectOption": "Bir seçenek seç",
@@ -673,8 +674,12 @@
       "subtitle": "Kişisel, organizasyon ve proje arşivleri",
       "loading": "Arşivlenmiş öğeler yükleniyor...",
       "empty": "Arşivlenmiş öğe bulunamadı.",
+      "emptyPersonal": "Arşivlenmiş kişisel öğe bulunamadı.",
       "unarchiveSuccess": "Öğe geri yüklendi.",
       "sections": {
+        "personal": "Kişisel",
+        "organizations": "Organizasyon ve proje arşivleri",
+        "general": "Genel",
         "todos": "Arşivlenmiş görevler",
         "projectTodos": "Arşivlenmiş proje görevleri",
         "projects": "Arşivlenmiş projeler"
@@ -682,9 +687,18 @@
       "actions": {
         "unarchive": "Arşivden çıkar"
       },
+      "folder": {
+        "selectOrganization": "Klasör seçin",
+        "selectProject": "Proje seçin",
+        "backToFolders": "Klasörlere dön",
+        "backToProjects": "Projelere dön",
+        "itemsCount": "{{count}} arşiv öğesi"
+      },
       "source": {
         "personal": "Kişisel",
         "org": "Organizasyon: {{org}}",
+        "orgGeneral": "{{org}} / {{general}}",
+        "orgProjectGroup": "{{org}} / {{project}}",
         "orgProject": "{{org}} içinde proje",
         "sharedProject": "{{org}} üzerinden paylaşılan (sunucu: {{host}})",
         "orgProjectTodo": "{{org}} içinde {{project}}",
