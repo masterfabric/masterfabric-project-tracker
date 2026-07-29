@@ -14,7 +14,7 @@ Notable changes to the **masterfabric-project-tracker** client repo are recorded
 
 ### Added
 
-- **mf-web:** New **Next.js** Linear-style tracker UI (`mf-web/`) — sign-in (OTP-aware), org/project switcher, issue **list** + **board** (Open/Done, drag-and-drop), issue drawer with subtasks, keyboard shortcuts (`C` `/` `1` `2` `Esc` `?`). Same mf-go GraphQL as mobile/macOS via `particularGraphqlEnvelope`. Desktop-first polish (dense list, board drop targets, dimmed drawer). See [`mf-web/README.md`](mf-web/README.md).
+- **mf-web:** New **Next.js** Linear-style tracker UI (`mf-web/`) — sign-in (OTP-aware), org/project switcher, issue **list** + **board** (Open/Done, drag-and-drop), issue drawer with subtasks, keyboard shortcuts (`C` `/` `1` `2` `Esc` `?`). Same mf-go GraphQL as mobile/macOS via `particularGraphqlEnvelope`. Desktop-first polish (dense list, board drop targets, dimmed drawer). **v0.3.0 parity:** create org + invites, project rename/delete, project members, assignee + due on create, assignee filters, editable due in drawer, **Purchases** tab, **My todos** (personal). See [`mf-web/README.md`](mf-web/README.md).
 
 - **mf-macos:** New SwiftUI **menu bar** companion (`MenuBarExtra`) and **WidgetKit** gallery (My Tasks, Project Pulse, Focus Timer, Quick Add) talking to existing mf-go GraphQL (`myTodos`, org projects, login/refresh). Local focus timer (25/15/5). See [`mf-macos/README.md`](mf-macos/README.md).
 

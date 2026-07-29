@@ -12,12 +12,21 @@ import {
 import { formatRelative, shortIssueId } from "@/lib/format";
 import { useWorkspace } from "@/lib/workspace";
 
+function toLocalInput(iso: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export function IssueDrawer() {
   const {
     selectedTodo,
     setSelectedTodoId,
     updateTodoStatus,
     updateTodoTitle,
+    updateTodoDue,
     deleteTodo,
     addSubtask,
     toggleSubtask,
@@ -26,13 +35,15 @@ export function IssueDrawer() {
   } = useWorkspace();
 
   const [title, setTitle] = useState("");
+  const [dueLocal, setDueLocal] = useState("");
   const [subTitle, setSubTitle] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setTitle(selectedTodo?.title ?? "");
+    setDueLocal(toLocalInput(selectedTodo?.dueAt ?? null));
     setSubTitle("");
-  }, [selectedTodo?.id, selectedTodo?.title]);
+  }, [selectedTodo?.id, selectedTodo?.title, selectedTodo?.dueAt]);
 
   if (!selectedTodo) return null;
 
@@ -46,6 +57,25 @@ export function IssueDrawer() {
     setSaving(true);
     try {
       await updateTodoTitle(selectedTodo!.id, next);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveDue() {
+    const nextIso = dueLocal ? new Date(dueLocal).toISOString() : null;
+    const prev = selectedTodo!.dueAt;
+    if ((nextIso ?? null) === (prev ?? null)) return;
+    if (
+      nextIso &&
+      prev &&
+      Math.abs(new Date(nextIso).getTime() - new Date(prev).getTime()) < 60_000
+    ) {
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateTodoDue(selectedTodo!.id, nextIso);
     } finally {
       setSaving(false);
     }
@@ -159,14 +189,21 @@ export function IssueDrawer() {
               <dt className="text-[var(--text-faint)]">Assignee</dt>
               <dd className="text-[var(--text-muted)]">
                 {assignee?.userNickname ?? "Unassigned"}
+                <span className="mt-0.5 block text-[10px] text-[var(--text-faint)]">
+                  Set on create (same as mobile API)
+                </span>
               </dd>
             </div>
             <div className="flex items-center justify-between gap-3 px-3.5 py-2.5">
               <dt className="text-[var(--text-faint)]">Due</dt>
-              <dd className="text-[var(--text-muted)]">
-                {selectedTodo.dueAt
-                  ? new Date(selectedTodo.dueAt).toLocaleString()
-                  : "—"}
+              <dd>
+                <input
+                  type="datetime-local"
+                  value={dueLocal}
+                  onChange={(e) => setDueLocal(e.target.value)}
+                  onBlur={() => void saveDue()}
+                  className="rounded-md border border-[var(--border)] bg-[var(--bg-elevated)] px-2 py-1 text-[12px] outline-none focus:border-[var(--accent)]"
+                />
               </dd>
             </div>
             <div className="flex items-center justify-between gap-3 px-3.5 py-2.5">

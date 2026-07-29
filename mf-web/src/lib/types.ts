@@ -1,4 +1,10 @@
 export type TodoStatus = "OPEN" | "DONE";
+export type PurchaseStatus = "REQUESTED" | "PURCHASED" | "CANCELLED";
+export type ViewMode = "list" | "board";
+export type StatusFilter = "all" | "OPEN" | "DONE";
+/** all | me | unassigned | member:<userId> */
+export type AssigneeFilter = "all" | "me" | "unassigned" | `member:${string}`;
+export type WorkspaceTab = "issues" | "purchases" | "personal";
 
 export interface AuthUser {
   id: string;
@@ -29,6 +35,27 @@ export interface Organization {
   name: string;
   description: string;
   logoURL: string;
+}
+
+export interface OrgMember {
+  id: string;
+  organizationID: string;
+  userID: string;
+  userNickname: string;
+  role: "OWNER" | "ADMIN" | "MEMBER";
+  membershipStatus: "ACTIVE" | "SUSPENDED";
+  joinedAt: string;
+}
+
+export interface OrgInvitation {
+  id: string;
+  organizationID: string;
+  inviterID: string;
+  inviteeEmail: string;
+  status: string;
+  createdAt: string;
+  organizationName?: string | null;
+  inviterNickname?: string | null;
 }
 
 export interface Project {
@@ -72,5 +99,42 @@ export interface Todo {
   subtasks: TodoSubtask[];
 }
 
-export type ViewMode = "list" | "board";
-export type StatusFilter = "all" | "OPEN" | "DONE";
+export interface Purchase {
+  id: string;
+  projectId: string;
+  productName: string;
+  taxRate: number;
+  productPurpose: string;
+  price: number;
+  quantity: number;
+  productLink: string | null;
+  status: PurchaseStatus;
+  statusNote: string;
+  currency: string;
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PersonalTodoSubtask {
+  id: string;
+  userTodoId: string;
+  title: string;
+  completed: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PersonalTodo {
+  id: string;
+  userID: string;
+  title: string;
+  completed: boolean;
+  organizationID: string | null;
+  assignedToUserID: string | null;
+  dueAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  subtasks: PersonalTodoSubtask[];
+}

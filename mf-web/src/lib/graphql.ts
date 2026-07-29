@@ -86,11 +86,26 @@ async function postGraphQL<T>(
     body: JSON.stringify({ query, variables }),
   });
 
-  if (!res.ok) {
-    throw new GraphQLError(`HTTP ${res.status}: ${res.statusText}`);
+  const json = (await res.json().catch(() => null)) as {
+    data?: T;
+    errors?: GraphQLErrorItem[];
+  } | null;
+
+  // gqlgen often returns 422 with a GraphQL body for validation failures —
+  // surface those as GraphQLError so callers can fall back to older schemas.
+  if (json?.errors?.length) {
+    return json;
   }
 
-  return (await res.json()) as { data?: T; errors?: GraphQLErrorItem[] };
+  if (!res.ok) {
+    throw new GraphQLError(
+      `HTTP ${res.status}: ${res.statusText}${
+        json ? ` · ${JSON.stringify(json).slice(0, 200)}` : ""
+      }`,
+    );
+  }
+
+  return json ?? {};
 }
 
 async function refreshSessionOnce(): Promise<boolean> {

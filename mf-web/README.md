@@ -1,6 +1,6 @@
 # mf-web — MasterFabric Tracker (web)
 
-Linear-speed issue tracking for MasterFabric teams. Talks to the same **mf-go GraphQL** API as `mf-expo` and `mf-macos`, with org projects/todos via **`particularGraphqlEnvelope`** → particular-project-tracker.
+Linear-speed issue tracking for MasterFabric teams. Talks to the same **mf-go GraphQL** API as `mf-expo` and `mf-macos`, with org projects/todos/purchases via **`particularGraphqlEnvelope`** → particular-project-tracker.
 
 ![MasterFabric Tracker](public/og.png)
 
@@ -14,19 +14,20 @@ Linear-speed issue tracking for MasterFabric teams. Talks to the same **mf-go Gr
 | --- | --- |
 | ![Board](docs/screenshots/03-board.png) | ![Drawer](docs/screenshots/04-drawer.png) |
 
-Brand assets in `public/`:
+Brand assets in `public/`: `tracker-mark.png`, `og.png`.
 
-- `tracker-mark.png` — favicon / sidebar / login mark
-- `og.png` — Open Graph + login hero preview
+## Features (parity with mobile tracker)
 
-## Features (v1)
-
-- Email/password sign-in (OTP challenge when required)
-- Organization + project switcher
-- **List** and **Board** views (Open / Done; drag cards between columns)
-- Issue detail drawer (title, status, subtasks, delete)
+- Email/password sign-in (OTP when required)
+- Create organization + invite members; accept/decline pending invites
+- Organization + project switcher; rename / delete project
+- Project roster: add/remove members from org members
+- **Issues** — list + board, status filters, **assignee filter**, search
+- Create issue with **assignee + due**; drawer edits title / due / status / subtasks
+- **Purchases** tab — create, status cycle, delete, product link (same validation ideas as mobile)
+- **My todos** — personal mf-go todos with due + subtasks
 - Keyboard shortcuts: `C` new, `/` search, `1`/`2` views, `Esc` close, `?` help
-- Session refresh (single-flight) so board/list mutations survive short-lived access tokens
+- Session refresh so mutations survive short-lived access tokens
 
 ## Setup
 
@@ -50,5 +51,5 @@ Open [http://localhost:3000](http://localhost:3000). Start **core-base mf-go** a
 
 ## Notes
 
-- Todo statuses in the API today are **OPEN** and **DONE** only — the board mirrors that.
-- Create orgs / invite members from the mobile app if the web workspace has none yet.
+- Project todo statuses are **OPEN** / **DONE** only; assignee is set at create time (Particular update API has no assignee field yet).
+- Admin / org chat / notifications stay mobile-first for now.
