@@ -54,7 +54,7 @@ export function CreateIssueDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/55 px-4 pt-[14vh] backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-[var(--overlay)] px-4 pt-[14vh] backdrop-blur-sm">
       <button
         type="button"
         aria-label="Close overlay"
@@ -63,11 +63,11 @@ export function CreateIssueDialog({
       />
       <form
         onSubmit={(e) => void onSubmit(e)}
-        className="mf-fade-up relative w-full max-w-lg rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] p-4 shadow-[var(--shadow)]"
+        className="mf-fade-up relative w-full max-w-lg rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--bg-elevated)] p-5 shadow-[var(--shadow-lg)]"
       >
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between">
           <h2
-            className="text-sm font-medium"
+            className="text-[16px] font-semibold tracking-tight"
             style={{ fontFamily: "var(--font-display)" }}
           >
             New issue
@@ -75,7 +75,7 @@ export function CreateIssueDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-[var(--text-muted)] hover:bg-[var(--bg-hover)]"
+            className="mf-btn mf-btn-ghost !p-1.5"
           >
             <X className="h-4 w-4" />
           </button>
@@ -85,15 +85,15 @@ export function CreateIssueDialog({
           name="title"
           required
           placeholder="Issue title"
-          className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 py-3 text-base outline-none focus:border-[var(--accent)]"
+          className="mf-input !rounded-[var(--radius-lg)] !px-3.5 !py-3.5 !text-[16px]"
         />
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <label className="block space-y-1.5">
-            <span className="text-[11px] text-[var(--text-faint)]">Assignee</span>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="mf-label">Assignee</span>
             <select
               value={assignee}
               onChange={(e) => setAssignee(e.target.value)}
-              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-2.5 py-2 text-[13px] outline-none focus:border-[var(--accent)]"
+              className="mf-input"
             >
               <option value="">Unassigned</option>
               {members.map((m) => (
@@ -103,24 +103,24 @@ export function CreateIssueDialog({
               ))}
             </select>
           </label>
-          <label className="block space-y-1.5">
-            <span className="text-[11px] text-[var(--text-faint)]">Due</span>
+          <label className="block">
+            <span className="mf-label">Due</span>
             <input
               type="datetime-local"
               value={dueLocal}
               onChange={(e) => setDueLocal(e.target.value)}
-              className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-2.5 py-2 text-[13px] outline-none focus:border-[var(--accent)]"
+              className="mf-input"
             />
           </label>
         </div>
-        <div className="mt-3 flex items-center justify-between">
-          <p className="text-xs text-[var(--text-faint)]">
-            Same fields as mobile create sheet
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <p className="text-[12.5px] text-[var(--text-faint)]">
+            Same fields as the mobile create sheet
           </p>
           <button
             type="submit"
             disabled={busy}
-            className="rounded-lg bg-[var(--accent)] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60"
+            className="mf-btn mf-btn-primary"
           >
             Create
           </button>

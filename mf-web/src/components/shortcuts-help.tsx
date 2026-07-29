@@ -21,17 +21,17 @@ export function ShortcutsHelp({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--overlay)] px-4 backdrop-blur-sm">
       <button
         type="button"
         className="absolute inset-0"
         aria-label="Close"
         onClick={onClose}
       />
-      <div className="mf-fade-up relative w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] p-5 shadow-[var(--shadow)]">
+      <div className="mf-fade-up relative w-full max-w-md rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--bg-elevated)] p-5 shadow-[var(--shadow-lg)]">
         <div className="mb-4 flex items-center justify-between">
           <h2
-            className="text-lg font-semibold"
+            className="text-[18px] font-semibold tracking-tight"
             style={{ fontFamily: "var(--font-display)" }}
           >
             Keyboard shortcuts
@@ -39,7 +39,7 @@ export function ShortcutsHelp({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-[var(--text-muted)] hover:bg-[var(--bg-hover)]"
+            className="mf-btn mf-btn-ghost !p-1.5"
           >
             <X className="h-4 w-4" />
           </button>
@@ -48,7 +48,7 @@ export function ShortcutsHelp({
           {ROWS.map(([key, label]) => (
             <li
               key={key}
-              className="flex items-center justify-between rounded-lg border border-[var(--border)] px-3 py-2 text-sm"
+              className="flex items-center justify-between rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-3.5 py-2.5 text-[14px]"
             >
               <span className="text-[var(--text-muted)]">{label}</span>
               <span className="mf-kbd">{key}</span>
