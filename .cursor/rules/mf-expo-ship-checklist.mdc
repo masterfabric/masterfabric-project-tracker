@@ -19,9 +19,9 @@ Treat a slice of **mf-expo** work as **not finished** until the items below are 
 - Avoid hard-coded English (or Turkish-only) copy on screens users see; use `t('…')` / existing i18n helpers.
 - After adding keys, quick sanity check: switch device language (or app language) if the feature exposes it.
 
-## 3. GraphQL / mf-go coupling
+## 3. GraphQL / backend coupling
 
-- New or changed operations must be reflected in **`mf-go-api.ts`** (or explicit `graphqlRequest` with types) and match the **mf-go schema** the app targets.
+- New or changed operations must be reflected in **`mf-go-api.ts`** (or explicit `graphqlRequest` / Particular envelope helpers) and match the **core-base mf-go** (and Particular) schemas the app targets.
 - If the backend added fields or operations: confirm **`EXPO_PUBLIC_GRAPHQL_URL`** / `local.env` and document any **minimum server version** in the PR description when relevant.
 - Prefer **`graphqlRequest` options** (e.g. `silent: true`) consistent with nearby calls; handle older backends only when the product explicitly supports version skew.
 
@@ -36,9 +36,9 @@ Treat a slice of **mf-expo** work as **not finished** until the items below are 
 - Update repo-root **`CHANGELOG.md`** for user-relevant or operator-relevant **mf-expo** changes (features, notable fixes, breaking UI).
 - Match existing style: version/date section, **`### Added` / `### Changed` / `### Fixed`**, bullet lines prefixed with **`mf-expo:`** (see current file).
 
-## 6. Paired mf-go work
+## 6. Paired backend work
 
-If this PR depends on **mf-go** schema or behavior changes, the **mf-go** author (often the same PR) must satisfy **`.cursor/rules/mf-go-ship-checklist.mdc`** (Postman + `CHANGELOG.md` for API/env changes).
+If this PR depends on **core-base mf-go** or **particular-project-tracker** schema/behavior changes, those land in the sibling repos (see `.cursor/rules/backend-ownership.mdc`). Link sibling PRs and note deploy order in the client PR description.
 
 ## 7. Before the PR is merged (human copy + order)
 

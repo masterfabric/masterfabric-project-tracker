@@ -1,19 +1,19 @@
 ---
-description: Monorepo structure — mf-expo + mf-go
+description: Client repo — mf-expo (+ web/macos); GraphQL in core-base; domain via Particular
 alwaysApply: true
 ---
 
-# MasterFabric Monorepo
+# MasterFabric Project Tracker
 
-- **mf-expo**: React Native + Expo app (TypeScript)
-- **mf-go**: Go GraphQL backend (Auth, User, Settings, Admin)
+- **mf-expo**: React Native + Expo app (TypeScript) — primary mobile client
+- **mf-web** / **mf-macos**: optional web and macOS companions in this repo
 
-mf-expo talks to mf-go via GraphQL at `EXPO_PUBLIC_GRAPHQL_URL` in repo-root `local.env` (default `http://localhost:8080/graphql`).
+**GraphQL platform API** lives in **masterfabric-core-base** (`mf-go`). Clients talk to it via `EXPO_PUBLIC_GRAPHQL_URL` / `EXPO_PUBLIC_DEV_GRAPHQL_URL` in repo-root `local.env` (default `http://localhost:8080/graphql`).
 
-When editing GraphQL schema in mf-go, run `make generate-all` in mf-go. The generated SDKs in `mf-go/sdk/` are never edited by hand. After schema changes, update `mf-expo` GraphQL usage (`mf-go-api.ts` or `graphqlRequest`) as needed.
+**Organization projects / todos / purchases** hop through mf-go `particularGraphqlEnvelope` to **particular-project-tracker** in **masterfabric-particulars** (particular key `EXPO_PUBLIC_MF_PROJECT_TRACKER_PARTICULAR`, default `project_tracker`).
 
-mf-go Postman: `mf-go/postman/masterfabric.collection.json` + `masterfabric.environment.json` only — one collection file holds all requests; extend it in place (see `.cursor/rules/mf-go-ship-checklist.mdc`).
+Do **not** add or maintain an in-repo `mf-go` here. Platform schema/migrations/Postman → core-base. Particular domain API → masterfabric-particulars. After backend changes, update this repo’s GraphQL usage (`mf-go-api.ts`, envelope helpers) as needed.
 
-mf-expo ship checklist: i18n (EN + TR), GraphQL usage in `mf-go-api.ts`, UX notes — `.cursor/rules/mf-expo-ship-checklist.mdc`.
+mf-expo ship checklist: i18n (EN + TR), GraphQL usage, UX notes — `.cursor/rules/mf-expo-ship-checklist.mdc`.
 
-PR conventions (description, verify steps, cross-project): `.cursor/rules/pr-reviews.mdc`.
+PR conventions: `.cursor/rules/pr-reviews.mdc`.

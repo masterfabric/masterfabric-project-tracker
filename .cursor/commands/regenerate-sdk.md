@@ -1,9 +1,11 @@
-# Regenerate mf-go SDKs
+# Regenerate platform SDKs (core-base)
 
-After changing any `.graphqls` file in `mf-go/internal/infrastructure/graphql/schema/`:
+This repo has **no** in-tree `mf-go`. After changing GraphQL schema in **masterfabric-core-base**:
 
 ```bash
-cd mf-go && make generate-all
+cd ../masterfabric-core-base/mf-go && make generate-all
 ```
 
-This regenerates `sdk/dart_go_api/` and `sdk/swift_go_api/`. Never edit these by hand.
+Never edit generated SDKs by hand. Then update this client’s GraphQL usage (`mf-go-api.ts`, Particular envelope helpers) to match.
+
+For **particular-project-tracker** schema changes, work in **masterfabric-particulars** and keep the Particular hop (`particularGraphqlEnvelope`) contract in sync.

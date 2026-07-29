@@ -23,15 +23,15 @@ Automation and agents tend to spit out stiff bullets. **Normalize on maintainer-
    - **How to verify** (commands, screens, Postman flows if API-related)
    - **Risk / rollbacks** if migrations, auth, or data deletion are involved
    - **Pre-review** — A short checklist in the PR body tying back to this section (one coherent slice, cross-project note if needed, applicable ship-checklist items marked N/A or done) so drafts are review-ready when marked ready.
-3. **Cross-project** — If the PR touches both `mf-go` and `mf-expo`, say how they deploy together (API first vs compatible fallbacks).
+3. **Cross-project** — If the PR depends on **masterfabric-core-base** (mf-go) or **masterfabric-particulars**, say how they deploy together (API / Particular first vs compatible client fallbacks) and link sibling PRs.
 4. **Checklists** — When applicable:
-   - **`mf-go`:** `.cursor/rules/mf-go-ship-checklist.mdc` (Postman + `CHANGELOG.md`)
    - **`mf-expo`:** `.cursor/rules/mf-expo-ship-checklist.mdc` (i18n + `CHANGELOG.md` + API usage)
+   - Backend ship checklists live in the sibling repos that own mf-go / Particulars — see `.cursor/rules/backend-ownership.mdc`
 
 ## Merge progression (do in order)
 
 1. **Finish the work in git** — Commits pushed; scope matches the title.
-2. **Run the ship checklists** for every area you touched (`mf-go` and/or `mf-expo` rules above). Skip only what those rules say is skippable.
+2. **Run the ship checklists** for every area you touched in this repo (`mf-expo` rules above). Skip only what those rules say is skippable.
 3. **Open or update the PR** — Draft is fine while iterating. When the diff stabilizes, set the **description** to human-shaped prose + structured sections (see **Human voice** above).
 4. **Optional thread comment** — Add a brief human note if it helps reviewers orient.
 5. **Mark Ready for review** — Only after description + applicable checklists are honest.
@@ -40,7 +40,7 @@ Automation and agents tend to spit out stiff bullets. **Normalize on maintainer-
 ## For reviewers (and authors self-reviewing)
 
 - Confirm **user-facing copy** has **EN + TR** (or project-agreed locales) when strings ship to the app.
-- Confirm **GraphQL** changes in `mf-go` have matching **client usage** (`mf-go-api.ts` / `graphqlRequest`) when the app depends on them.
+- Confirm **GraphQL** client usage (`mf-go-api.ts` / `graphqlRequest` / Particular envelope) matches the **core-base** / Particular schemas the app targets.
 - Prefer **small commits** with clear messages; squash policy is team choice, but history should remain understandable from PR description + commits.
 
 ## After merge

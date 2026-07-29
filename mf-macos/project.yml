@@ -1,0 +1,112 @@
+name: MFProjectTracker
+options:
+  bundleIdPrefix: com.masterfabric
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+packages:
+  MFTrackerKit:
+    path: .
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  MFProjectTracker:
+    type: application
+    platform: macOS
+    sources:
+      - path: App
+    dependencies:
+      - package: MFTrackerKit
+        product: MFTrackerKit
+      - target: MFTrackerWidgets
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.masterfabric.projectTracker.macos
+        PRODUCT_NAME: MF Project Tracker
+        INFOPLIST_FILE: Configs/App-Info.plist
+        CODE_SIGN_ENTITLEMENTS: Configs/App.entitlements
+        GENERATE_INFOPLIST_FILE: false
+        LD_RUNPATH_SEARCH_PATHS: ["$(inherited)", "@executable_path/../Frameworks"]
+        ENABLE_HARDENED_RUNTIME: false
+        COMBINE_HIDPI_IMAGES: true
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GRAPHQL_URL: http://localhost:8080/graphql
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGNING_REQUIRED: false
+      configs:
+        Debug:
+          GRAPHQL_URL: http://localhost:8080/graphql
+        Release:
+          GRAPHQL_URL: http://localhost:8080/graphql
+    info:
+      path: Configs/App-Info.plist
+      properties:
+        CFBundleDisplayName: MF Project Tracker
+        CFBundleName: MF Project Tracker
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "1"
+        LSUIElement: true
+        LSMinimumSystemVersion: "14.0"
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        GRAPHQL_URL: $(GRAPHQL_URL)
+        CFBundleURLTypes:
+          - CFBundleURLName: com.masterfabric.projectTracker.macos
+            CFBundleURLSchemes:
+              - mfprojecttracker
+    entitlements:
+      path: Configs/App.entitlements
+      properties:
+        com.apple.security.app-sandbox: false
+        com.apple.security.network.client: true
+
+  MFTrackerWidgets:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: Widgets
+    dependencies:
+      - package: MFTrackerKit
+        product: MFTrackerKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.masterfabric.projectTracker.macos.widgets
+        PRODUCT_NAME: MFTrackerWidgets
+        INFOPLIST_FILE: Configs/Widgets-Info.plist
+        CODE_SIGN_ENTITLEMENTS: Configs/Widgets.entitlements
+        GENERATE_INFOPLIST_FILE: false
+        LD_RUNPATH_SEARCH_PATHS: ["$(inherited)", "@executable_path/../Frameworks", "@executable_path/../../../../Frameworks"]
+        SKIP_INSTALL: true
+    info:
+      path: Configs/Widgets-Info.plist
+      properties:
+        CFBundleDisplayName: MF Tracker Widgets
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "1"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Configs/Widgets.entitlements
+      properties:
+        com.apple.security.app-sandbox: false
+        com.apple.security.network.client: true
+
+schemes:
+  MFProjectTracker:
+    build:
+      targets:
+        MFProjectTracker: all
+        MFTrackerWidgets: all
+    run:
+      config: Debug
+    archive:
+      config: Release

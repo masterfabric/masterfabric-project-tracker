@@ -197,9 +197,9 @@ export function OrganizationProjectDetailScreen({
         const [org, om, p, pm, td] = await Promise.all([
           mfGoOrganizations.organization(organizationId),
           mfGoOrganizations.organizationMembers(organizationId),
-          mfGoOrganizations.organizationProject(projectId),
-          mfGoOrganizations.organizationProjectMembers(projectId),
-          mfGoOrganizations.organizationProjectTodos(projectId),
+          mfGoOrganizations.organizationProject(organizationId, projectId),
+          mfGoOrganizations.organizationProjectMembers(organizationId, projectId),
+          mfGoOrganizations.organizationProjectTodos(organizationId, projectId),
         ]);
         setOrganization(org);
         setOrgMembers(om);
@@ -208,7 +208,7 @@ export function OrganizationProjectDetailScreen({
         setTodos(td);
         let pu: OrganizationProjectPurchasePayload[] = [];
         try {
-          pu = await mfGoOrganizations.organizationProjectPurchases(projectId);
+          pu = await mfGoOrganizations.organizationProjectPurchases(organizationId, projectId);
         } catch {
           pu = [];
         }
@@ -312,6 +312,7 @@ export function OrganizationProjectDetailScreen({
     async (input: TodoSheetSaveInput) => {
       try {
         const created = await mfGoOrganizations.createOrganizationProjectTodo({
+          organizationId,
           projectId,
           title: input.title,
           assignedToUserId: input.assignedToUserID ?? undefined,
@@ -319,15 +320,12 @@ export function OrganizationProjectDetailScreen({
         });
         await load('refresh');
         snackbarService.success(t('home.todos.addedToProjectList'), 2800);
-        if (created._dueAtNotSaved) {
-          snackbarService.info(t('home.todos.dueAtNotSavedOnServer'), 4200);
-        }
         return null;
       } catch {
         return t('profile.organizations.projects.todoAddFailed');
       }
     },
-    [projectId, load, t]
+    [organizationId, projectId, load, t]
   );
 
   const toggleTodo = useCallback(
@@ -335,6 +333,7 @@ export function OrganizationProjectDetailScreen({
       const next = item.status === 'DONE' ? 'OPEN' : 'DONE';
       try {
         const updated = await mfGoOrganizations.updateOrganizationProjectTodo({
+          organizationId,
           todoId: item.id,
           status: next,
         });
@@ -349,7 +348,7 @@ export function OrganizationProjectDetailScreen({
         showErr(t('profile.organizations.projects.todoUpdateFailed'));
       }
     },
-    [showErr]
+    [organizationId, showErr]
   );
 
   const toggleProjectSubtask = useCallback(
@@ -358,6 +357,7 @@ export function OrganizationProjectDetailScreen({
       setProjectSubtasksBusy(true);
       try {
         const updated = await mfGoOrganizations.updateOrganizationProjectTodoSubtask({
+          organizationId,
           id: sub.id,
           completed: !sub.completed,
         });
@@ -377,7 +377,7 @@ export function OrganizationProjectDetailScreen({
         setProjectSubtasksBusy(false);
       }
     },
-    [showErr, t]
+    [organizationId, showErr, t]
   );
 
   const deleteProjectSubtask = useCallback(
@@ -385,7 +385,7 @@ export function OrganizationProjectDetailScreen({
       if (!Array.isArray(parent.subtasks)) return;
       setProjectSubtasksBusy(true);
       try {
-        await mfGoOrganizations.deleteOrganizationProjectTodoSubtask(subId);
+        await mfGoOrganizations.deleteOrganizationProjectTodoSubtask(organizationId, subId);
         setTodos((prev) =>
           prev.map((x) =>
             x.id === parent.id
@@ -399,7 +399,7 @@ export function OrganizationProjectDetailScreen({
         setProjectSubtasksBusy(false);
       }
     },
-    [showErr, t]
+    [organizationId, showErr, t]
   );
 
   const addProjectSubtask = useCallback(
@@ -410,6 +410,7 @@ export function OrganizationProjectDetailScreen({
       setProjectSubtasksBusy(true);
       try {
         const created = await mfGoOrganizations.createOrganizationProjectTodoSubtask({
+          organizationId,
           projectTodoId: parent.id,
           title,
         });
@@ -427,7 +428,7 @@ export function OrganizationProjectDetailScreen({
         setProjectSubtasksBusy(false);
       }
     },
-    [projectSubtaskDrafts, showErr, t]
+    [organizationId, projectSubtaskDrafts, showErr, t]
   );
 
   const confirmDeleteTodo = useCallback(
@@ -448,7 +449,7 @@ export function OrganizationProjectDetailScreen({
             void (async () => {
               try {
                 await cancelTodoReminder(item.id);
-                await mfGoOrganizations.deleteOrganizationProjectTodo(item.id);
+                await mfGoOrganizations.deleteOrganizationProjectTodo(organizationId, item.id);
                 setTodos((prev) => prev.filter((x) => x.id !== item.id));
               } catch {
                 showErr(t('profile.organizations.projects.todoDeleteFailed'));
@@ -458,20 +459,20 @@ export function OrganizationProjectDetailScreen({
         },
       });
     },
-    [showErr]
+    [organizationId, showErr]
   );
 
   const addMember = useCallback(
     async (userId: string) => {
       try {
-        await mfGoOrganizations.addOrganizationProjectMember(projectId, userId);
+        await mfGoOrganizations.addOrganizationProjectMember(organizationId, projectId, userId);
         setShowAddMember(false);
         await load('refresh');
       } catch {
         showErr(t('profile.organizations.projects.memberAddFailed'));
       }
     },
-    [projectId, load, showErr]
+    [organizationId, projectId, load, showErr]
   );
 
   const removeMember = useCallback(
@@ -491,7 +492,11 @@ export function OrganizationProjectDetailScreen({
             setMsgSheet(null);
             void (async () => {
               try {
-                await mfGoOrganizations.removeOrganizationProjectMember(projectId, userId);
+                await mfGoOrganizations.removeOrganizationProjectMember(
+                  organizationId,
+                  projectId,
+                  userId
+                );
                 await load('refresh');
               } catch {
                 showErr(t('profile.organizations.projects.memberRemoveFailed'));
@@ -501,7 +506,7 @@ export function OrganizationProjectDetailScreen({
         },
       });
     },
-    [projectId, load, showErr]
+    [organizationId, projectId, load, showErr]
   );
 
   const confirmDeletePurchase = useCallback(
@@ -523,7 +528,10 @@ export function OrganizationProjectDetailScreen({
             setMsgSheet(null);
             void (async () => {
               try {
-                await mfGoOrganizations.deleteOrganizationProjectPurchase(item.id);
+                await mfGoOrganizations.deleteOrganizationProjectPurchase(
+                  organizationId,
+                  item.id
+                );
                 setPurchases((prev) => prev.filter((x) => x.id !== item.id));
                 snackbarService.success(t('profile.organizations.projects.purchaseDeleted'), 2400);
               } catch {
@@ -534,7 +542,7 @@ export function OrganizationProjectDetailScreen({
         },
       });
     },
-    [showErr]
+    [organizationId, showErr]
   );
 
   const openNewPurchase = useCallback(() => {
@@ -583,7 +591,7 @@ export function OrganizationProjectDetailScreen({
           setMsgSheet(null);
           void (async () => {
             try {
-              await mfGoOrganizations.deleteOrganizationProject(projectId);
+              await mfGoOrganizations.deleteOrganizationProject(organizationId, projectId);
               router.replace(`/organization/${organizationId}/projects` as never);
             } catch {
               showErr(t('profile.organizations.projects.deleteProjectFailed'));
@@ -1318,6 +1326,7 @@ export function OrganizationProjectDetailScreen({
           setShowPurchaseSheet(false);
           setEditingPurchase(null);
         }}
+        organizationId={organizationId}
         projectId={projectId}
         purchase={editingPurchase}
         onSaved={onPurchaseSaved}

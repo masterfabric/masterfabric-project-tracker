@@ -10,6 +10,10 @@ import {
 } from './graphql-client';
 import { isDueAtSchemaMismatchError, isSubtasksSchemaMismatchError } from './graphql-due-at-fallback';
 import { logger } from './logger';
+import { projectTrackerEnvelope } from './project-tracker-envelope';
+
+/** Particular forward capability for org-project GraphQL (wildcard covers read/write). */
+const PROJECT_TRACKER_CAPABILITY = 'project.tracker.graphql';
 
 // ── Types (match mf-go schema) ───────────────────────────────────────────────
 
@@ -893,9 +897,6 @@ export interface OrganizationProjectTodoPayload {
   dueAt?: string | null;
   createdAt: string;
   updatedAt: string;
-  /** Set by client when server schema lacks dueAt and the task was saved without a due time. */
-  _dueAtNotSaved?: boolean;
-  /** Present when mf-go supports GFG-117 subtasks; omitted on older servers. */
   subtasks?: OrganizationProjectTodoSubtaskPayload[];
 }
 
@@ -1084,8 +1085,9 @@ const DELETE_ORGANIZATION_MESSAGE = /* GraphQL */ `
   }
 `;
 
+/** Inner Particular schema uses String IDs (not UUID scalars). */
 const ORGANIZATION_PROJECTS = /* GraphQL */ `
-  query OrganizationProjects($organizationId: UUID!) {
+  query OrganizationProjects($organizationId: String!) {
     organizationProjects(organizationId: $organizationId) {
       id organizationId name description createdByUserId createdAt updatedAt
     }
@@ -1093,7 +1095,7 @@ const ORGANIZATION_PROJECTS = /* GraphQL */ `
 `;
 
 const ORGANIZATION_PROJECT = /* GraphQL */ `
-  query OrganizationProject($projectId: UUID!) {
+  query OrganizationProject($projectId: String!) {
     organizationProject(projectId: $projectId) {
       id organizationId name description createdByUserId createdAt updatedAt
     }
@@ -1101,7 +1103,7 @@ const ORGANIZATION_PROJECT = /* GraphQL */ `
 `;
 
 const ORGANIZATION_PROJECT_MEMBERS = /* GraphQL */ `
-  query OrganizationProjectMembers($projectId: UUID!) {
+  query OrganizationProjectMembers($projectId: String!) {
     organizationProjectMembers(projectId: $projectId) {
       id projectId userId userNickname addedAt
     }
@@ -1109,20 +1111,12 @@ const ORGANIZATION_PROJECT_MEMBERS = /* GraphQL */ `
 `;
 
 const ORGANIZATION_PROJECT_TODOS = /* GraphQL */ `
-  query OrganizationProjectTodos($projectId: UUID!) {
+  query OrganizationProjectTodos($projectId: String!) {
     organizationProjectTodos(projectId: $projectId) {
       id projectId title status createdByUserId assignedToUserId dueAt createdAt updatedAt
       subtasks {
         id projectTodoId title completed sortOrder createdAt updatedAt
       }
-    }
-  }
-`;
-
-const ORGANIZATION_PROJECT_TODOS_NO_SUBTASKS = /* GraphQL */ `
-  query OrganizationProjectTodosNoSubtasks($projectId: UUID!) {
-    organizationProjectTodos(projectId: $projectId) {
-      id projectId title status createdByUserId assignedToUserId dueAt createdAt updatedAt
     }
   }
 `;
@@ -1144,19 +1138,19 @@ const UPDATE_ORGANIZATION_PROJECT = /* GraphQL */ `
 `;
 
 const DELETE_ORGANIZATION_PROJECT = /* GraphQL */ `
-  mutation DeleteOrganizationProject($projectId: UUID!) {
+  mutation DeleteOrganizationProject($projectId: String!) {
     deleteOrganizationProject(projectId: $projectId)
   }
 `;
 
 const ADD_ORGANIZATION_PROJECT_MEMBER = /* GraphQL */ `
-  mutation AddOrganizationProjectMember($projectId: UUID!, $userId: UUID!) {
+  mutation AddOrganizationProjectMember($projectId: String!, $userId: String!) {
     addOrganizationProjectMember(projectId: $projectId, userId: $userId)
   }
 `;
 
 const REMOVE_ORGANIZATION_PROJECT_MEMBER = /* GraphQL */ `
-  mutation RemoveOrganizationProjectMember($projectId: UUID!, $userId: UUID!) {
+  mutation RemoveOrganizationProjectMember($projectId: String!, $userId: String!) {
     removeOrganizationProjectMember(projectId: $projectId, userId: $userId)
   }
 `;
@@ -1165,6 +1159,9 @@ const CREATE_ORGANIZATION_PROJECT_TODO = /* GraphQL */ `
   mutation CreateOrganizationProjectTodo($input: CreateOrganizationProjectTodoInput!) {
     createOrganizationProjectTodo(input: $input) {
       id projectId title status createdByUserId assignedToUserId dueAt createdAt updatedAt
+      subtasks {
+        id projectTodoId title completed sortOrder createdAt updatedAt
+      }
     }
   }
 `;
@@ -1173,29 +1170,15 @@ const UPDATE_ORGANIZATION_PROJECT_TODO = /* GraphQL */ `
   mutation UpdateOrganizationProjectTodo($input: UpdateOrganizationProjectTodoInput!) {
     updateOrganizationProjectTodo(input: $input) {
       id projectId title status createdByUserId assignedToUserId dueAt createdAt updatedAt
-    }
-  }
-`;
-
-/** Older mf-go: no dueAt on OrganizationProjectTodo (GraphQL + DB). */
-const CREATE_ORGANIZATION_PROJECT_TODO_NO_DUE = /* GraphQL */ `
-  mutation CreateOrganizationProjectTodoNoDue($input: CreateOrganizationProjectTodoInput!) {
-    createOrganizationProjectTodo(input: $input) {
-      id projectId title status createdByUserId assignedToUserId createdAt updatedAt
-    }
-  }
-`;
-
-const UPDATE_ORGANIZATION_PROJECT_TODO_NO_DUE = /* GraphQL */ `
-  mutation UpdateOrganizationProjectTodoNoDue($input: UpdateOrganizationProjectTodoInput!) {
-    updateOrganizationProjectTodo(input: $input) {
-      id projectId title status createdByUserId assignedToUserId createdAt updatedAt
+      subtasks {
+        id projectTodoId title completed sortOrder createdAt updatedAt
+      }
     }
   }
 `;
 
 const DELETE_ORGANIZATION_PROJECT_TODO = /* GraphQL */ `
-  mutation DeleteOrganizationProjectTodo($todoId: UUID!) {
+  mutation DeleteOrganizationProjectTodo($todoId: String!) {
     deleteOrganizationProjectTodo(todoId: $todoId)
   }
 `;
@@ -1217,13 +1200,13 @@ const UPDATE_ORGANIZATION_PROJECT_TODO_SUBTASK = /* GraphQL */ `
 `;
 
 const DELETE_ORGANIZATION_PROJECT_TODO_SUBTASK = /* GraphQL */ `
-  mutation DeleteOrganizationProjectTodoSubtask($id: UUID!) {
+  mutation DeleteOrganizationProjectTodoSubtask($id: String!) {
     deleteOrganizationProjectTodoSubtask(id: $id)
   }
 `;
 
 const ORGANIZATION_PROJECT_PURCHASES = /* GraphQL */ `
-  query OrganizationProjectPurchases($projectId: UUID!) {
+  query OrganizationProjectPurchases($projectId: String!) {
     organizationProjectPurchases(projectId: $projectId) {
       id projectId productName taxRate productPurpose price quantity productLink status statusNote currency createdByUserId createdAt updatedAt
     }
@@ -1247,7 +1230,7 @@ const UPDATE_ORGANIZATION_PROJECT_PURCHASE = /* GraphQL */ `
 `;
 
 const DELETE_ORGANIZATION_PROJECT_PURCHASE = /* GraphQL */ `
-  mutation DeleteOrganizationProjectPurchase($purchaseId: UUID!) {
+  mutation DeleteOrganizationProjectPurchase($purchaseId: String!) {
     deleteOrganizationProjectPurchase(purchaseId: $purchaseId)
   }
 `;
@@ -1430,197 +1413,181 @@ export const mfGoOrganizations = {
     }).then((r) => r.deleteOrganizationMessage),
 
   organizationProjects: (organizationId: string) =>
-    graphqlRequest<{ organizationProjects: OrganizationProjectPayload[] }>(ORGANIZATION_PROJECTS, {
+    projectTrackerEnvelope<{ organizationProjects: OrganizationProjectPayload[] }>({
       organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: ORGANIZATION_PROJECTS,
+      variables: { organizationId },
     }).then((r) => r.organizationProjects),
 
-  organizationProject: (projectId: string) =>
-    graphqlRequest<{ organizationProject: OrganizationProjectPayload }>(ORGANIZATION_PROJECT, {
-      projectId,
+  organizationProject: (organizationId: string, projectId: string) =>
+    projectTrackerEnvelope<{ organizationProject: OrganizationProjectPayload }>({
+      organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: ORGANIZATION_PROJECT,
+      variables: { projectId },
     }).then((r) => r.organizationProject),
 
-  organizationProjectMembers: (projectId: string) =>
-    graphqlRequest<{ organizationProjectMembers: OrganizationProjectMemberPayload[] }>(
-      ORGANIZATION_PROJECT_MEMBERS,
-      { projectId }
-    ).then((r) => r.organizationProjectMembers),
+  organizationProjectMembers: (organizationId: string, projectId: string) =>
+    projectTrackerEnvelope<{ organizationProjectMembers: OrganizationProjectMemberPayload[] }>({
+      organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: ORGANIZATION_PROJECT_MEMBERS,
+      variables: { projectId },
+    }).then((r) => r.organizationProjectMembers),
 
-  organizationProjectTodos: async (projectId: string) => {
-    try {
-      const r = await graphqlRequest<{ organizationProjectTodos: OrganizationProjectTodoPayload[] }>(
-        ORGANIZATION_PROJECT_TODOS,
-        { projectId }
-      );
-      return r.organizationProjectTodos;
-    } catch (e) {
-      if (!isSubtasksSchemaMismatchError(e)) throw e;
-      const r = await graphqlRequest<{ organizationProjectTodos: OrganizationProjectTodoPayload[] }>(
-        ORGANIZATION_PROJECT_TODOS_NO_SUBTASKS,
-        { projectId },
-        { silent: true }
-      );
-      return r.organizationProjectTodos;
-    }
-  },
+  organizationProjectTodos: (organizationId: string, projectId: string) =>
+    projectTrackerEnvelope<{ organizationProjectTodos: OrganizationProjectTodoPayload[] }>({
+      organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: ORGANIZATION_PROJECT_TODOS,
+      variables: { projectId },
+    }).then((r) => r.organizationProjectTodos),
 
-  organizationProjectPurchases: (projectId: string) =>
-    graphqlRequest<{ organizationProjectPurchases: OrganizationProjectPurchasePayload[] }>(
-      ORGANIZATION_PROJECT_PURCHASES,
-      { projectId }
-    ).then((r) => r.organizationProjectPurchases),
+  organizationProjectPurchases: (organizationId: string, projectId: string) =>
+    projectTrackerEnvelope<{ organizationProjectPurchases: OrganizationProjectPurchasePayload[] }>({
+      organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: ORGANIZATION_PROJECT_PURCHASES,
+      variables: { projectId },
+    }).then((r) => r.organizationProjectPurchases),
 
   createOrganizationProject: (input: {
     organizationId: string;
     name: string;
     description?: string | null;
   }) =>
-    graphqlRequest<{ createOrganizationProject: OrganizationProjectPayload }>(
-      CREATE_ORGANIZATION_PROJECT,
-      {
+    projectTrackerEnvelope<{ createOrganizationProject: OrganizationProjectPayload }>({
+      organizationId: input.organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: CREATE_ORGANIZATION_PROJECT,
+      variables: {
         input: {
           organizationId: input.organizationId,
           name: input.name,
           description: input.description ?? undefined,
         },
-      }
-    ).then((r) => r.createOrganizationProject),
+      },
+    }).then((r) => r.createOrganizationProject),
 
   updateOrganizationProject: (input: {
+    organizationId: string;
     projectId: string;
     name?: string | null;
     description?: string | null;
   }) =>
-    graphqlRequest<{ updateOrganizationProject: OrganizationProjectPayload }>(
-      UPDATE_ORGANIZATION_PROJECT,
-      {
+    projectTrackerEnvelope<{ updateOrganizationProject: OrganizationProjectPayload }>({
+      organizationId: input.organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: UPDATE_ORGANIZATION_PROJECT,
+      variables: {
         input: {
           projectId: input.projectId,
           name: input.name ?? undefined,
           description: input.description ?? undefined,
         },
-      }
-    ).then((r) => r.updateOrganizationProject),
+      },
+    }).then((r) => r.updateOrganizationProject),
 
-  deleteOrganizationProject: (projectId: string) =>
-    graphqlRequest<{ deleteOrganizationProject: boolean }>(DELETE_ORGANIZATION_PROJECT, {
-      projectId,
+  deleteOrganizationProject: (organizationId: string, projectId: string) =>
+    projectTrackerEnvelope<{ deleteOrganizationProject: boolean }>({
+      organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: DELETE_ORGANIZATION_PROJECT,
+      variables: { projectId },
     }).then((r) => r.deleteOrganizationProject),
 
-  addOrganizationProjectMember: (projectId: string, userId: string) =>
-    graphqlRequest<{ addOrganizationProjectMember: boolean }>(ADD_ORGANIZATION_PROJECT_MEMBER, {
-      projectId,
-      userId,
+  addOrganizationProjectMember: (organizationId: string, projectId: string, userId: string) =>
+    projectTrackerEnvelope<{ addOrganizationProjectMember: boolean }>({
+      organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: ADD_ORGANIZATION_PROJECT_MEMBER,
+      variables: { projectId, userId },
     }).then((r) => r.addOrganizationProjectMember),
 
-  removeOrganizationProjectMember: (projectId: string, userId: string) =>
-    graphqlRequest<{ removeOrganizationProjectMember: boolean }>(
-      REMOVE_ORGANIZATION_PROJECT_MEMBER,
-      { projectId, userId }
-    ).then((r) => r.removeOrganizationProjectMember),
+  removeOrganizationProjectMember: (organizationId: string, projectId: string, userId: string) =>
+    projectTrackerEnvelope<{ removeOrganizationProjectMember: boolean }>({
+      organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: REMOVE_ORGANIZATION_PROJECT_MEMBER,
+      variables: { projectId, userId },
+    }).then((r) => r.removeOrganizationProjectMember),
 
-  createOrganizationProjectTodo: async (input: {
+  createOrganizationProjectTodo: (input: {
+    organizationId: string;
     projectId: string;
     title: string;
     assignedToUserId?: string | null;
     dueAt?: string | null;
-  }) => {
-    try {
-      const r = await graphqlRequest<{ createOrganizationProjectTodo: OrganizationProjectTodoPayload }>(
-        CREATE_ORGANIZATION_PROJECT_TODO,
-        {
-          input: {
-            projectId: input.projectId,
-            title: input.title,
-            ...(input.assignedToUserId ? { assignedToUserId: input.assignedToUserId } : {}),
-            ...(input.dueAt ? { dueAt: input.dueAt } : {}),
-          },
-        }
-      );
-      return r.createOrganizationProjectTodo;
-    } catch (e) {
-      if (!isDueAtSchemaMismatchError(e)) throw e;
-      const r = await graphqlRequest<{ createOrganizationProjectTodo: OrganizationProjectTodoPayload }>(
-        CREATE_ORGANIZATION_PROJECT_TODO_NO_DUE,
-        {
-          input: {
-            projectId: input.projectId,
-            title: input.title,
-            ...(input.assignedToUserId ? { assignedToUserId: input.assignedToUserId } : {}),
-          },
+  }) =>
+    projectTrackerEnvelope<{ createOrganizationProjectTodo: OrganizationProjectTodoPayload }>({
+      organizationId: input.organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: CREATE_ORGANIZATION_PROJECT_TODO,
+      variables: {
+        input: {
+          projectId: input.projectId,
+          title: input.title,
+          ...(input.assignedToUserId ? { assignedToUserId: input.assignedToUserId } : {}),
+          ...(input.dueAt ? { dueAt: input.dueAt } : {}),
         },
-        { silent: true }
-      );
-      return {
-        ...r.createOrganizationProjectTodo,
-        ...(input.dueAt ? { _dueAtNotSaved: true as const } : {}),
-      };
-    }
-  },
+      },
+    }).then((r) => r.createOrganizationProjectTodo),
 
-  updateOrganizationProjectTodo: async (input: {
+  updateOrganizationProjectTodo: (input: {
+    organizationId: string;
     todoId: string;
     title?: string | null;
     status?: OrganizationProjectTodoStatusGql | null;
     dueAt?: string | null;
     clearDueAt?: boolean;
-  }) => {
-    const fullInput = {
-      todoId: input.todoId,
-      title: input.title ?? undefined,
-      status: input.status ?? undefined,
-      ...(input.dueAt ? { dueAt: input.dueAt } : {}),
-      ...(input.clearDueAt ? { clearDueAt: true } : {}),
-    };
-    try {
-      const r = await graphqlRequest<{ updateOrganizationProjectTodo: OrganizationProjectTodoPayload }>(
-        UPDATE_ORGANIZATION_PROJECT_TODO,
-        { input: fullInput }
-      );
-      return r.updateOrganizationProjectTodo;
-    } catch (e) {
-      if (!isDueAtSchemaMismatchError(e)) throw e;
-      const legacyInput: {
-        todoId: string;
-        title?: string;
-        status?: OrganizationProjectTodoStatusGql;
-      } = { todoId: input.todoId };
-      if (input.title !== undefined && input.title !== null) legacyInput.title = input.title;
-      if (input.status !== undefined && input.status !== null) legacyInput.status = input.status;
-      const r = await graphqlRequest<{ updateOrganizationProjectTodo: OrganizationProjectTodoPayload }>(
-        UPDATE_ORGANIZATION_PROJECT_TODO_NO_DUE,
-        { input: legacyInput },
-        { silent: true }
-      );
-      const hadDueIntent = Boolean(input.dueAt) || input.clearDueAt === true;
-      return {
-        ...r.updateOrganizationProjectTodo,
-        ...(hadDueIntent ? { _dueAtNotSaved: true as const } : {}),
-      };
-    }
-  },
+  }) =>
+    projectTrackerEnvelope<{ updateOrganizationProjectTodo: OrganizationProjectTodoPayload }>({
+      organizationId: input.organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: UPDATE_ORGANIZATION_PROJECT_TODO,
+      variables: {
+        input: {
+          todoId: input.todoId,
+          title: input.title ?? undefined,
+          status: input.status ?? undefined,
+          ...(input.dueAt ? { dueAt: input.dueAt } : {}),
+          ...(input.clearDueAt ? { clearDueAt: true } : {}),
+        },
+      },
+    }).then((r) => r.updateOrganizationProjectTodo),
 
-  deleteOrganizationProjectTodo: (todoId: string) =>
-    graphqlRequest<{ deleteOrganizationProjectTodo: boolean }>(DELETE_ORGANIZATION_PROJECT_TODO, {
-      todoId,
+  deleteOrganizationProjectTodo: (organizationId: string, todoId: string) =>
+    projectTrackerEnvelope<{ deleteOrganizationProjectTodo: boolean }>({
+      organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: DELETE_ORGANIZATION_PROJECT_TODO,
+      variables: { todoId },
     }).then((r) => r.deleteOrganizationProjectTodo),
 
   createOrganizationProjectTodoSubtask: (input: {
+    organizationId: string;
     projectTodoId: string;
     title: string;
     completed?: boolean;
   }) =>
-    graphqlRequest<{ createOrganizationProjectTodoSubtask: OrganizationProjectTodoSubtaskPayload }>(
-      CREATE_ORGANIZATION_PROJECT_TODO_SUBTASK,
-      {
+    projectTrackerEnvelope<{
+      createOrganizationProjectTodoSubtask: OrganizationProjectTodoSubtaskPayload;
+    }>({
+      organizationId: input.organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: CREATE_ORGANIZATION_PROJECT_TODO_SUBTASK,
+      variables: {
         input: {
           projectTodoId: input.projectTodoId,
           title: input.title,
           ...(input.completed !== undefined ? { completed: input.completed } : {}),
         },
-      }
-    ).then((r) => r.createOrganizationProjectTodoSubtask),
+      },
+    }).then((r) => r.createOrganizationProjectTodoSubtask),
 
   updateOrganizationProjectTodoSubtask: (input: {
+    organizationId: string;
     id: string;
     title?: string;
     completed?: boolean;
@@ -1628,19 +1595,26 @@ export const mfGoOrganizations = {
     const body: { id: string; title?: string; completed?: boolean } = { id: input.id };
     if (input.title !== undefined) body.title = input.title;
     if (input.completed !== undefined) body.completed = input.completed;
-    return graphqlRequest<{ updateOrganizationProjectTodoSubtask: OrganizationProjectTodoSubtaskPayload }>(
-      UPDATE_ORGANIZATION_PROJECT_TODO_SUBTASK,
-      { input: body }
-    ).then((r) => r.updateOrganizationProjectTodoSubtask);
+    return projectTrackerEnvelope<{
+      updateOrganizationProjectTodoSubtask: OrganizationProjectTodoSubtaskPayload;
+    }>({
+      organizationId: input.organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: UPDATE_ORGANIZATION_PROJECT_TODO_SUBTASK,
+      variables: { input: body },
+    }).then((r) => r.updateOrganizationProjectTodoSubtask);
   },
 
-  deleteOrganizationProjectTodoSubtask: (id: string) =>
-    graphqlRequest<{ deleteOrganizationProjectTodoSubtask: boolean }>(
-      DELETE_ORGANIZATION_PROJECT_TODO_SUBTASK,
-      { id }
-    ).then((r) => r.deleteOrganizationProjectTodoSubtask),
+  deleteOrganizationProjectTodoSubtask: (organizationId: string, id: string) =>
+    projectTrackerEnvelope<{ deleteOrganizationProjectTodoSubtask: boolean }>({
+      organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: DELETE_ORGANIZATION_PROJECT_TODO_SUBTASK,
+      variables: { id },
+    }).then((r) => r.deleteOrganizationProjectTodoSubtask),
 
   createOrganizationProjectPurchase: (input: {
+    organizationId: string;
     projectId: string;
     productName: string;
     taxRate?: number | null;
@@ -1667,13 +1641,18 @@ export const mfGoOrganizations = {
     if (input.status) body.status = input.status;
     const note = input.statusNote?.trim();
     if (note) body.statusNote = note;
-    return graphqlRequest<{ createOrganizationProjectPurchase: OrganizationProjectPurchasePayload }>(
-      CREATE_ORGANIZATION_PROJECT_PURCHASE,
-      { input: body }
-    ).then((r) => r.createOrganizationProjectPurchase);
+    return projectTrackerEnvelope<{
+      createOrganizationProjectPurchase: OrganizationProjectPurchasePayload;
+    }>({
+      organizationId: input.organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: CREATE_ORGANIZATION_PROJECT_PURCHASE,
+      variables: { input: body },
+    }).then((r) => r.createOrganizationProjectPurchase);
   },
 
   updateOrganizationProjectPurchase: (input: {
+    organizationId: string;
     purchaseId: string;
     productName: string;
     taxRate: number;
@@ -1702,17 +1681,23 @@ export const mfGoOrganizations = {
     } else {
       gqlInput.productLink = link;
     }
-    return graphqlRequest<{ updateOrganizationProjectPurchase: OrganizationProjectPurchasePayload }>(
-      UPDATE_ORGANIZATION_PROJECT_PURCHASE,
-      { input: gqlInput }
-    ).then((r) => r.updateOrganizationProjectPurchase);
+    return projectTrackerEnvelope<{
+      updateOrganizationProjectPurchase: OrganizationProjectPurchasePayload;
+    }>({
+      organizationId: input.organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: UPDATE_ORGANIZATION_PROJECT_PURCHASE,
+      variables: { input: gqlInput },
+    }).then((r) => r.updateOrganizationProjectPurchase);
   },
 
-  deleteOrganizationProjectPurchase: (purchaseId: string) =>
-    graphqlRequest<{ deleteOrganizationProjectPurchase: boolean }>(
-      DELETE_ORGANIZATION_PROJECT_PURCHASE,
-      { purchaseId }
-    ).then((r) => r.deleteOrganizationProjectPurchase),
+  deleteOrganizationProjectPurchase: (organizationId: string, purchaseId: string) =>
+    projectTrackerEnvelope<{ deleteOrganizationProjectPurchase: boolean }>({
+      organizationId,
+      requiredCapability: PROJECT_TRACKER_CAPABILITY,
+      query: DELETE_ORGANIZATION_PROJECT_PURCHASE,
+      variables: { purchaseId },
+    }).then((r) => r.deleteOrganizationProjectPurchase),
 };
 
 // ── Notifications ────────────────────────────────────────────────────────────

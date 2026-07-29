@@ -586,7 +586,7 @@ export const TodosSection = React.memo(function TodosSection({
     let cancelled = false;
     setProjectTodosLoading(true);
     mfGoOrganizations
-      .organizationProjectTodos(filterProject)
+      .organizationProjectTodos(filterOrg, filterProject)
       .then((rows) => {
         if (!cancelled) setProjectTodos(rows);
       })
@@ -752,12 +752,16 @@ export const TodosSection = React.memo(function TodosSection({
   const handleToggleProjectTodo = useCallback(async (todo: OrganizationProjectTodoPayload) => {
     const next = todo.status === 'DONE' ? 'OPEN' : 'DONE';
     try {
-      await mfGoOrganizations.updateOrganizationProjectTodo({ todoId: todo.id, status: next });
+      await mfGoOrganizations.updateOrganizationProjectTodo({
+        organizationId: filterOrg,
+        todoId: todo.id,
+        status: next,
+      });
       setProjectTodos((prev) => prev.map((x) => (x.id === todo.id ? { ...x, status: next } : x)));
     } catch {
       snackbarService.error(t('profile.organizations.projects.todoUpdateFailed'));
     }
-  }, []);
+  }, [filterOrg, t]);
 
   const renderTodoItem = useCallback(
     ({ item, drag, isActive }: RenderItemParams<TodoItemType>) => (

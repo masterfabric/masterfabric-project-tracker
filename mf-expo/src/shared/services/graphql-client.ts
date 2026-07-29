@@ -19,15 +19,28 @@ export function resetGraphQLClient(): void {
   graphqlClient = null;
 }
 
+function mfClientIdentityHeaders(): Record<string, string> {
+  const apiKey =
+    (typeof process !== 'undefined' && process.env.EXPO_PUBLIC_MF_APP_API_KEY?.trim()) || '';
+  const bundleId =
+    (typeof process !== 'undefined' && process.env.EXPO_PUBLIC_MF_BUNDLE_ID?.trim()) ||
+    'com.masterfabric.monoExpo';
+  const headers: Record<string, string> = {};
+  if (apiKey) headers['X-API-Key'] = apiKey;
+  if (bundleId) headers['X-Bundle-ID'] = bundleId;
+  return headers;
+}
+
 function getGraphQLClient(): GraphQLClient {
   if (!graphqlClient) {
     const url = getGraphQLUrl();
     graphqlClient = new GraphQLClient(url, {
       headers: {
         'Content-Type': 'application/json',
+        ...mfClientIdentityHeaders(),
       },
     });
-    logger.debug('GraphQL client initialized', { url });
+    logger.debug('GraphQL client initialized', { url, hasApiKey: Boolean(mfClientIdentityHeaders()['X-API-Key']) });
   }
   return graphqlClient;
 }
