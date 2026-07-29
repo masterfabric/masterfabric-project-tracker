@@ -44,6 +44,22 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). Start **core-base mf-go** and **particular-project-tracker** first.
 
+### Client app ↔ organization link (required)
+
+Org-scoped Particular calls (`particularGraphqlEnvelope` → `project_tracker`) require **`client_apps.organization_id`** on the app identity you send (`NEXT_PUBLIC_MF_BUNDLE_ID` / API key). If that column is NULL, mf-go returns **`CLIENT_APP_ORGANIZATION_NOT_LINKED`**.
+
+**Fix in MasterFabric Core:** Apps → open `com.masterfabric.monoExpo` → set **Organization** to your tenant (local Demo id `0b9b7f9e-4c96-4061-b432-66487809453c`).
+
+**Local SQL (dev only):**
+
+```sql
+UPDATE client_apps
+SET organization_id = '0b9b7f9e-4c96-4061-b432-66487809453c'
+WHERE bundle_id = 'com.masterfabric.monoExpo' AND organization_id IS NULL;
+```
+
+mf-go **dev seed** re-links this bundle to the Demo org on restart (same helper that links Academy). Confirm grants still include `project.tracker.graphql` for that app after register/setup scripts.
+
 ## Stack
 
 - Next.js 16 (App Router) + React 19 + Tailwind CSS 4

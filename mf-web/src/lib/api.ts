@@ -654,8 +654,7 @@ export const api = {
       );
       return normalizePersonal(r.createTodo);
     } catch (e) {
-      if (input.dueAt && !isPersonalTodoSchemaMismatchError(e)) throw e;
-      if (!input.dueAt) throw e;
+      if (!isPersonalTodoSchemaMismatchError(e)) throw e;
       const r = await graphqlRequest<{ createTodo: PersonalTodo }>(
         `mutation CreateTodoBasic($input: CreateTodoInput!) {
           createTodo(input: $input) {
@@ -688,9 +687,7 @@ export const api = {
       );
       return normalizePersonal(r.updateTodo);
     } catch (e) {
-      const touchesDue =
-        input.dueAt !== undefined || input.clearDueAt === true;
-      if (!touchesDue || !isPersonalTodoSchemaMismatchError(e)) throw e;
+      if (!isPersonalTodoSchemaMismatchError(e)) throw e;
       const { dueAt: _d, clearDueAt: _c, ...rest } = input;
       const r = await graphqlRequest<{ updateTodo: PersonalTodo }>(
         `mutation UpdateTodoBasic($input: UpdateTodoInput!) {
