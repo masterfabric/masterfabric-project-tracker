@@ -35,7 +35,7 @@ export function IssueRow({
           onOpen();
         }
       }}
-      className="mf-row group grid cursor-pointer grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2 border-b border-[var(--border)] px-3 py-2"
+      className="mf-row group grid cursor-pointer grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-2 border-b border-[var(--border)] px-4 py-2.5"
     >
       <button
         type="button"
@@ -44,12 +44,12 @@ export function IssueRow({
           e.stopPropagation();
           onToggleStatus();
         }}
-        className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--text-muted)] transition hover:bg-[var(--bg-soft)] hover:text-[var(--text)]"
+        className="flex h-8 w-8 items-center justify-center rounded-[10px] text-[var(--text-muted)] transition hover:bg-[var(--bg-soft)] hover:text-[var(--text)]"
       >
         {todo.status === "DONE" ? (
-          <CheckCircle2 className="h-4 w-4 text-[var(--done)]" />
+          <CheckCircle2 className="h-4.5 w-4.5 text-[var(--done)]" />
         ) : (
-          <Circle className="h-4 w-4 text-[var(--open)] opacity-80 group-hover:opacity-100" />
+          <Circle className="h-4.5 w-4.5 text-[var(--open)] opacity-80 group-hover:opacity-100" />
         )}
       </button>
 
@@ -60,7 +60,7 @@ export function IssueRow({
           </span>
           <p
             className={cn(
-              "truncate text-[13px] font-medium tracking-tight",
+              "truncate text-[14px] font-medium tracking-tight",
               todo.status === "DONE" && "text-[var(--text-muted)] line-through",
             )}
           >
@@ -68,39 +68,39 @@ export function IssueRow({
           </p>
         </div>
         {subCount > 0 ? (
-          <p className="mt-0.5 flex items-center gap-1 text-[11px] text-[var(--text-faint)]">
+          <p className="mt-0.5 flex items-center gap-1 text-[12px] text-[var(--text-faint)]">
             <ListTodo className="h-3 w-3" />
             {doneCount}/{subCount} checklist
           </p>
         ) : null}
       </div>
 
-      <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-faint)]">
+      <div className="flex items-center gap-1.5 text-[12px] text-[var(--text-faint)]">
         <span
           className={cn(
-            "mf-chip !h-6",
+            "mf-chip !h-7",
             todo.status === "DONE"
-              ? "!border-[color-mix(in_oklab,var(--done)_35%,transparent)] !text-[var(--done)]"
-              : "!border-[color-mix(in_oklab,var(--open)_35%,transparent)] !text-[var(--open)]",
+              ? "!border-[color-mix(in_oklab,var(--done)_35%,transparent)] !bg-[color-mix(in_oklab,var(--done)_10%,transparent)] !text-[var(--done)]"
+              : "!border-[color-mix(in_oklab,var(--open)_35%,transparent)] !bg-[color-mix(in_oklab,var(--open)_10%,transparent)] !text-[var(--open)]",
           )}
         >
           {todo.status === "DONE" ? "Done" : "Open"}
         </span>
         {due ? (
-          <span className="mf-chip !h-6">
+          <span className="mf-chip !h-7">
             <CalendarDays className="h-3 w-3" />
             {due}
           </span>
         ) : null}
         {assignee ? (
-          <span className="mf-chip !h-6 !pl-1">
-            <span className="mf-avatar !h-4 !w-4 !text-[0.5rem]">
+          <span className="mf-chip !h-7 !pl-1">
+            <span className="mf-avatar !h-4.5 !w-4.5 !text-[0.5rem]">
               {initials(assignee.userNickname)}
             </span>
             {assignee.userNickname}
           </span>
         ) : (
-          <span className="mf-chip !h-6 opacity-0 transition group-hover:opacity-100">
+          <span className="mf-chip !h-7 opacity-0 transition group-hover:opacity-100">
             Unassigned
           </span>
         )}

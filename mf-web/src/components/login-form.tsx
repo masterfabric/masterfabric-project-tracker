@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowRight, LoaderCircle, Sparkles } from "lucide-react";
+import { ArrowRight, LoaderCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { graphqlUrl } from "@/lib/graphql";
 
@@ -41,35 +41,45 @@ export function LoginForm() {
   }
 
   return (
-    <div className="relative grid min-h-screen lg:grid-cols-[1.15fr_0.85fr]">
+    <div className="relative grid min-h-screen lg:grid-cols-[1.1fr_0.9fr]">
       <section className="relative hidden overflow-hidden border-r border-[var(--border)] lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_500px_at_20%_10%,rgba(91,141,239,0.22),transparent_55%),radial-gradient(700px_420px_at_80%_90%,rgba(52,211,153,0.1),transparent_50%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_520px_at_15%_0%,rgba(15,118,110,0.18),transparent_55%),radial-gradient(680px_420px_at_90%_100%,rgba(20,184,166,0.12),transparent_50%)]" />
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.45]"
+          style={{
+            backgroundImage:
+              "linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+            maskImage:
+              "radial-gradient(ellipse 70% 60% at 40% 30%, black, transparent)",
+          }}
+        />
         <div className="mf-noise" />
         <div className="relative">
           <div className="flex items-center gap-3">
             <Image
               src="/tracker-mark.png"
               alt=""
-              width={44}
-              height={44}
-              className="h-11 w-11 rounded-xl ring-1 ring-[color-mix(in_oklab,var(--accent)_35%,transparent)]"
+              width={48}
+              height={48}
+              className="h-12 w-12 rounded-[14px] shadow-[var(--shadow)] ring-1 ring-[color-mix(in_oklab,var(--accent)_30%,transparent)]"
               priority
             />
-            <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--text-faint)]">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.2em] text-[var(--text-faint)]">
               MasterFabric
             </p>
           </div>
           <h1
-            className="mt-6 max-w-lg text-5xl font-semibold leading-[1.05] tracking-tight text-[var(--text)] xl:text-6xl"
+            className="mt-8 max-w-lg text-5xl font-semibold leading-[1.02] tracking-tight text-[var(--text)] xl:text-[3.5rem]"
             style={{ fontFamily: "var(--font-display)" }}
           >
             Tracker
           </h1>
-          <p className="mt-5 max-w-md text-[15px] leading-relaxed text-[var(--text-muted)]">
-            A desktop-first issue workspace — list, board, and keyboard speed
-            on the same GraphQL graph as mobile.
+          <p className="mt-4 max-w-md text-[16px] leading-relaxed text-[var(--text-muted)]">
+            The same teal-on-slate workspace as mobile — list, board, and
+            keyboard speed on the desktop.
           </p>
-          <div className="mt-10 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg)]/40 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.55)]">
+          <div className="mt-10 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--bg-elevated)] shadow-[var(--shadow-lg)]">
             <Image
               src="/og.png"
               alt="MasterFabric Tracker workspace preview"
@@ -80,14 +90,14 @@ export function LoginForm() {
             />
           </div>
         </div>
-        <ul className="relative space-y-3 text-sm text-[var(--text-muted)]">
+        <ul className="relative space-y-2.5 text-[14px] text-[var(--text-muted)]">
           {[
-            "Dense list + kanban without the clutter",
-            "Issue drawer with subtasks and status",
-            "Shortcuts that feel native: C / 1 2 Esc",
+            "Issues with assignee, due dates, and subtasks",
+            "Purchases and personal todos in one shell",
+            "Shortcuts: C · / · 1 2 · Esc · ?",
           ].map((line) => (
             <li key={line} className="flex items-start gap-2.5">
-              <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" />
               <span>{line}</span>
             </li>
           ))}
@@ -95,35 +105,35 @@ export function LoginForm() {
       </section>
 
       <section className="relative flex items-center justify-center px-6 py-16">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(600px_320px_at_70%_0%,rgba(91,141,239,0.12),transparent_60%)] lg:hidden" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(560px_300px_at_70%_0%,rgba(15,118,110,0.1),transparent_60%)] lg:hidden" />
         <div className="mf-fade-up relative w-full max-w-[400px]">
           <div className="mb-8 lg:hidden">
             <div className="flex items-center gap-2.5">
               <Image
                 src="/tracker-mark.png"
                 alt=""
-                width={36}
-                height={36}
-                className="h-9 w-9 rounded-lg"
+                width={40}
+                height={40}
+                className="h-10 w-10 rounded-[12px]"
                 priority
               />
-              <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-[var(--text-faint)]">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--text-faint)]">
                 MasterFabric
               </p>
             </div>
             <h1
-              className="mt-3 text-4xl font-semibold tracking-tight"
+              className="mt-4 text-4xl font-semibold tracking-tight"
               style={{ fontFamily: "var(--font-display)" }}
             >
               Tracker
             </h1>
           </div>
 
-          <p className="mb-2 text-sm text-[var(--text-muted)]">
+          <p className="mb-1.5 text-[13px] text-[var(--text-muted)]">
             {loginToken ? "Enter your one-time code" : "Sign in to continue"}
           </p>
           <h2
-            className="mb-6 text-2xl font-semibold tracking-tight"
+            className="mb-6 text-[26px] font-semibold tracking-tight"
             style={{ fontFamily: "var(--font-display)" }}
           >
             {loginToken ? "Verify" : "Welcome back"}
@@ -132,53 +142,47 @@ export function LoginForm() {
           <form onSubmit={onSubmit} className="mf-panel space-y-4 p-5">
             {!loginToken ? (
               <>
-                <label className="block space-y-1.5">
-                  <span className="text-[11px] text-[var(--text-faint)]">
-                    Email
-                  </span>
+                <label className="block">
+                  <span className="mf-label">Email</span>
                   <input
                     autoFocus
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2.5 outline-none transition focus:border-[var(--accent)]"
+                    className="mf-input"
                     placeholder="you@company.com"
                   />
                 </label>
-                <label className="block space-y-1.5">
-                  <span className="text-[11px] text-[var(--text-faint)]">
-                    Password
-                  </span>
+                <label className="block">
+                  <span className="mf-label">Password</span>
                   <input
                     type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2.5 outline-none transition focus:border-[var(--accent)]"
+                    className="mf-input"
                     placeholder="••••••••"
                   />
                 </label>
               </>
             ) : (
-              <label className="block space-y-1.5">
-                <span className="text-[11px] text-[var(--text-faint)]">
-                  One-time code
-                </span>
+              <label className="block">
+                <span className="mf-label">One-time code</span>
                 <input
                   autoFocus
                   inputMode="numeric"
                   required
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2.5 tracking-[0.28em] outline-none transition focus:border-[var(--accent)]"
+                  className="mf-input tracking-[0.28em]"
                   placeholder="••••••"
                 />
               </label>
             )}
 
             {error ? (
-              <p className="rounded-lg border border-[rgba(248,113,113,0.35)] bg-[rgba(248,113,113,0.08)] px-3 py-2 text-sm text-[var(--danger)]">
+              <p className="rounded-[var(--radius)] border border-[color-mix(in_oklab,var(--danger)_35%,transparent)] bg-[color-mix(in_oklab,var(--danger)_8%,transparent)] px-3 py-2.5 text-[13px] text-[var(--danger)]">
                 {error}
               </p>
             ) : null}
@@ -186,7 +190,7 @@ export function LoginForm() {
             <button
               type="submit"
               disabled={busy}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+              className="mf-btn mf-btn-primary w-full !py-2.5"
             >
               {busy ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />

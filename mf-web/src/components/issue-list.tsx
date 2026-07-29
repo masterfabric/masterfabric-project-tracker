@@ -16,13 +16,13 @@ export function IssueList() {
 
   if (!project) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 p-10 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-faint)]">
+      <div className="mf-empty h-full">
+        <div className="mf-empty-icon">
           <FolderOpen className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-[14px] font-medium">Pick a project</p>
-          <p className="mt-1 max-w-xs text-[12px] text-[var(--text-faint)]">
+          <p className="mf-empty-title">Pick a project</p>
+          <p className="mf-empty-copy mt-1.5">
             Select or create a project in the sidebar to open the issue list.
           </p>
         </div>
@@ -32,13 +32,13 @@ export function IssueList() {
 
   if (filteredTodos.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 p-10 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-faint)]">
+      <div className="mf-empty h-full">
+        <div className="mf-empty-icon">
           <CircleDashed className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-[14px] font-medium">No issues match</p>
-          <p className="mt-1 text-[12px] text-[var(--text-faint)]">
+          <p className="mf-empty-title">No issues match</p>
+          <p className="mf-empty-copy mt-1.5">
             Press <span className="mf-kbd">C</span> to create one, or clear
             filters.
           </p>
@@ -49,7 +49,7 @@ export function IssueList() {
 
   return (
     <div className="mf-fade-up h-full overflow-y-auto mf-scroll">
-      <div className="sticky top-0 z-10 grid grid-cols-[32px_minmax(0,1fr)_auto] gap-2 border-b border-[var(--border)] bg-[color-mix(in_oklab,var(--bg)_88%,transparent)] px-3 py-2 text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--text-faint)] backdrop-blur-md">
+      <div className="sticky top-0 z-10 grid grid-cols-[40px_minmax(0,1fr)_auto] gap-2 border-b border-[var(--border)] bg-[color-mix(in_oklab,var(--bg)_90%,transparent)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-faint)] backdrop-blur-md">
         <span />
         <span>Issue</span>
         <span className="pr-1 text-right">Properties</span>

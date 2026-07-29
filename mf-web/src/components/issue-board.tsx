@@ -31,26 +31,26 @@ function BoardCard({
       }}
       onClick={onOpen}
       className={cn(
-        "group w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] p-3 text-left shadow-[0_1px_0_rgba(255,255,255,0.03)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:bg-[var(--bg-hover)]",
+        "group w-full rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-elevated)] p-3.5 text-left shadow-[var(--shadow)] transition hover:-translate-y-px hover:border-[var(--border-strong)]",
         active && "border-[var(--accent)] bg-[var(--accent-soft)]",
       )}
     >
       <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="font-mono text-[10px] text-[var(--text-faint)]">
+        <p className="font-mono text-[11px] text-[var(--text-faint)]">
           {shortIssueId(todo.id)}
         </p>
         <span
           className={cn(
-            "h-1.5 w-1.5 rounded-full",
+            "h-2 w-2 rounded-full",
             todo.status === "DONE" ? "bg-[var(--done)]" : "bg-[var(--open)]",
           )}
         />
       </div>
-      <p className="text-[13px] font-medium leading-snug tracking-tight">
+      <p className="text-[14px] font-medium leading-snug tracking-tight">
         {todo.title}
       </p>
       {todo.subtasks.length > 0 ? (
-        <p className="mt-2 text-[11px] text-[var(--text-faint)]">
+        <p className="mt-2.5 text-[12px] text-[var(--text-faint)]">
           {todo.subtasks.filter((s) => s.completed).length}/
           {todo.subtasks.length} checklist
         </p>
@@ -71,11 +71,11 @@ export function IssueBoard() {
 
   if (!project) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 p-10 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-faint)]">
+      <div className="mf-empty h-full">
+        <div className="mf-empty-icon">
           <FolderOpen className="h-5 w-5" />
         </div>
-        <p className="text-[14px] font-medium">Pick a project for the board</p>
+        <p className="mf-empty-title">Pick a project for the board</p>
       </div>
     );
   }
@@ -91,7 +91,7 @@ export function IssueBoard() {
   }
 
   return (
-    <div className="mf-fade-up grid h-full grid-cols-1 gap-3 overflow-auto p-4 md:grid-cols-2 mf-scroll">
+    <div className="mf-fade-up grid h-full grid-cols-1 gap-4 overflow-auto p-5 md:grid-cols-2 mf-scroll">
       {COLUMNS.map((col) => {
         const items = filteredTodos.filter((t) => t.status === col.status);
         return (
@@ -104,9 +104,9 @@ export function IssueBoard() {
             }}
             onDragLeave={() => setOver((v) => (v === col.status ? null : v))}
             onDrop={(e) => void onDrop(col.status, e)}
-            className="mf-board-col flex min-h-[320px] flex-col rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)]"
+            className="mf-board-col flex min-h-[320px] flex-col rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--bg-elevated)] shadow-[var(--shadow)]"
           >
-            <header className="flex items-center gap-2 border-b border-[var(--border)] px-3.5 py-2.5">
+            <header className="flex items-center gap-2 border-b border-[var(--border)] px-4 py-3">
               {col.status === "OPEN" ? (
                 <Circle className="h-3.5 w-3.5" style={{ color: col.color }} />
               ) : (
@@ -115,14 +115,14 @@ export function IssueBoard() {
                   style={{ color: col.color }}
                 />
               )}
-              <h2 className="text-[13px] font-medium tracking-tight">
+              <h2 className="text-[14px] font-semibold tracking-tight">
                 {col.label}
               </h2>
-              <span className="ml-auto rounded-md bg-[var(--bg-soft)] px-1.5 py-0.5 font-mono text-[11px] tabular-nums text-[var(--text-muted)]">
+              <span className="ml-auto rounded-lg bg-[var(--bg-soft)] px-2 py-0.5 font-mono text-[12px] tabular-nums text-[var(--text-muted)]">
                 {items.length}
               </span>
             </header>
-            <div className="flex flex-1 flex-col gap-2 p-2.5">
+            <div className="flex flex-1 flex-col gap-2.5 p-3">
               {items.map((todo) => (
                 <BoardCard
                   key={todo.id}
@@ -132,7 +132,7 @@ export function IssueBoard() {
                 />
               ))}
               {items.length === 0 ? (
-                <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-[var(--border)] px-3 py-10 text-center text-[12px] text-[var(--text-faint)]">
+                <div className="flex flex-1 items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] px-3 py-10 text-center text-[13px] text-[var(--text-faint)]">
                   Drop issues here
                 </div>
               ) : null}
