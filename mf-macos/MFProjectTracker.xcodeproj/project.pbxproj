@@ -1,0 +1,528 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1726B1E3AD07472CE99BF447 /* MFTrackerWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5964DF3DE77C07D776B2FC2C /* MFTrackerWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		1A8A44BB7F0D327742B70DCF /* TasksDueWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85CAF1A620485D77388ED1A9 /* TasksDueWidget.swift */; };
+		1C0C4D84FA2CF50F5251463A /* FocusTimerWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8D8EE5F090531485C0D36E /* FocusTimerWidget.swift */; };
+		1FBE0375ED62DB63BCF163D5 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 323488BFAF165264F3DB7542 /* LoginView.swift */; };
+		3F1E6BCE546AB5FAF37EE4FB /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A019B3C7F41478C3542E9A9 /* SettingsView.swift */; };
+		428211682FE239C671DEC1EF /* ProjectPulseWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = E058B526658E9453FC01D601 /* ProjectPulseWidget.swift */; };
+		63A21827BBCB863F7A817B1B /* MenuBarRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 860A3C350065F8D1357F70AD /* MenuBarRootView.swift */; };
+		92EB657A1095B2E9340DA217 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AFE7F532D3C0FE418B25DD98 /* Assets.xcassets */; };
+		9EEB5D0A42274B8F14898BF2 /* MFTrackerKit in Frameworks */ = {isa = PBXBuildFile; productRef = 79C1457BD93E1D2BEA7CE5C3 /* MFTrackerKit */; };
+		AA93767396EDF8D165392B22 /* MenuSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = C435BE80AE41A2A14CC0E1FD /* MenuSections.swift */; };
+		D1F86727E402F0140DEF3EF9 /* MFProjectTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DE2F15DCD7A4526B78B3900 /* MFProjectTrackerApp.swift */; };
+		F35E406B2202B3CC0C406C3D /* QuickAddWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D4FB82273488FDBAFF8CBE6 /* QuickAddWidget.swift */; };
+		F605D88CF5554CAF372653DB /* MFTrackerKit in Frameworks */ = {isa = PBXBuildFile; productRef = E043FCA30684B9EB1E61973E /* MFTrackerKit */; };
+		F7A1A33F65560EFD7A2C2C0C /* MFTrackerWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60DAAC330EAB031E56700850 /* MFTrackerWidgets.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D7384CACD8C376F4C7BF2435 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A9D099E5372FE83DAF2F1BAF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 02BB7051CE81898D339363D0;
+			remoteInfo = MFTrackerWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		87B7AE317AEDCC26FC89F32D /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				1726B1E3AD07472CE99BF447 /* MFTrackerWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		323488BFAF165264F3DB7542 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		3DE2F15DCD7A4526B78B3900 /* MFProjectTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MFProjectTrackerApp.swift; sourceTree = "<group>"; };
+		4D4FB82273488FDBAFF8CBE6 /* QuickAddWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAddWidget.swift; sourceTree = "<group>"; };
+		5964DF3DE77C07D776B2FC2C /* MFTrackerWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MFTrackerWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		5DB1E375FD04FBF093011B37 /* mf-macos */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "mf-macos"; path = .; sourceTree = SOURCE_ROOT; };
+		60DAAC330EAB031E56700850 /* MFTrackerWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MFTrackerWidgets.swift; sourceTree = "<group>"; };
+		7A019B3C7F41478C3542E9A9 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		85CAF1A620485D77388ED1A9 /* TasksDueWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksDueWidget.swift; sourceTree = "<group>"; };
+		860A3C350065F8D1357F70AD /* MenuBarRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarRootView.swift; sourceTree = "<group>"; };
+		AD8811848A4B5506A3FC3A1B /* MFProjectTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MFProjectTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AFE7F532D3C0FE418B25DD98 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C435BE80AE41A2A14CC0E1FD /* MenuSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuSections.swift; sourceTree = "<group>"; };
+		DC8D8EE5F090531485C0D36E /* FocusTimerWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusTimerWidget.swift; sourceTree = "<group>"; };
+		E058B526658E9453FC01D601 /* ProjectPulseWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPulseWidget.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B55E27DF1F8F2D9715A96D45 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F605D88CF5554CAF372653DB /* MFTrackerKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E8B10FCD92E61E0BE7FE94BD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9EEB5D0A42274B8F14898BF2 /* MFTrackerKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1B4560BA19EAF883CD620DF8 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				AFE7F532D3C0FE418B25DD98 /* Assets.xcassets */,
+				323488BFAF165264F3DB7542 /* LoginView.swift */,
+				860A3C350065F8D1357F70AD /* MenuBarRootView.swift */,
+				C435BE80AE41A2A14CC0E1FD /* MenuSections.swift */,
+				3DE2F15DCD7A4526B78B3900 /* MFProjectTrackerApp.swift */,
+				7A019B3C7F41478C3542E9A9 /* SettingsView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		230325120B8131422E4BD879 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AD8811848A4B5506A3FC3A1B /* MFProjectTracker.app */,
+				5964DF3DE77C07D776B2FC2C /* MFTrackerWidgets.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		380A44EA5C04432E59269C71 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				5DB1E375FD04FBF093011B37 /* mf-macos */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		4CF1464BCB5C869C417599E4 = {
+			isa = PBXGroup;
+			children = (
+				1B4560BA19EAF883CD620DF8 /* App */,
+				380A44EA5C04432E59269C71 /* Packages */,
+				94735BF72F931AF89664D55F /* Widgets */,
+				230325120B8131422E4BD879 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		94735BF72F931AF89664D55F /* Widgets */ = {
+			isa = PBXGroup;
+			children = (
+				DC8D8EE5F090531485C0D36E /* FocusTimerWidget.swift */,
+				60DAAC330EAB031E56700850 /* MFTrackerWidgets.swift */,
+				E058B526658E9453FC01D601 /* ProjectPulseWidget.swift */,
+				4D4FB82273488FDBAFF8CBE6 /* QuickAddWidget.swift */,
+				85CAF1A620485D77388ED1A9 /* TasksDueWidget.swift */,
+			);
+			path = Widgets;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		02BB7051CE81898D339363D0 /* MFTrackerWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 89ACCCB0546A00C67E964BB0 /* Build configuration list for PBXNativeTarget "MFTrackerWidgets" */;
+			buildPhases = (
+				695E5A2BDA93981B3AAED43A /* Sources */,
+				B55E27DF1F8F2D9715A96D45 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MFTrackerWidgets;
+			packageProductDependencies = (
+				E043FCA30684B9EB1E61973E /* MFTrackerKit */,
+			);
+			productName = MFTrackerWidgets;
+			productReference = 5964DF3DE77C07D776B2FC2C /* MFTrackerWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		1D106567D6DDD740B09855B7 /* MFProjectTracker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 71E8D987C8CE55A560476B50 /* Build configuration list for PBXNativeTarget "MFProjectTracker" */;
+			buildPhases = (
+				45B7899349B0D842B325DFF9 /* Sources */,
+				C00B729A995FD3F195414DC2 /* Resources */,
+				E8B10FCD92E61E0BE7FE94BD /* Frameworks */,
+				87B7AE317AEDCC26FC89F32D /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				58AD8CCF71E3198AF6E3CEA8 /* PBXTargetDependency */,
+			);
+			name = MFProjectTracker;
+			packageProductDependencies = (
+				79C1457BD93E1D2BEA7CE5C3 /* MFTrackerKit */,
+			);
+			productName = MFProjectTracker;
+			productReference = AD8811848A4B5506A3FC3A1B /* MFProjectTracker.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A9D099E5372FE83DAF2F1BAF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					02BB7051CE81898D339363D0 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					1D106567D6DDD740B09855B7 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 84EBD7ABC330F60A2F18FEC7 /* Build configuration list for PBXProject "MFProjectTracker" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 4CF1464BCB5C869C417599E4;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				2DB1D32F7F29370535FF10C7 /* XCLocalSwiftPackageReference "." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 230325120B8131422E4BD879 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1D106567D6DDD740B09855B7 /* MFProjectTracker */,
+				02BB7051CE81898D339363D0 /* MFTrackerWidgets */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C00B729A995FD3F195414DC2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92EB657A1095B2E9340DA217 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		45B7899349B0D842B325DFF9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1FBE0375ED62DB63BCF163D5 /* LoginView.swift in Sources */,
+				D1F86727E402F0140DEF3EF9 /* MFProjectTrackerApp.swift in Sources */,
+				63A21827BBCB863F7A817B1B /* MenuBarRootView.swift in Sources */,
+				AA93767396EDF8D165392B22 /* MenuSections.swift in Sources */,
+				3F1E6BCE546AB5FAF37EE4FB /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		695E5A2BDA93981B3AAED43A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1C0C4D84FA2CF50F5251463A /* FocusTimerWidget.swift in Sources */,
+				F7A1A33F65560EFD7A2C2C0C /* MFTrackerWidgets.swift in Sources */,
+				428211682FE239C671DEC1EF /* ProjectPulseWidget.swift in Sources */,
+				F35E406B2202B3CC0C406C3D /* QuickAddWidget.swift in Sources */,
+				1A8A44BB7F0D327742B70DCF /* TasksDueWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		58AD8CCF71E3198AF6E3CEA8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 02BB7051CE81898D339363D0 /* MFTrackerWidgets */;
+			targetProxy = D7384CACD8C376F4C7BF2435 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1C9EE212E171880857AC1F76 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Configs/Widgets.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Configs/Widgets-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.masterfabric.projectTracker.macos.widgets;
+				PRODUCT_NAME = MFTrackerWidgets;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		2A69EC04ABC654F4D652FFDD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Configs/Widgets.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Configs/Widgets-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.masterfabric.projectTracker.macos.widgets;
+				PRODUCT_NAME = MFTrackerWidgets;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		3F56DAF17EFDDC353DB7F587 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		6DFFA9BA7D47BBB33DB7B64A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		96E51D8745B43D77C13969A5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = Configs/App.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				GRAPHQL_URL = "http://localhost:8080/graphql";
+				INFOPLIST_FILE = "Configs/App-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.masterfabric.projectTracker.macos;
+				PRODUCT_NAME = "MF Project Tracker";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		BAF834E97D759CAA7EF46879 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = Configs/App.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				GRAPHQL_URL = "http://localhost:8080/graphql";
+				INFOPLIST_FILE = "Configs/App-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.masterfabric.projectTracker.macos;
+				PRODUCT_NAME = "MF Project Tracker";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		71E8D987C8CE55A560476B50 /* Build configuration list for PBXNativeTarget "MFProjectTracker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				96E51D8745B43D77C13969A5 /* Debug */,
+				BAF834E97D759CAA7EF46879 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		84EBD7ABC330F60A2F18FEC7 /* Build configuration list for PBXProject "MFProjectTracker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3F56DAF17EFDDC353DB7F587 /* Debug */,
+				6DFFA9BA7D47BBB33DB7B64A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		89ACCCB0546A00C67E964BB0 /* Build configuration list for PBXNativeTarget "MFTrackerWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1C9EE212E171880857AC1F76 /* Debug */,
+				2A69EC04ABC654F4D652FFDD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		2DB1D32F7F29370535FF10C7 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		79C1457BD93E1D2BEA7CE5C3 /* MFTrackerKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MFTrackerKit;
+		};
+		E043FCA30684B9EB1E61973E /* MFTrackerKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MFTrackerKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = A9D099E5372FE83DAF2F1BAF /* Project object */;
+}

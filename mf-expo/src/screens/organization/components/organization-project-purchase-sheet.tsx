@@ -125,6 +125,7 @@ function isProbablyValidHttpUrl(s: string): boolean {
 export interface OrganizationProjectPurchaseSheetProps {
   visible: boolean;
   onClose: () => void;
+  organizationId: string;
   projectId: string;
   /** null = create */
   purchase: OrganizationProjectPurchasePayload | null;
@@ -135,6 +136,7 @@ export interface OrganizationProjectPurchaseSheetProps {
 export function OrganizationProjectPurchaseSheet({
   visible,
   onClose,
+  organizationId,
   projectId,
   purchase,
   onSaved,
@@ -262,6 +264,7 @@ export function OrganizationProjectPurchaseSheet({
     try {
       if (purchase) {
         const updated = await mfGoOrganizations.updateOrganizationProjectPurchase({
+          organizationId,
           purchaseId: purchase.id,
           productName: name,
           taxRate,
@@ -276,6 +279,7 @@ export function OrganizationProjectPurchaseSheet({
         onSaved(updated);
       } else {
         const created = await mfGoOrganizations.createOrganizationProjectPurchase({
+          organizationId,
           projectId,
           productName: name,
           taxRate,

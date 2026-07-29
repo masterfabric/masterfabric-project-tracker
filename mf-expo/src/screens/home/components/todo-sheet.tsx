@@ -220,11 +220,11 @@ export function TodoSheet({
     }
   }, []);
 
-  const loadProjectMembers = useCallback(async (projectId: string) => {
+  const loadProjectMembers = useCallback(async (orgId: string, projectId: string) => {
     const req = ++projectMembersRequestRef.current;
     setProjectMembersLoading(true);
     try {
-      const list = await mfGoOrganizations.organizationProjectMembers(projectId);
+      const list = await mfGoOrganizations.organizationProjectMembers(orgId, projectId);
       if (req === projectMembersRequestRef.current) {
         setProjectMembers(list);
       }
@@ -271,14 +271,14 @@ export function TodoSheet({
   }, [visible, organizationID, isEdit, fixedProjectId, loadOrgProjects]);
 
   useEffect(() => {
-    if (!visible || !organizationProjectId || isEdit) {
+    if (!visible || !organizationID || !organizationProjectId || isEdit) {
       projectMembersRequestRef.current += 1;
       setProjectMembers([]);
       setProjectMembersLoading(false);
       return;
     }
-    void loadProjectMembers(organizationProjectId);
-  }, [visible, organizationProjectId, isEdit, loadProjectMembers]);
+    void loadProjectMembers(organizationID, organizationProjectId);
+  }, [visible, organizationID, organizationProjectId, isEdit, loadProjectMembers]);
 
   /** General (my list) create: lock assignee to the current user. */
   useEffect(() => {

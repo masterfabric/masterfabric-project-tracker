@@ -1,8 +1,22 @@
 # Changelog
 
-Notable changes to the **masterfabric-expo-base** monorepo are recorded here. Style: open-source friendly sections with **version**, **date**, and **author** per release. The mobile app can show the same Markdown via mf-go `productRelease` (admins publish from **Settings → Admin → Version & changelog**).
+Notable changes to the **masterfabric-project-tracker** client repo are recorded here. Style: open-source friendly sections with **version**, **date**, and **author** per release. The mobile app can show the same Markdown via core-base mf-go `productRelease` (admins publish from **Settings → Admin → Version & changelog**).
 
 ## [Unreleased]
+
+### Changed
+
+- **repo:** Removed in-repo **`mf-go/`**, Azure **`infra/`**, **`fly.toml`**, and **`render.yaml`**. Platform GraphQL is **masterfabric-core-base** `mf-go`; org project domain API is **masterfabric-particulars** `particular-project-tracker`. Root CLI (`start-all` / `stop-all`) starts **mf-expo only** and documents sibling backend setup. Docs, `.cursor` rules/commands, and env examples retargeted accordingly.
+
+- **mf-expo:** Organization **projects / todos / purchases** GraphQL now hops through core-base mf-go **`particularGraphqlEnvelope`** to **particular-project-tracker** (`project-tracker-envelope.ts`, particular key `EXPO_PUBLIC_MF_PROJECT_TRACKER_PARTICULAR`, default `project_tracker`). Auth, orgs, and personal todos stay on direct mf-go GraphQL. Inner Particular IDs use **String** (not UUID). Legacy dueAt/subtasks schema fallbacks for project todos removed. App version **1.2.1**.
+
+- **mf-expo (1.2.2):** GraphQL client sends **`X-API-Key`** / **`X-Bundle-ID`** from `EXPO_PUBLIC_MF_*` so core-base Particular hops resolve the Project Tracker client app. Dedicated iOS Simulator **MF Project Tracker**; Particular host port **39205**.
+
+### Added
+
+- **mf-web:** New **Next.js** Linear-style tracker UI (`mf-web/`) — sign-in (OTP-aware), org/project switcher, issue **list** + **board** (Open/Done, drag-and-drop), issue drawer with subtasks, keyboard shortcuts (`C` `/` `1` `2` `Esc` `?`). Same mf-go GraphQL as mobile/macOS via `particularGraphqlEnvelope`. Desktop-first polish (dense list, board drop targets, dimmed drawer). **v0.3.0 parity:** create org + invites, project rename/delete, project members, assignee + due on create, assignee filters, editable due in drawer, **Purchases** tab, **My todos** (personal). See [`mf-web/README.md`](mf-web/README.md).
+
+- **mf-macos:** New SwiftUI **menu bar** companion (`MenuBarExtra`) and **WidgetKit** gallery (My Tasks, Project Pulse, Focus Timer, Quick Add) talking to existing mf-go GraphQL (`myTodos`, org projects, login/refresh). Local focus timer (25/15/5). See [`mf-macos/README.md`](mf-macos/README.md).
 
 ### Fixed
 

@@ -11,16 +11,16 @@
 A modern cross-platform mobile application development framework built with React Native and Expo. 
 Offering type-safe development with TypeScript, state management solutions, multi-language support, theming capabilities, and developer tools.
 
-### In the **masterfabric-expo-base** monorepo
+### In **masterfabric-project-tracker**
 
-This folder is the **Expo client** next to **`mf-go`** (GraphQL API). For full-stack setup, env layout, OTP/messaging on the backend, and CI/deploy, read the **[root README](../README.md)**.
+This folder is the **Expo client**. Platform GraphQL is **masterfabric-core-base** `mf-go`; org projects hop to **particular-project-tracker** in **masterfabric-particulars**. For multi-repo setup, read the **[root README](../README.md)**.
 
 | Topic | Where |
 |--------|--------|
 | GraphQL URL (dev/prod switcher) | Repo root **`local.env`** (`EXPO_PUBLIC_DEV_GRAPHQL_URL`, `EXPO_PUBLIC_GRAPHQL_URL`) — see **`local.env.example`**; also **`app.config.js`** load order. **Physical device:** set dev URL to your computer’s **LAN IP** (not `localhost`). **Android emulator:** app maps `localhost` → `10.0.2.2` for mf-go on the host. |
 | Expo `EXPO_PUBLIC_*` defaults | **[`.env.example`](.env.example)** → copy to `.env.development` / `.env` |
 | EAS / production push (OneSignal) | Set **`EXPO_PUBLIC_ONE_SIGNAL_APP_ID`** (and related keys) in **[Expo Environment variables](https://docs.expo.dev/eas/environment-variables/)** per **`eas.json`** profile environment — local `.env` is not used on EAS builders unless you wire it |
-| Backend env & security | **[`mf-go/.env.example`](../mf-go/.env.example)**, **[`mf-go/docs/SECURITY.md`](../mf-go/docs/SECURITY.md)** |
+| Backend env & security | Sibling **masterfabric-core-base** `mf-go/.env.example` and `mf-go/docs/SECURITY.md` |
 | Typed API calls | [`src/shared/services/mf-go-api.ts`](src/shared/services/mf-go-api.ts) |
 
 <!-- Optionally, add a screenshot or GIF here -->
@@ -181,5 +181,5 @@ Please read our [Code of Conduct](CODE_OF_CONDUCT.md) and open issues or PRs.
 
 ## 📚 Documentation
 
-- **Monorepo / backend:** [root README](../README.md), [mf-go README](../mf-go/README.md), [SECURITY.md](../mf-go/docs/SECURITY.md)
+- **Multi-repo / backend:** [root README](../README.md); platform API in **masterfabric-core-base**; Particulars in **masterfabric-particulars**
 - **This app:** [`docs/`](docs/) — [Internationalization](docs/i18n-implementation.md), [Development Rules](rules/expo-development-rules.md)

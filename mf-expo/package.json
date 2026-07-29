@@ -3,7 +3,7 @@
   "displayName": "MF Project Tracker",
   "description": "Project tracking application connected to mf-go GraphQL backend",
   "main": "expo-router/entry",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "stage": "development",
   "author": {
     "name": "Gürkan Fikret Günak",

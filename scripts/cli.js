@@ -39,27 +39,22 @@ function loadLocalEnv() {
 }
 loadLocalEnv();
 
-// Dev ports: mf-go, Expo, Docker infra (host-mapped)
+// Dev ports: Expo / Metro (mf-go runs in masterfabric-core-base)
 const DEV_PORTS = [
-  { port: 8080, label: "mf-go GraphQL" },
   { port: 8081, label: "Expo Metro" },
-  { port: 5001, label: "pgAdmin (Postgres UI)" },
   { port: 19000, label: "Expo dev server" },
   { port: 19001, label: "Expo dev tools" },
-  { port: 5433, label: "Postgres" },
-  { port: 6380, label: "Redis" },
-  { port: 5673, label: "RabbitMQ" },
-  { port: 15673, label: "RabbitMQ UI" },
 ];
 
-/** Host ports to SIGTERM after mf-go / Docker teardown (stray listeners). */
-const MF_GO_LISTENER_PORTS = [8080, 5001, 5433, 6380, 5673, 15673];
 /** Host ports to SIGTERM after stopping Expo (pkill can miss orphaned node). */
 const EXPO_LISTENER_PORTS = [8081, 19000, 19001];
 
 // Prod GraphQL URL from local.env (EXPO_PUBLIC_GRAPHQL_URL). Override with MASTERFABRIC_LIVE_GRAPHQL_URL if needed.
 const LIVE_GRAPHQL_URL =
   process.env.MASTERFABRIC_LIVE_GRAPHQL_URL || process.env.EXPO_PUBLIC_GRAPHQL_URL || "";
+
+const CORE_BASE_HINT =
+  "Backend: run mf-go from masterfabric-core-base; Particular from masterfabric-particulars (setup-project-tracker.sh).";
 
 function formatBytes(bytes) {
   if (bytes < 1024) return bytes + " B";
@@ -74,21 +69,30 @@ function getDirSize(dir) {
     const kb = parseInt(out.split("\t")[0], 10);
     return kb * 1024;
   } catch {
-    
     return 0;
   }
 }
 
 function showSpaceUsage() {
   const mfExpo = join(ROOT, "mf-expo");
-  const mfGo = join(ROOT, "mf-go");
   const sizes = {
     "mf-expo": existsSync(mfExpo) ? getDirSize(mfExpo) : 0,
-    "mf-go": existsSync(mfGo) ? getDirSize(mfGo) : 0,
   };
   console.log(chalk.dim("\n  📦 Space usage:"));
   console.log(chalk.dim(`     mf-expo  ${formatBytes(sizes["mf-expo"]).padStart(10)}`));
-  console.log(chalk.dim(`     mf-go    ${formatBytes(sizes["mf-go"]).padStart(10)}`));
+  console.log();
+}
+
+function printBackendReminder() {
+  console.log(chalk.cyan.bold("\n  Backend (not started by this CLI)"));
+  console.log(
+    chalk.dim(
+      "  mf-go GraphQL lives in masterfabric-core-base (`cd mf-go && make docker-infra && make run`).\n" +
+        "  Org projects hop via particular-project-tracker in masterfabric-particulars:\n" +
+        "    ./scripts/setup-project-tracker.sh --start\n" +
+        "  Point EXPO_PUBLIC_DEV_GRAPHQL_URL at core-base (default http://localhost:8080/graphql)."
+    )
+  );
   console.log();
 }
 
@@ -224,126 +228,6 @@ function showPortUsage() {
   console.log();
 }
 
-/** Explain how "all" behaves on this OS (separate windows vs background). */
-function explainAllStartMode() {
-  if (canOpenOsTerminalWindows()) {
-    console.log(chalk.cyan.bold("\n  Separate Terminal windows"));
-    console.log(
-      chalk.dim(
-        "  On this OS we open two windows: one for `make run` (mf-go), one for Expo.\n" +
-          "  Docker infra + pgAdmin start in the background; this CLI exits so you keep this shell.\n" +
-          "  When finished: `npm run stop-all` (and close the other windows if still open)."
-      )
-    );
-  } else {
-    console.log(chalk.cyan.bold("\n  Background mode"));
-    console.log(
-      chalk.dim(
-        "  This OS has no auto “new terminal window” integration — servers run in the\n" +
-          "  background with logs attached to this session where possible.\n" +
-          "  Prefer macOS Terminal.app for separate windows on **all**, or start mf-go / mf-expo individually."
-      )
-    );
-  }
-  console.log();
-}
-
-function canOpenOsTerminalWindows() {
-  if (process.platform === "darwin") return true;
-  if (process.platform === "linux") {
-    return Boolean(process.env.DISPLAY || process.env.WAYLAND_DISPLAY);
-  }
-  if (process.platform === "win32") return true;
-  return false;
-}
-
-/**
- * Prefix for `make run` in a new shell so mf-go sees REDIS_* from repo-root local.env
- * (merged into this Node process by loadLocalEnv). mf-go does not read local.env itself.
- */
-function mfGoRedisEnvPrefixForShell() {
-  const keys = ["REDIS_URL", "REDIS_ADDR", "REDIS_PASSWORD", "REDIS_DB", "REDIS_REQUIRED"];
-  const pairs = [];
-  for (const key of keys) {
-    const v = process.env[key];
-    if (v === undefined || v === "") continue;
-    pairs.push([key, String(v)]);
-  }
-  if (pairs.length === 0) return "";
-  if (process.platform === "win32") {
-    return (
-      pairs.map(([k, v]) => `set "${k}=${v.replace(/"/g, '""')}"`).join(" && ") + " && "
-    );
-  }
-  const parts = pairs.map(([k, v]) => {
-    const escaped = v.replace(/'/g, "'\\''");
-    return `export ${k}='${escaped}'`;
-  });
-  return `${parts.join(" && ")} && `;
-}
-
-/**
- * Open a new OS terminal window running `command` in `cwd`.
- * @returns {boolean} whether a window was opened (else caller may fall back)
- */
-function openInNewTerminalWindow(cwd, command, windowTitle = "mf-dev") {
-  const safeCwd = cwd.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-  const safeCmd = command.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-
-  try {
-    if (process.platform === "darwin") {
-      const script = [
-        'tell application "Terminal"',
-        "activate",
-        `do script "cd \\"${safeCwd}\\" && ${safeCmd}"`,
-        "end tell",
-      ].join("\n");
-      execSync(`osascript -e ${JSON.stringify(script)}`, { stdio: "pipe" });
-      return true;
-    }
-
-    if (process.platform === "linux") {
-      const bashLine = `cd ${JSON.stringify(cwd)} && ${command}; exec bash`;
-      try {
-        execSync(`which gnome-terminal`, { stdio: "pipe" });
-        spawn("gnome-terminal", ["--", "bash", "-lc", bashLine], {
-          detached: true,
-          stdio: "ignore",
-        }).unref();
-        return true;
-      } catch {
-        try {
-          execSync(`which konsole`, { stdio: "pipe" });
-          spawn("konsole", ["-e", "bash", "-lc", bashLine], { detached: true, stdio: "ignore" }).unref();
-          return true;
-        } catch {
-          try {
-            execSync(`which xterm`, { stdio: "pipe" });
-            spawn("xterm", ["-e", "bash", "-lc", bashLine], { detached: true, stdio: "ignore" }).unref();
-            return true;
-          } catch {
-            return false;
-          }
-        }
-      }
-    }
-
-    if (process.platform === "win32") {
-      const escaped = cwd.replace(/"/g, '""');
-      const title = String(windowTitle).replace(/"/g, "");
-      execSync(`start "${title}" cmd /k "cd /d \\"${escaped}\\" && ${command}"`, {
-        cwd: ROOT,
-        shell: true,
-        stdio: "pipe",
-      });
-      return true;
-    }
-  } catch {
-    return false;
-  }
-  return false;
-}
-
 /**
  * Inquirer puts the TTY in raw mode for arrow keys. If we don't turn it off, many
  * terminals send Ctrl+C as a control character on stdin instead of raising SIGINT,
@@ -382,12 +266,11 @@ async function showMenu(action, forceLive = false) {
 
   const choices = [
     {
-      name: "  all      — Docker infra here + mf-go & mf-expo in separate terminal windows (macOS/Linux GUI / Windows)",
+      name: "  all      — Start mf-expo (mf-go must already run from masterfabric-core-base)",
       value: "all",
     },
-    { name: "  mf-expo  — Expo / Metro only (GraphQL must already be up)", value: "mf-expo" },
-    { name: "  mf-go    — Docker (Postgres, Redis, RabbitMQ, pgAdmin :5001) + GraphQL :8080", value: "mf-go" },
-    { name: "  live     — Expo only, points at EXPO_PUBLIC_GRAPHQL_URL (no local mf-go)", value: "live" },
+    { name: "  mf-expo  — Expo / Metro only", value: "mf-expo" },
+    { name: "  live     — Expo only, points at EXPO_PUBLIC_GRAPHQL_URL", value: "live" },
   ];
   const { target } = await inquirer.prompt([
     {
@@ -400,44 +283,6 @@ async function showMenu(action, forceLive = false) {
     },
   ]);
   return target;
-}
-
-function run(cmd, args, cwd, opts = {}) {
-  const silent = Boolean(opts.silent);
-  return new Promise((resolve, reject) => {
-    const proc = spawn(cmd, args, {
-      cwd: cwd || ROOT,
-      stdio: silent ? "pipe" : "inherit",
-      // Avoid shell: true + argv — DEP0190 and broken escaping; make/npm/docker work without a shell.
-      shell: false,
-    });
-    let combined = "";
-    if (silent) {
-      const capture = (d) => {
-        combined += d.toString();
-        if (combined.length > 16000) combined = combined.slice(-12000);
-      };
-      proc.stdout?.on("data", capture);
-      proc.stderr?.on("data", capture);
-    }
-    proc.on("close", (code) => {
-      if (code === 0) resolve();
-      else {
-        const tail = combined
-          .trim()
-          .split("\n")
-          .filter(Boolean)
-          .slice(-35)
-          .join("\n");
-        reject(
-          new Error(
-            tail || `${cmd} ${args.join(" ")} exited with code ${code}`
-          )
-        );
-      }
-    });
-    proc.on("error", reject);
-  });
 }
 
 function runBackground(cmd, args, cwd, label, env = process.env) {
@@ -470,7 +315,7 @@ function savePids(pids) {
 function killPid(pid) {
   if (!pid) return;
   try {
-    // On Unix: kill process group (-pid) so children (make→go, npm→expo→metro) all stop
+    // On Unix: kill process group (-pid) so children (npm→expo→metro) all stop
     if (process.platform !== "win32") {
       process.kill(-pid, "SIGTERM");
     } else {
@@ -481,127 +326,6 @@ function killPid(pid) {
       process.kill(pid, "SIGTERM");
     } catch {}
   }
-}
-
-/**
- * Exit with a clear message if the Docker CLI/engine is not usable (before make docker-infra).
- */
-function assertDockerDaemonReachable() {
-  try {
-    // Use a shell here: `execSync("docker", ["info"])` can invoke the CLI incorrectly
-    // on some setups (prints "Usage" and exits 0), so the preflight would be skipped.
-    execSync("docker info", {
-      encoding: "utf8",
-      stdio: "pipe",
-      timeout: 20000,
-      maxBuffer: 512 * 1024,
-      shell: true,
-    });
-  } catch (e) {
-    let detail = "";
-    if (e && typeof e === "object" && "stderr" in e && e.stderr) {
-      detail = String(e.stderr).trim();
-    } else if (e instanceof Error && e.message) {
-      detail = e.message.trim();
-    }
-    const firstLines = detail ? detail.split(/\n/).filter(Boolean).slice(0, 4).join("\n  ") : "";
-    console.log();
-    console.log(chalk.red.bold("  ✖ Docker engine not reachable — mf-go infra needs Docker running."));
-    console.log(chalk.dim("  Start Docker Desktop (or the Docker service on Linux), wait until it is ready,"));
-    console.log(chalk.dim("  then confirm in a terminal:"));
-    console.log(chalk.cyan("    docker ps"));
-    console.log();
-    if (firstLines) {
-      console.log(chalk.dim("  From docker:"));
-      console.log(chalk.dim(`  ${firstLines}\n`));
-    }
-    process.exit(1);
-  }
-}
-
-async function startMfGoInfraOnly() {
-  assertDockerDaemonReachable();
-  freePortsForNextStart(
-    MF_GO_LISTENER_PORTS,
-    "Freeing mf-go / Docker host ports (8080, pgAdmin, Postgres, Redis, RabbitMQ…)"
-  );
-  const cwd = join(ROOT, "mf-go");
-  const spinner = ora({ text: "Starting mf-go infra (Postgres, Redis, RabbitMQ, pgAdmin)...", color: "cyan" }).start();
-  try {
-    await run("make", ["docker-infra"], cwd, { silent: true });
-    spinner.succeed("mf-go infra ready (Docker)");
-  } catch (e) {
-    spinner.fail("mf-go infra failed");
-    const msg = e instanceof Error ? e.message : String(e);
-    if (msg) {
-      console.log(chalk.red(`\n${msg}\n`));
-    }
-    console.log(
-      chalk.dim(
-        "  Typical fixes: start Docker Desktop, free ports 5001 / 5433 / 6380 / 5673 / 15673, then run:\n" +
-          "    cd mf-go && make docker-infra\n"
-      )
-    );
-    throw e;
-  }
-}
-
-async function startMfGo() {
-  await startMfGoInfraOnly();
-  // GraphQL binds :8080 on the host again after Docker is up — clear stragglers (e.g. old make run).
-  freePortsForNextStart([8080], "Freeing host :8080 for GraphQL…");
-  const cwd = join(ROOT, "mf-go");
-  const runSpinner = ora({ text: "Starting mf-go server (background)...", color: "cyan" }).start();
-  const pid = runBackground("make", ["run"], cwd, "mf-go");
-  savePids({ ...loadPids(), mfGo: pid });
-  runSpinner.succeed(`mf-go server running (PID ${pid})`);
-}
-
-/**
- * "all" on supported OS: Docker infra (includes pgAdmin); mf-go + mf-expo each in a new terminal window.
- */
-async function startAllWithSeparateTerminals(runIos, started) {
-  explainAllStartMode();
-  await startMfGoInfraOnly();
-  freePortsForNextStart([8080], "Freeing host :8080 before mf-go terminal…");
-  freePortsForNextStart(EXPO_LISTENER_PORTS, "Freeing Expo / Metro ports before mf-expo terminal…");
-
-  const mfGoCwd = join(ROOT, "mf-go");
-  const mfExpoCwd = join(ROOT, "mf-expo");
-  const expoShellCmd = runIos ? "npm run ios" : "npm start";
-
-  const mfGoCmd = `${mfGoRedisEnvPrefixForShell()}make run`;
-  const openedGo = openInNewTerminalWindow(mfGoCwd, mfGoCmd, "mf-go");
-  const openedExpo = openInNewTerminalWindow(mfExpoCwd, expoShellCmd, "mf-expo");
-
-  if (!openedGo || !openedExpo) {
-    ora({
-      text: "Could not open one or more OS terminal windows — falling back to background for missing pieces.",
-      color: "yellow",
-    }).warn();
-    if (!openedGo) {
-      const pid = runBackground("make", ["run"], mfGoCwd, "mf-go");
-      savePids({ ...loadPids(), mfGo: pid });
-    }
-    if (!openedExpo) {
-      const cmd = runIos ? ["run", "ios"] : ["start"];
-      const pid = runBackground("npm", cmd, mfExpoCwd, "mf-expo");
-      savePids({ ...loadPids(), mfExpo: pid });
-    }
-  } else {
-    console.log(chalk.green("  ✓ Opened Terminal windows for mf-go (`make run`) and mf-expo."));
-    console.log(chalk.dim("    Docker + pgAdmin are running in the background. Use `npm run stop-all` when done.\n"));
-  }
-
-  started.mfGo = true;
-  started.mfExpo = true;
-}
-
-async function startAllDefault(runIos, started) {
-  await startMfGo();
-  started.mfGo = true;
-  await startMfExpo(runIos);
-  started.mfExpo = true;
 }
 
 async function startMfExpo(runIos = false) {
@@ -637,50 +361,6 @@ async function startMfExpoLive(runIos = false) {
   spinner.succeed(`mf-expo (live) running (PID ${pid})`);
 }
 
-async function stopPgweb() {
-  const pids = loadPids();
-  if (pids.pgweb) {
-    killPid(pids.pgweb);
-    delete pids.pgweb;
-    savePids(pids);
-  }
-  try {
-    execSync('pkill -f "pgweb" 2>/dev/null || true', { cwd: ROOT });
-  } catch {}
-}
-
-async function stopMfGo() {
-  console.log(chalk.bold.white("\n  ═ mf-go / Docker ═══════════════════════════════════════"));
-
-  let s = ora({ text: "① Legacy host pgweb binary (PID file + pkill)…", color: "yellow" }).start();
-  await stopPgweb();
-  s.succeed("① Legacy host pgweb — cleared (or was not running)");
-
-  const cwd = join(ROOT, "mf-go");
-  s = ora({ text: "② docker compose down (Postgres, Redis, RabbitMQ, pgAdmin…)…", color: "yellow" }).start();
-  try {
-    await run("make", ["docker-down"], cwd, { silent: true });
-    s.succeed("② Docker — compose down finished");
-  } catch (e) {
-    s.warn("② Docker — compose down had issues (containers may already be down)");
-  }
-
-  s = ora({ text: "③ Tracked host `make run` / mf-go GraphQL process group…", color: "yellow" }).start();
-  const pids = loadPids();
-  const mfGoPid = pids.mfGo;
-  if (mfGoPid) {
-    killPid(mfGoPid);
-    delete pids.mfGo;
-    savePids(pids);
-    s.succeed(`③ mf-go server — SIGTERM on process group (leader PID ${mfGoPid})`);
-  } else {
-    s.succeed("③ mf-go server — no PID in .cli-pids.json (often: `make run` in another Terminal)");
-  }
-
-  console.log(chalk.dim("  ④ Free host ports used by mf-go / Docker publishes…"));
-  stopPortsWithCliReport(MF_GO_LISTENER_PORTS, "SIGTERM listeners on mf-go stack ports");
-}
-
 async function stopMfExpo() {
   console.log(chalk.bold.white("\n  ═ mf-expo / Metro ═════════════════════════════════════"));
 
@@ -708,7 +388,6 @@ async function stopMfExpo() {
 }
 
 async function shutdownAll(started) {
-  if (started.mfGo) await stopMfGo();
   if (started.mfExpo) await stopMfExpo();
 }
 
@@ -728,22 +407,22 @@ function parseArgs() {
 async function main() {
   const { action, runIos, forceLive, holdTerminal } = parseArgs();
   if (!action) {
-    console.log(chalk.bold.white("\n  MasterFabric dev CLI"));
-    console.log(chalk.dim("  Repo root helper for mf-go + mf-expo. Requires Node, Docker (for mf-go), and npm.\n"));
+    console.log(chalk.bold.white("\n  MasterFabric Project Tracker CLI"));
+    console.log(chalk.dim("  Starts mf-expo only. Requires Node and npm.\n"));
+    console.log(chalk.dim(`  ${CORE_BASE_HINT}\n`));
     console.log(chalk.cyan("  Usage (from repository root)"));
     console.log(chalk.dim("  ─────────────────────────────────────────"));
-    console.log("    npm run start-all           Start (menu). Stays attached — Ctrl+C = stop-all.");
+    console.log("    npm run start-all           Start mf-expo (menu). Stays attached — Ctrl+C = stop-all.");
     console.log("    npm run start-all:detach    Start, then exit immediately (run stop-all in another shell).");
     console.log("    npm run start-all:ios       Expo uses `npm run ios` (simulator / device).");
     console.log("    npm run start-all:live      Expo only; uses EXPO_PUBLIC_GRAPHQL_URL from local.env.");
     console.log("    npm run start-all:live:ios  Live GraphQL + `npm run ios`.");
-    console.log("    npm run stop-all            Stop Docker + PIDs + Expo — step-by-step log and per-port status.");
+    console.log("    npm run stop-all            Stop tracked Expo / Metro processes.");
     console.log();
     console.log(chalk.dim("  After start-all: press Ctrl+C in the same terminal (or run `npm run stop-all` elsewhere)."));
-    console.log(chalk.dim("  **all** on macOS: Docker/pgAdmin here; mf-go + mf-expo open in new terminal windows."));
     console.log(
       chalk.dim(
-        "  Before starts, stray processes on dev ports get SIGTERM (set MF_CLI_SKIP_PORT_FREE=1 to skip)."
+        "  Before starts, stray processes on Expo ports get SIGTERM (set MF_CLI_SKIP_PORT_FREE=1 to skip)."
       )
     );
     console.log();
@@ -752,23 +431,15 @@ async function main() {
 
   await playWelcomeScene(action, chalk);
   await playEnvironmentScene(() => showSpaceUsage(), chalk);
+  if (action === "start") printBackendReminder();
   await sceneBridge(chalk, "Opening target menu — ↑/↓ to move, Enter to confirm.");
   const target = await showMenu(action, forceLive);
   restoreTerminalAfterInquirer();
 
-  const started = { mfGo: false, mfExpo: false };
+  const started = { mfExpo: false };
 
   if (action === "start") {
-    if (target === "all") {
-      if (canOpenOsTerminalWindows()) {
-        await startAllWithSeparateTerminals(runIos, started);
-      } else {
-        await startAllDefault(runIos, started);
-      }
-    } else if (target === "mf-go") {
-      await startMfGo();
-      started.mfGo = true;
-    } else if (target === "mf-expo") {
+    if (target === "all" || target === "mf-expo") {
       await startMfExpo(runIos);
       started.mfExpo = true;
     } else if (target === "live") {
@@ -778,27 +449,23 @@ async function main() {
 
     /** @type {string[]} */
     const doneLines = [];
-    doneLines.push("  Services are running (or new terminal windows were opened).");
-    if (started.mfGo) {
-      doneLines.push("  URLs: GraphQL http://localhost:8080/graphql  |  pgAdmin http://localhost:5001");
-    }
+    doneLines.push("  mf-expo is running (or was started in the background).");
+    doneLines.push(`  ${CORE_BASE_HINT}`);
     if (target === "live") {
       doneLines.push(`  GraphQL: ${LIVE_GRAPHQL_URL}`);
-    }
-    if (target === "all" && canOpenOsTerminalWindows()) {
+    } else {
       doneLines.push(
-        "  mf-go / mf-expo logs: in the two windows that just opened. Docker + pgAdmin run in the background."
+        `  Dev GraphQL: ${process.env.EXPO_PUBLIC_DEV_GRAPHQL_URL || "http://localhost:8080/graphql"}`
       );
     }
     await playDoneScene("start", chalk, doneLines);
 
     if (!holdTerminal) {
-      console.log(chalk.cyan.bold("\n  Detach mode — CLI exiting (servers keep running)."));
+      console.log(chalk.cyan.bold("\n  Detach mode — CLI exiting (Expo keeps running)."));
       console.log(
         chalk.dim(
           "  Stop later:  npm run stop-all\n" +
-            "  Next time, omit :detach to stay attached — Ctrl+C will run stop-all for you.\n" +
-            "  (If you used **all** on macOS, you can still close the mf-go / mf-expo windows manually.)"
+            "  Next time, omit :detach to stay attached — Ctrl+C will run stop-all for you.\n"
         )
       );
       releaseTerminalStdin();
@@ -837,7 +504,7 @@ async function main() {
       shuttingDown = true;
       console.log(chalk.bold.cyan("\n  Teardown (same steps as npm run stop-all)"));
       showPortUsage();
-      console.log(chalk.yellow("  Working through mf-go → Expo → ports…\n"));
+      console.log(chalk.yellow("  Working through Expo → ports…\n"));
 
       const forceTimer = setTimeout(() => {
         console.log(
@@ -868,15 +535,10 @@ async function main() {
     process.on("SIGTERM", handleShutdown);
   } else {
     console.log(chalk.bold.cyan("\n  MasterFabric — stop"));
-    console.log(
-      chalk.dim(
-        "  Order: mf-go / Docker → host GraphQL & stack ports → Expo / Metro → dev ports.\n"
-      )
-    );
+    console.log(chalk.dim("  Order: Expo / Metro → dev ports.\n"));
     showPortUsage();
     console.log();
 
-    if (target === "all" || target === "mf-go") await stopMfGo();
     if (target === "all" || target === "mf-expo" || target === "live") await stopMfExpo();
 
     console.log(chalk.dim("\n  🔌 Port check after stop:"));
@@ -885,6 +547,7 @@ async function main() {
     await playDoneScene("stop", chalk, [
       "  Each step above lists what was signaled; yellow = listeners that got SIGTERM.",
       "  If a port still shows busy, close the listed app or run npm run stop-all again.",
+      "  mf-go / Particular (if running) are managed in core-base / particulars — not stopped here.",
     ]);
   }
 }

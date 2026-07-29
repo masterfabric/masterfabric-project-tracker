@@ -191,35 +191,32 @@ function HomeScreenContent() {
           ) {
             const nextStatus = input.completed ? 'DONE' : 'OPEN';
             const updated = await mfGoOrganizations.updateOrganizationProjectTodo({
+              organizationId: editingHomeProjectTodo.organizationId,
               todoId: editingHomeProjectTodo.todo.id,
               title: input.title,
               status: nextStatus,
               ...(input.clearDueAt ? { clearDueAt: true } : {}),
               ...(input.dueAt ? { dueAt: input.dueAt } : {}),
             });
-            dueAtNotSaved = Boolean(updated._dueAtNotSaved);
             void syncTodoReminder(projectTodoToReminderPayload(updated));
             fetchTodos(true);
             setProjectTodosSyncKey((k) => k + 1);
-            if (dueAtNotSaved) {
-              snackbarService.info(t('home.todos.dueAtNotSavedOnServer'), 4200);
-            }
             return null;
           }
           if (input.organizationProjectId && !input.id) {
+            if (!input.organizationID) {
+              return t('common.error');
+            }
             const created = await mfGoOrganizations.createOrganizationProjectTodo({
+              organizationId: input.organizationID,
               projectId: input.organizationProjectId,
               title: input.title,
               assignedToUserId: input.assignedToUserID ?? undefined,
               dueAt: input.dueAt ?? undefined,
             });
-            dueAtNotSaved = Boolean(created._dueAtNotSaved);
             fetchTodos(true);
             setProjectTodosSyncKey((k) => k + 1);
             snackbarService.success(t('home.todos.addedToProjectList'), 3200);
-            if (dueAtNotSaved) {
-              snackbarService.info(t('home.todos.dueAtNotSavedOnServer'), 4200);
-            }
             void syncTodoReminder(projectTodoToReminderPayload(created));
             return null;
           }
@@ -284,7 +281,10 @@ function HomeScreenContent() {
     async (id: string) => {
       try {
         if (editingHomeProjectTodo && editingHomeProjectTodo.todo.id === id) {
-          await mfGoOrganizations.deleteOrganizationProjectTodo(id);
+          await mfGoOrganizations.deleteOrganizationProjectTodo(
+            editingHomeProjectTodo.organizationId,
+            id
+          );
           void cancelTodoReminder(id);
           fetchTodos(true);
           setProjectTodosSyncKey((k) => k + 1);

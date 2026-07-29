@@ -1,9 +1,9 @@
 {
-  "name": "masterfabric-expo-base",
+  "name": "masterfabric-project-tracker",
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "MasterFabric monorepo: mf-expo (Expo/RN) + mf-go (GraphQL). Dev CLI: npm run start-all / stop-all. Backend needs Docker; see local.env and .cursor/rules.",
+  "description": "MasterFabric Project Tracker clients (mf-expo, mf-web, mf-macos). GraphQL via masterfabric-core-base mf-go; org projects via particular-project-tracker in masterfabric-particulars. Dev CLI: npm run start-all / stop-all (Expo only).",
   "scripts": {
     "start-all": "node scripts/cli.js start",
     "start-all:detach": "node scripts/cli.js start --detach",
@@ -11,6 +11,7 @@
     "start-all:ios": "node scripts/cli.js start --ios",
     "start-all:live": "node scripts/cli.js start --live",
     "start-all:live:ios": "node scripts/cli.js start --live --ios",
+    "ios:sim": "bash scripts/run-ios-simulator.sh",
     "stop-all": "node scripts/cli.js stop",
     "mf-expo:version": "bash scripts/app-deploy-version.sh"
   },
