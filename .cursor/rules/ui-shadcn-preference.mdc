@@ -1,0 +1,39 @@
+---
+description: Prefer shadcn/ui + shared tokens; stop custom design sprawl
+alwaysApply: true
+---
+
+# UI — shadcn first (no custom chrome sprawl)
+
+User mandate: use shadcn for design; do **not** invent one-off visual systems unless necessary.
+
+## mf-web / mf-desktop
+
+- Prefer existing shadcn/ui in `src/components/ui/*` and shared **`packages/mf-tracker-ui`** tokens (`tokens.css`, `chrome.css`).
+- Compose with **Button, Card, Input, Tabs, Sheet, Badge, Separator** (and siblings already in-tree).
+- Do **not** invent neon cards, custom chip languages, rainbow accents, or parallel design kits.
+
+```tsx
+// ❌ BAD — one-off neon / decorative card system
+<div className="rounded-2xl bg-gradient-to-br from-violet-500/20 … shadow-[0_0_40px_…]">
+
+// ✅ GOOD — shadcn primitives + tracker tokens
+<Card><CardHeader>…</CardHeader><CardContent>…</CardContent></Card>
+```
+
+## mf-expo
+
+- No full shadcn-RN migration — **do not** expand scope into one.
+- Reuse existing primitives; keep visuals aligned with MasterFabric / shadcn: **neutral slate, hairlines, simple buttons**.
+- Prefer SoftCard / existing inputs over new illustration-heavy chrome.
+- **SVGs only for empty states** (or when explicitly requested). Stop bold-block / rainbow / duplicate chrome.
+
+## Information architecture
+
+- **Home** = general overview
+- **My tasks** = personal list
+- Implement with **simple structures**, not decorative frameworks.
+
+## Shipping
+
+- Version bump when shipping user-visible UI; commit only when the user asks.

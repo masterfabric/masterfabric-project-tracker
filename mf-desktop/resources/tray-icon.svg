@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Template tray: official MF geometric mark + check. Black + transparent. -->
+  <g transform="translate(14.5 14) scale(0.118) translate(-96 -76)" fill="#000000">
+    <path d="M96.7465 -0.00150013L82.6484 14.084L177.184 108.536L191.282 94.4501L96.7465 -0.00150013Z"/>
+    <path d="M14.0981 110.627L0 96.541L94.5359 2.08942L108.634 16.1749L14.0981 110.627Z"/>
+    <path d="M55.0082 151.505L40.9102 137.42L135.446 42.9683L149.544 57.0538L55.0082 151.505Z"/>
+    <path d="M59.7973 41.5083L45.6992 55.5938L140.235 150.045L154.333 135.96L59.7973 41.5083Z"/>
+  </g>
+  <path d="M22 21 L24.2 23.2 L29 17.8" stroke="#000000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

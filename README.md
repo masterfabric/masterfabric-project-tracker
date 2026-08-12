@@ -1,6 +1,6 @@
 # MasterFabric Project Tracker
 
-> Cross-platform **clients** for project tracking — React Native (Expo), Next.js web, and macOS companions. Backend GraphQL and domain Particulars live in sibling repos.
+> Cross-platform **clients** for project tracking — React Native (Expo), Next.js web, Electron desktop, and macOS companions. Backend GraphQL and domain Particulars live in sibling repos.
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![GraphQL](https://img.shields.io/badge/GraphQL-E10098?style=flat&logo=graphql&logoColor=white)](https://graphql.org/)
@@ -15,6 +15,7 @@ flowchart LR
     subgraph Clients["masterfabric-project-tracker"]
         Expo[mf-expo]
         Web[mf-web]
+        Desk[mf-desktop]
         Mac[mf-macos]
     end
 
@@ -28,13 +29,14 @@ flowchart LR
 
     Expo -->|auth / orgs / personal todos| MfGo
     Web --> MfGo
+    Desk --> MfGo
     Mac --> MfGo
     MfGo -->|particularGraphqlEnvelope| PT
 ```
 
 | Repo | Role |
 |------|------|
-| **masterfabric-project-tracker** (this repo) | Client apps: `mf-expo`, `mf-web`, `mf-macos` |
+| **masterfabric-project-tracker** (this repo) | Client apps: `mf-expo`, `mf-web`, `mf-macos`, `mf-desktop` (+ `packages/mf-tracker-client`) |
 | **[masterfabric-core-base](https://github.com/masterfabric/masterfabric-core-base)** | Platform GraphQL (`mf-go`), admin UI (`mf-core`), auth, orgs, personal todos |
 | **[masterfabric-particulars](https://github.com/masterfabric/masterfabric-particulars)** | Domain Particulars — org projects / todos / purchases in `particular-project-tracker` |
 
@@ -57,6 +59,7 @@ Projects/
 |---------|-------|-------------|
 | **mf-expo** | React Native, Expo SDK 54, TypeScript, Zustand | Mobile app — todos, auth, org projects (via Particular hop) |
 | **mf-web** | Next.js, React, Tailwind | Linear-style web tracker |
+| **mf-desktop** | Electron, Vite, React | Cross-platform desktop (tray + AppShell) |
 | **mf-macos** | SwiftUI, MenuBarExtra, WidgetKit | macOS menu bar + widgets |
 
 ---
@@ -133,8 +136,10 @@ Schema changes for platform APIs belong in **core-base**; project-tracker domain
 masterfabric-project-tracker/
 ├── mf-expo/          # React Native + Expo
 ├── mf-web/           # Next.js tracker UI
+├── mf-desktop/       # Electron desktop companion
 ├── mf-macos/         # SwiftUI companion
-├── scripts/          # Dev CLI (Expo start/stop)
+├── packages/         # mf-tracker-client, mf-tracker-ui
+├── scripts/          # Dev CLI (Expo start/stop) + sync-desktop-env
 ├── local.env.example
 └── .cursor/          # rules, commands, AGENTS.md
 ```
@@ -154,7 +159,19 @@ masterfabric-project-tracker/
 
 - [mf-expo README](mf-expo/README.md) — app structure, env, scripts
 - [mf-web README](mf-web/README.md) — Linear-style web tracker
+- [mf-desktop README](mf-desktop/README.md) — Electron desktop companion
 - [mf-macos README](mf-macos/README.md) — macOS menu bar + WidgetKit companion
 - [.cursor/AGENTS.md](.cursor/AGENTS.md) — AI agent conventions
 - Sibling: **masterfabric-core-base** — mf-go GraphQL, Postman, migrations
 - Sibling: **masterfabric-particulars** — `particular-project-tracker`, `scripts/setup-project-tracker.sh`
+
+### Desktop (mf-desktop)
+
+```bash
+# Sync GraphQL URL + API keys from repo-root local.env
+npm run mf-desktop:env
+npm run mf-desktop:dev
+# → Electron + Vite on http://127.0.0.1:5173
+```
+
+See [`mf-desktop/README.md`](mf-desktop/README.md).

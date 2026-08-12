@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Favicon - same family as resources/icon.svg -->
+  <rect width="64" height="64" rx="14" fill="#1E293B"/>
+  <g transform="translate(32 28.5) scale(0.195) translate(-96 -76)">
+    <path d="M96.7465 -0.00150013L82.6484 14.084L177.184 108.536L191.282 94.4501L96.7465 -0.00150013Z" fill="#F8FAFC"/>
+    <path d="M14.0981 110.627L0 96.541L94.5359 2.08942L108.634 16.1749L14.0981 110.627Z" fill="#F8FAFC"/>
+    <path d="M55.0082 151.505L40.9102 137.42L135.446 42.9683L149.544 57.0538L55.0082 151.505Z" fill="#F8FAFC"/>
+    <path d="M59.7973 41.5083L45.6992 55.5938L140.235 150.045L154.333 135.96L59.7973 41.5083Z" fill="#F8FAFC"/>
+  </g>
+  <g transform="translate(40 40)">
+    <rect width="18" height="18" rx="4" fill="#0F172A"/>
+    <rect x="1" y="1" width="16" height="16" rx="3" fill="#334155"/>
+    <rect x="3.5" y="4.5" width="2.5" height="2.5" rx="0.5" fill="#F8FAFC"/>
+    <path d="M4 5.7 L4.6 6.3 L5.8 5" stroke="#1E293B" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="7.5" y="5" width="7" height="1.4" rx="0.4" fill="#94A3B8"/>
+    <rect x="3.5" y="9" width="2.5" height="2.5" rx="0.5" fill="#64748B"/>
+    <rect x="7.5" y="9.5" width="5.5" height="1.4" rx="0.4" fill="#64748B"/>
+    <rect x="3.5" y="13.5" width="2.5" height="2.5" rx="0.5" fill="#475569"/>
+    <rect x="7.5" y="14" width="4" height="1.4" rx="0.4" fill="#475569"/>
+  </g>
+</svg>

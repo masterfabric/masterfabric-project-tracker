@@ -4,7 +4,13 @@ Notable changes to the **masterfabric-project-tracker** client repo are recorded
 
 ## [Unreleased]
 
+### Added
+
+- **mf-desktop (0.3.0–0.3.4):** New Electron + Vite/React desktop client (`mf-desktop/`) with shared `packages/mf-tracker-client` + `packages/mf-tracker-ui`. App shell (Home / Backlog / Board / Sprints / Reports / My Work), command palette, native menu + tray, focus timer, GitHub PAT/settings, board DnD via Particular `boardColumn`. Auth Wave A: password show/hide (`PasswordField`) on Sign in/up + GitHub PAT; clear Sign in / Sign up active tabs; idle field borders; GraphQL URL only in DEV; product auth vectors; UX audit doc + PR screenshots under `mf-desktop/docs/`.
+
 ### Changed
+
+- **repo:** Root scripts `mf-desktop:dev` / `mf-desktop:build` / `mf-desktop:env` (`scripts/sync-desktop-env.sh`) for local Electron against sibling mf-go + Particular.
 
 - **repo:** Removed in-repo **`mf-go/`**, Azure **`infra/`**, **`fly.toml`**, and **`render.yaml`**. Platform GraphQL is **masterfabric-core-base** `mf-go`; org project domain API is **masterfabric-particulars** `particular-project-tracker`. Root CLI (`start-all` / `stop-all`) starts **mf-expo only** and documents sibling backend setup. Docs, `.cursor` rules/commands, and env examples retargeted accordingly.
 

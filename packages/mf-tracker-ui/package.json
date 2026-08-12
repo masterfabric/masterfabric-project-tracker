@@ -1,0 +1,20 @@
+{
+  "name": "mf-tracker-ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared MasterFabric Tracker design tokens and product chrome CSS for mf-web + mf-desktop",
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./tokens.css",
+    "./chrome.css": "./chrome.css",
+    "./tokens": "./src/tokens.ts"
+  },
+  "files": [
+    "tokens.css",
+    "chrome.css",
+    "src"
+  ],
+  "sideEffects": [
+    "*.css"
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "name": "mf-desktop",
+  "version": "0.3.4",
+  "private": true,
+  "description": "MasterFabric Project Tracker — Electron desktop client",
+  "main": "./out/main/index.js",
+  "author": "MasterFabric",
+  "license": "UNLICENSED",
+  "scripts": {
+    "env:sync": "bash ../scripts/sync-desktop-env.sh",
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "typecheck": "tsc --noEmit -p tsconfig.web.json && tsc --noEmit -p tsconfig.node.json"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/utilities": "^3.2.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "electron-updater": "^6.6.2",
+    "lucide-react": "^1.27.0",
+    "mf-tracker-client": "file:../packages/mf-tracker-client",
+    "mf-tracker-ui": "file:../packages/mf-tracker-ui",
+    "radix-ui": "^1.6.7",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.9.4",
+    "recharts": "^3.10.1",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/node": "^22.18.6",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^5.0.4",
+    "electron": "^38.2.1",
+    "electron-builder": "^26.0.12",
+    "electron-vite": "^4.0.1",
+    "tailwindcss": "^4.1.14",
+    "tw-animate-css": "^1.4.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7"
+  },
+  "build": {
+    "appId": "com.masterfabric.projectTracker.desktop",
+    "productName": "MF Project Tracker",
+    "directories": {
+      "buildResources": "resources",
+      "output": "release"
+    },
+    "icon": "resources/icon.png",
+    "files": [
+      "out/**/*",
+      "package.json",
+      "resources/icon.png",
+      "resources/icon-512.png",
+      "resources/icon.svg",
+      "resources/trayTemplate.png",
+      "resources/trayTemplate@2x.png",
+      "resources/tray-icon.svg"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "resources/icon.png",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "icon": "resources/icon.png",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "linux": {
+      "icon": "resources/icon.png",
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "masterfabric-mobile",
+        "repo": "masterfabric-project-tracker"
+      }
+    ]
+  }
+}
