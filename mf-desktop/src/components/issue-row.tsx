@@ -34,9 +34,9 @@ export function stageLabel(todo: Todo): string {
     case "DOING":
       return "In Progress";
     case "TODO":
-    default:
-      if (todo.status === "DONE") return "Done";
       return "To Do";
+    default:
+      return todo.status === "DONE" ? "Done" : "To Do";
   }
 }
 

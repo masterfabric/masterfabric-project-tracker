@@ -34,8 +34,8 @@
   --accent-foreground: #111827;
   --destructive: #1e293b;
   --border: #e4e4e7;
-  /* Input border (idle) — must contrast on white cards; not white-on-white */
-  --input: #cbd5e1;
+  /* Input border (idle) — stronger slate stroke on white cards */
+  --input: #94a3b8;
   --ring: #1e293b;
 
   --chart-1: #0f172a;

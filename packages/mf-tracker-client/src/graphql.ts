@@ -48,11 +48,19 @@ function identityHeaders(): Record<string, string> {
 
 /** Redis/session-store outages must not wipe a still-valid local session. */
 function isTransientSessionStoreFailure(err: GraphQLError): boolean {
-  if (err.codes.includes("SESSION_STORE_UNAVAILABLE")) return true;
+  // mf-go often wraps Redis blips as INTERNAL_ERROR (see mf-expo auth-refresh).
+  if (
+    err.codes.includes("SESSION_STORE_UNAVAILABLE") ||
+    err.codes.includes("INTERNAL_ERROR")
+  ) {
+    return true;
+  }
   const msg = err.message.toLowerCase();
   return (
     msg.includes("session store unavailable") ||
-    (msg.includes("redis") && msg.includes("unavailable"))
+    (msg.includes("redis") &&
+      (msg.includes("unavailable") || msg.includes("timeout"))) ||
+    (msg.includes("internal") && msg.includes("session"))
   );
 }
 

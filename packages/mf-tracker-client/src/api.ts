@@ -105,6 +105,20 @@ function inferBoardColumn(
   return "TODO";
 }
 
+/** Older Particular schemas lack boardColumn / SP / sprint fields. */
+function isAgileTodoSchemaMismatchError(err: unknown): boolean {
+  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  const mentionsField =
+    /boardcolumn|storypoints|sprintid|clearsprintid|clearstorypoints|\brank\b/.test(
+      msg,
+    );
+  const looksLikeValidation =
+    /unknown field|cannot query field|unknown argument|unknown type|graphql_validation|validation error|got invalid value/.test(
+      msg,
+    );
+  return mentionsField && looksLikeValidation;
+}
+
 function normalizeTodo(
   raw: Todo & {
     subtasks?: TodoSubtask[] | null;
@@ -396,7 +410,9 @@ export const api = {
         variables: { projectId },
       });
       return r.organizationProjectTodos.map(normalizeTodo);
-    } catch {
+    } catch (err) {
+      // Only degrade the selection set on schema skew — never on auth/network.
+      if (!isAgileTodoSchemaMismatchError(err)) throw err;
       try {
         const r = await projectTrackerEnvelope<{
           organizationProjectTodos: Todo[];
@@ -408,7 +424,8 @@ export const api = {
           variables: { projectId },
         });
         return r.organizationProjectTodos.map(normalizeTodo);
-      } catch {
+      } catch (legacyErr) {
+        if (!isAgileTodoSchemaMismatchError(legacyErr)) throw legacyErr;
         const r = await projectTrackerEnvelope<{
           organizationProjectTodos: Todo[];
         }>({
@@ -450,7 +467,8 @@ export const api = {
       },
     })
       .then((r) => normalizeTodo(r.createOrganizationProjectTodo))
-      .catch(async () => {
+      .catch(async (err) => {
+        if (!isAgileTodoSchemaMismatchError(err)) throw err;
         const r = await projectTrackerEnvelope<{
           createOrganizationProjectTodo: Todo;
         }>({
@@ -525,7 +543,20 @@ export const api = {
       variables: { input: variablesInput },
     })
       .then((r) => normalizeTodo(r.updateOrganizationProjectTodo))
-      .catch(async () => {
+      .catch(async (err) => {
+        // Broad catch used to swallow permission/network failures and "succeed"
+        // via a legacy mutation that dropped boardColumn — board DnD looked saved.
+        if (!isAgileTodoSchemaMismatchError(err)) throw err;
+
+        const legacyStatus: TodoStatus | undefined =
+          input.status !== undefined
+            ? input.status
+            : input.boardColumn === "DONE"
+              ? "DONE"
+              : input.boardColumn !== undefined
+                ? "OPEN"
+                : undefined;
+
         const r = await projectTrackerEnvelope<{
           updateOrganizationProjectTodo: Todo;
         }>({
@@ -537,7 +568,7 @@ export const api = {
             input: {
               todoId: input.todoId,
               ...(input.title !== undefined ? { title: input.title } : {}),
-              ...(input.status !== undefined ? { status: input.status } : {}),
+              ...(legacyStatus !== undefined ? { status: legacyStatus } : {}),
               ...(input.dueAt !== undefined && input.dueAt !== null
                 ? { dueAt: input.dueAt }
                 : {}),
@@ -551,7 +582,12 @@ export const api = {
             },
           },
         });
-        return normalizeTodo(r.updateOrganizationProjectTodo);
+        const normalized = normalizeTodo(r.updateOrganizationProjectTodo);
+        // Preserve requested column in the client model when the server cannot.
+        if (input.boardColumn) {
+          return { ...normalized, boardColumn: input.boardColumn };
+        }
+        return normalized;
       });
   },
 

@@ -66,9 +66,7 @@ function stageOf(todo: Todo): PipelineStage {
     case "TODO":
       return "todo";
     default:
-      if (todo.status === "DONE") return "done";
-      if (todo.assignedToUserId) return "doing";
-      return "todo";
+      return todo.status === "DONE" ? "done" : "todo";
   }
 }
 

@@ -1,8 +1,8 @@
 {
   "name": "mf-desktop",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "private": true,
-  "description": "MasterFabric Project Tracker — Electron desktop client",
+  "description": "MasterFabric Project Tracker \u2014 Electron desktop client",
   "main": "./out/main/index.js",
   "author": "MasterFabric",
   "license": "UNLICENSED",

@@ -25,7 +25,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -71,9 +70,8 @@ export function stageOf(todo: Todo): Stage {
     case "TODO":
       return "todo";
     default:
-      if (todo.status === "DONE") return "done";
-      if (todo.assignedToUserId) return "doing";
-      return "todo";
+      // Prefer status only when boardColumn is missing (legacy payloads).
+      return todo.status === "DONE" ? "done" : "todo";
   }
 }
 
@@ -440,35 +438,22 @@ export function IssueBoard() {
 
   if (filteredTodos.length === 0) {
     const filtered = statusFilter !== "all" || query.trim().length > 0;
-    return (
-      <Empty className="h-full border-0">
-        <EmptyHeader className="max-w-md gap-3">
-          <EmptyMedia>
-            <IllusEmptyIssues className="h-48 w-[min(100%,20rem)]" />
-          </EmptyMedia>
-          <EmptyTitle>
-            {filtered ? "No matching issues" : "No issues yet"}
-          </EmptyTitle>
-          <EmptyDescription>
-            {filtered
-              ? "Clear filters or search to see more."
-              : "Create the first issue to fill the board."}
-          </EmptyDescription>
-        </EmptyHeader>
-        {!filtered ? (
-          <EmptyContent>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => requestCreateIssue()}
-            >
-              <Plus data-icon="inline-start" />
-              New issue
-            </Button>
-          </EmptyContent>
-        ) : null}
-      </Empty>
-    );
+    if (filtered) {
+      return (
+        <Empty className="h-full border-0">
+          <EmptyHeader className="max-w-md gap-3">
+            <EmptyMedia>
+              <IllusEmptyIssues className="h-48 w-[min(100%,20rem)]" />
+            </EmptyMedia>
+            <EmptyTitle>No matching issues</EmptyTitle>
+            <EmptyDescription>
+              Clear filters or search to see more.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      );
+    }
+    // Empty project: still render columns so Create / drop targets stay usable.
   }
 
   return (
@@ -477,13 +462,13 @@ export function IssueBoard() {
         <div>
           <p className="mf-kanban-toolbar-title">Board</p>
           <p className="mf-kanban-toolbar-hint">
-            Drag cards · To Do → In Progress → Done
+            Drag cards · Todo → In Progress → In Review → Done
           </p>
         </div>
         <Button
           type="button"
           size="sm"
-          className="h-7 shrink-0 gap-1 rounded-md bg-[#14B8A6] px-2.5 text-[11px] font-semibold text-[#0F172A] hover:bg-[#2DD4BF]"
+          className="h-7 shrink-0 gap-1 rounded-md bg-slate-800 px-2.5 text-[11px] font-semibold text-white hover:bg-slate-700"
           onClick={() => requestCreateIssue()}
         >
           <Plus className="size-3.5" />

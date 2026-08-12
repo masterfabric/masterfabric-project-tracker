@@ -531,3 +531,43 @@ Prioritized from **real APIs** — Particular first, then client, then desktop I
 ---
 
 *End of plan. Implementation should proceed phase-ordered: Particular schema → mf-tracker-client → mf-desktop → mf-web/mf-expo.*
+
+---
+
+## Appendix D — Customizable board roadmap (Linear/Jira-quality)
+
+**Goal:** Board structures and process stages that teams can shape — not only the fixed `TODO | DOING | REVIEW | DONE` enum — while keeping MasterFabric slate/shadcn chrome.
+
+### Today (Particular)
+
+| Exists | Gap |
+|--------|-----|
+| `boardColumn` enum on `OrganizationProjectTodo` | No project-level workflow definition |
+| Status `OPEN`/`DONE` synced when column is DONE | No active/inactive stage toggles |
+| Desktop DnD writes `boardColumn` | No custom labels, WIP limits, or per-project column sets |
+
+### Wave 1 — Trust the fixed board (shipped / hardening)
+
+- Persist moves via `boardColumn`; list/board/dashboard share one mapping
+- Empty board still shows columns; errors surface (no silent legacy swallow)
+- Optional: WIP soft warnings client-side only
+
+### Wave 2 — Project workflow config (Particular migration)
+
+- New entity e.g. `OrganizationProjectBoardColumn` / `WorkflowStage`: `id`, `projectId`, `key`, `label`, `sortOrder`, `active`, `mapsToStatus` (`OPEN`|`DONE`), optional `wipLimit`
+- Seed defaults: Todo / In Progress / In Review / Done (active)
+- Todo field: keep `boardColumn` string **or** migrate to `boardStageId` (prefer id for custom columns)
+- GraphQL: list/update stages; deactivate (hide) without deleting history
+- Client: render only `active` stages; inactive cards stay readable in list with archived stage label
+
+### Wave 3 — Process packs + polish
+
+- Toggle process packs (e.g. “Review required” on/off → Review stage active)
+- Drag-reorder stages; rename labels; WIP hard/soft limits
+- Reports/burndown respect custom Done mapping
+- mf-web / mf-expo parity via `mf-tracker-client`
+
+### Non-goals for Wave 2
+
+- Full Jira automations / custom field platform
+- Purple neon / parallel design kit — stay on `mf-tracker-ui` tokens

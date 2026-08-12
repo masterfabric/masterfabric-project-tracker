@@ -513,7 +513,7 @@ export function AppShell() {
                   >
                     <Plus data-icon="inline-start" />
                     <span className="hidden sm:inline">New issue</span>
-                    <Kbd className="ml-1 hidden h-4 px-1 font-mono text-[9px] xl:inline-flex">
+                    <Kbd className="ml-1 hidden h-4 min-w-4 px-1 font-mono text-[11px] xl:inline-flex">
                       C
                     </Kbd>
                   </Button>
@@ -526,7 +526,7 @@ export function AppShell() {
                   aria-label="Account settings"
                 >
                   <Avatar size="sm">
-                    <AvatarFallback className="text-[9px]">
+                    <AvatarFallback className="text-[11px]">
                       {initials(
                         memberLabel(user?.displayName, user?.email, "?"),
                       )}
@@ -586,7 +586,7 @@ export function AppShell() {
                       }
                       className="h-7 bg-white pl-7 pr-8 text-[12px]"
                     />
-                    <Kbd className="pointer-events-none absolute top-1/2 right-1.5 hidden h-4 -translate-y-1/2 px-1 font-mono text-[9px] sm:inline-flex">
+                    <Kbd className="pointer-events-none absolute top-1/2 right-1.5 hidden h-4 min-w-4 -translate-y-1/2 px-1 font-mono text-[11px] sm:inline-flex">
                       /
                     </Kbd>
                   </div>

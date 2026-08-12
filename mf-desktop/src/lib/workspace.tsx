@@ -696,15 +696,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       if (!snapshot) return;
 
       const column = STAGE_TO_COLUMN[stage];
-      const currentStage =
-        snapshot.boardColumn === "DONE"
-          ? "done"
-          : snapshot.boardColumn === "REVIEW"
-            ? "review"
-            : snapshot.boardColumn === "DOING"
-              ? "doing"
-              : "todo";
-      if (currentStage === stage) return;
+      if (snapshot.boardColumn === column) return;
 
       const patchOptimistic = (t: Todo): Todo => ({
         ...t,
@@ -750,7 +742,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         throw e;
       }
     },
-    [orgId, orgTodos, todos, user?.id],
+    [orgId, orgTodos, todos],
   );
 
   const updateTodoTitle = useCallback(

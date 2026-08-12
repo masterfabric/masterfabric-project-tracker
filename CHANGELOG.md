@@ -4,6 +4,10 @@ Notable changes to the **masterfabric-project-tracker** client repo are recorded
 
 ## [Unreleased]
 
+### Fixed
+
+- **mf-desktop (0.3.5):** Board / session robustness — Particular `updateOrganizationProjectTodo` no longer falls back to a legacy mutation on every error (that silently dropped `boardColumn` and made DnD look saved). List/create schema fallbacks only run on Agile-field validation mismatches. Session refresh treats `INTERNAL_ERROR` / Redis blips like `SESSION_STORE_UNAVAILABLE` (keep local session). Board + list + dashboard pipeline use `boardColumn` only (no assignee heuristic). Empty boards still show columns. Stronger idle `--input` stroke; larger header kbd/avatar type.
+
 ### Added
 
 - **mf-desktop (0.3.0–0.3.4):** New Electron + Vite/React desktop client (`mf-desktop/`) with shared `packages/mf-tracker-client` + `packages/mf-tracker-ui`. App shell (Home / Backlog / Board / Sprints / Reports / My Work), command palette, native menu + tray, focus timer, GitHub PAT/settings, board DnD via Particular `boardColumn`. Auth Wave A: password show/hide (`PasswordField`) on Sign in/up + GitHub PAT; clear Sign in / Sign up active tabs; idle field borders; GraphQL URL only in DEV; product auth vectors; PR screenshots under `mf-desktop/docs/pr-screenshots/`.

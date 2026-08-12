@@ -151,8 +151,12 @@ export function DashboardPanel() {
       const d = new Date(t.dueAt).getTime() - now;
       return d >= 0 && d < week;
     }).length;
-    const todo = open.filter((t) => !t.assignedToUserId).length;
-    const doing = open.filter((t) => !!t.assignedToUserId).length;
+    const todo = issuePool.filter((t) => t.boardColumn === "TODO").length;
+    const doing = issuePool.filter((t) => t.boardColumn === "DOING").length;
+    const review = issuePool.filter((t) => t.boardColumn === "REVIEW").length;
+    const doneCol = issuePool.filter(
+      (t) => t.boardColumn === "DONE" || t.status === "DONE",
+    ).length;
     return {
       open: open.length,
       done: done.length,
@@ -161,6 +165,8 @@ export function DashboardPanel() {
       dueSoon,
       todo,
       doing,
+      review,
+      doneCol,
       total: issuePool.length,
       completion:
         issuePool.length === 0
@@ -169,8 +175,17 @@ export function DashboardPanel() {
     };
   }, [issuePool, user?.id, now, week]);
 
-  const pipelineMax = Math.max(stats.todo, stats.doing, stats.done, 1);
-  const pipelineTotal = Math.max(stats.todo + stats.doing + stats.done, 1);
+  const pipelineMax = Math.max(
+    stats.todo,
+    stats.doing,
+    stats.review,
+    stats.doneCol,
+    1,
+  );
+  const pipelineTotal = Math.max(
+    stats.todo + stats.doing + stats.review + stats.doneCol,
+    1,
+  );
 
   const workloadRows = useMemo(() => {
     const active = orgMembers.filter((m) => m.membershipStatus === "ACTIVE");
@@ -283,7 +298,7 @@ export function DashboardPanel() {
     {
       id: "todo" as const,
       label: "To-do",
-      hint: "Open · unassigned",
+      hint: "Board · Todo",
       count: stats.todo,
       icon: Circle,
       fill: "mf-dash-workload-fill-soft",
@@ -292,8 +307,17 @@ export function DashboardPanel() {
     {
       id: "doing" as const,
       label: "In progress",
-      hint: "Open · assigned",
+      hint: "Board · Doing",
       count: stats.doing,
+      icon: SquareStack,
+      fill: "mf-dash-workload-fill-accent",
+      status: "OPEN" as const,
+    },
+    {
+      id: "review" as const,
+      label: "In review",
+      hint: "Board · Review",
+      count: stats.review,
       icon: SquareStack,
       fill: "mf-dash-workload-fill-accent",
       status: "OPEN" as const,
@@ -301,8 +325,8 @@ export function DashboardPanel() {
     {
       id: "done" as const,
       label: "Completed",
-      hint: "Done",
-      count: stats.done,
+      hint: "Board · Done",
+      count: stats.doneCol,
       icon: CheckCircle2,
       fill: "mf-dash-workload-fill-ink",
       status: "DONE" as const,
@@ -388,7 +412,7 @@ export function DashboardPanel() {
             <div className="mf-dash-card-head">
               <div className="min-w-0">
                 <h3 className="mf-dash-card-title">Process pipeline</h3>
-                <p className="mf-dash-card-hint">To-do → assigned → done</p>
+                <p className="mf-dash-card-hint">Todo → Doing → Review → Done</p>
               </div>
               <Button
                 type="button"
@@ -406,7 +430,7 @@ export function DashboardPanel() {
               <div
                 className="mf-dash-pipe-stack"
                 role="img"
-                aria-label={`Pipeline: ${stats.todo} to-do, ${stats.doing} in progress, ${stats.done} completed`}
+                aria-label={`Pipeline: ${stats.todo} to-do, ${stats.doing} in progress, ${stats.review} in review, ${stats.doneCol} completed`}
               >
                 {pipeStages.map((col) =>
                   col.count > 0 ? (
@@ -422,7 +446,7 @@ export function DashboardPanel() {
                     />
                   ) : null,
                 )}
-                {stats.todo + stats.doing + stats.done === 0 ? (
+                {stats.todo + stats.doing + stats.review + stats.doneCol === 0 ? (
                   <div className="mf-dash-pipe-seg mf-dash-pipe-seg-empty" />
                 ) : null}
               </div>
