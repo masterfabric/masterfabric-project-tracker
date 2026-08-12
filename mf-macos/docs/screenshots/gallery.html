@@ -1,0 +1,49 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>MF macOS Widgets — screenshot gallery</title>
+<style>
+  body{font:14px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;margin:24px;background:#0b1220;color:#e8eefc}
+  h1,h2{font-weight:650} h1{font-size:22px} h2{font-size:16px;margin-top:28px;color:#9fb0d0}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  figure{margin:0;background:#141c2e;border:1px solid #24304a;border-radius:12px;overflow:hidden}
+  figcaption{padding:10px 12px;color:#b7c4de;font-size:12px}
+  img{display:block;width:100%;height:auto;background:#0a0f1a}
+  .wide{grid-column:1/-1}
+</style>
+<h1>MF Project Tracker macOS — Widget & flow screenshots</h1>
+<p>Build 1.0.12 — Desktop WidgetKit + menu bar deep-link flows.</p>
+<h2>Desktop widgets</h2>
+<div class="grid" id="w"></div>
+<h2>Menu bar / deep-link flows</h2>
+<div class="grid" id="f"></div>
+<script>
+const widgets=[
+['widgets/01-dashboard-medium.png','Dashboard · Medium — Me/Proj/Chat/Done + bars'],
+['widgets/02-dashboard-large.png','Dashboard · Large — bars + sparkline + open tasks'],
+['widgets/03-focus-small.png','Focus Timer · Small — ring + Start/Pause'],
+['widgets/04-quick-add-small.png','Quick Add · Small — Add CTA'],
+['widgets/05-quick-add-medium.png','Quick Add · Medium — compose chrome'],
+['widgets/06-tasks-medium.png','Open Tasks · Medium — due bars + checklist'],
+];
+const flows=[
+['00-desktop-overview.png','Desktop overview (widgets on Desktop)'],
+['flow/00-menubar-strip.png','Closed menu bar strip (Tasks · Chat · Projects)'],
+['flow/01-login.png','Deep link login / auth gate'],
+['flow/02-tasks.png','Tasks tab'],
+['flow/03-chat.png','Chat tab'],
+['flow/04-projects.png','Projects tab'],
+['flow/05-timer.png','Timer / Focus tab'],
+['flow/06-dashboard.png','Desktop Dashboard panel'],
+['flow/07-compose.png','Compose / Quick Add open'],
+];
+function fill(id, rows){
+  const el=document.getElementById(id);
+  for(const [src,cap] of rows){
+    const fig=document.createElement('figure');
+    if(src.includes('overview')||src.includes('menubar')) fig.className='wide';
+    fig.innerHTML=`<img src="${src}" alt="${cap}" /><figcaption>${cap}</figcaption>`;
+    el.appendChild(fig);
+  }
+}
+fill('w',widgets); fill('f',flows);
+</script>

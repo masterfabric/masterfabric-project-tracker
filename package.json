@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "MasterFabric Project Tracker clients (mf-expo, mf-web, mf-macos). GraphQL via masterfabric-core-base mf-go; org projects via particular-project-tracker in masterfabric-particulars. Dev CLI: npm run start-all / stop-all (Expo only).",
+  "description": "MasterFabric Project Tracker clients (mf-expo, mf-web, mf-macos, mf-desktop). GraphQL via masterfabric-core-base mf-go; org projects via particular-project-tracker in masterfabric-particulars. Dev CLI: npm run start-all / stop-all (Expo only).",
   "scripts": {
     "start-all": "node scripts/cli.js start",
     "start-all:detach": "node scripts/cli.js start --detach",
@@ -13,7 +13,8 @@
     "start-all:live:ios": "node scripts/cli.js start --live --ios",
     "ios:sim": "bash scripts/run-ios-simulator.sh",
     "stop-all": "node scripts/cli.js stop",
-    "mf-expo:version": "bash scripts/app-deploy-version.sh"
+    "mf-expo:version": "bash scripts/app-deploy-version.sh",
+    "mf-macos:env": "bash mf-macos/scripts/sync-env.sh"
   },
   "bin": {
     "start-all": "./scripts/cli.js",

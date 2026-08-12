@@ -119,14 +119,12 @@ if let signIn = collect(root, matching: { role($0) == "AXButton" && desc($0) == 
 
 let sheet = collect(root, matching: { role($0) == "AXSheet" }).first ?? root
 let fields = collect(sheet, matching: { ["AXTextField", "AXSecureTextField"].contains(role($0)) })
-log(fields.count >= 4 ? "PASS" : "FAIL", "login fields", "\(fields.count)")
+log(fields.count == 2 ? "PASS" : "FAIL", "login fields", "\(fields.count) (want email+password only)")
 
 // Type into fields with real key events (SecureField-safe)
-if fields.count >= 4 {
+if fields.count >= 2 {
     selectAllAndType(fields[0], creds.email)
     selectAllAndType(fields[1], creds.password)
-    selectAllAndType(fields[2], "http://localhost:8080/graphql")
-    selectAllAndType(fields[3], creds.bundleId ?? "com.masterfabric.monoExpo")
     log("PASS", "typed credentials")
 }
 

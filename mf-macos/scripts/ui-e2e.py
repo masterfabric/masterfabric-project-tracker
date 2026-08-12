@@ -184,13 +184,7 @@ def sign_in_ui(email: str, password: str) -> None:
           if (count of tfs) >= 1 then
             set value of item 1 of tfs to "{email}"
           end if
-          -- GraphQL URL may be text field 2; Bundle ID field 3
-          if (count of tfs) >= 2 then
-            set value of item 2 of tfs to "http://localhost:8080/graphql"
-          end if
-          if (count of tfs) >= 3 then
-            set value of item 3 of tfs to "com.masterfabric.monoExpo"
-          end if
+          -- Sign In is email + password only (server config lives in Settings / env)
           if (count of sfs) >= 1 then
             set value of item 1 of sfs to "{password}"
           end if

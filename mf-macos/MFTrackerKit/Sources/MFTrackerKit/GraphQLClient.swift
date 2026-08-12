@@ -24,13 +24,33 @@ public enum GraphQLClientError: LocalizedError {
             return "Session expired. Please sign in again."
         }
     }
+
+    /// Expo-equivalent of `isDueAtSchemaMismatchError` — older mf-go without `dueAt` on todos.
+    public var isDueAtSchemaMismatch: Bool {
+        let blob: String
+        switch self {
+        case let .graphQL(messages):
+            blob = messages.joined(separator: "\n").lowercased()
+        case let .httpStatus(_, body):
+            blob = body.lowercased()
+        default:
+            return false
+        }
+        let mentionsDue = blob.contains("dueat") || blob.contains("due_at")
+        let validation =
+            blob.contains("graphql_validation_failed")
+            || blob.contains("cannot query field")
+            || blob.contains("unknown field")
+            || blob.contains("unknown argument")
+        return mentionsDue && validation
+    }
 }
 
 public final class GraphQLClient: @unchecked Sendable {
     public var endpoint: URL
     public var accessToken: String?
 
-    public init(endpoint: URL = AppGroupStore.graphqlURL, accessToken: String? = nil) {
+    public init(endpoint: URL = MFTrackerConstants.defaultGraphQLURL, accessToken: String? = nil) {
         self.endpoint = endpoint
         self.accessToken = accessToken
     }
@@ -44,10 +64,9 @@ public final class GraphQLClient: @unchecked Sendable {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("MFProjectTracker-macOS", forHTTPHeaderField: "User-Agent")
-        request.setValue(AppGroupStore.clientBundleID, forHTTPHeaderField: "X-Bundle-ID")
-        if let apiKey = AppGroupStore.apiKey, !apiKey.isEmpty {
-            request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
-        }
+        // Every GraphQL call (login, refreshTokens, data) must carry the registered client
+        // headers. mf-go refresh without X-API-Key returns TOKEN_INVALID → "Session expired".
+        Self.applyClientHeaders(to: &request)
         if let accessToken {
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         }
@@ -57,12 +76,27 @@ public final class GraphQLClient: @unchecked Sendable {
             body["variables"] = variables
         }
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        request.timeoutInterval = 30
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        // Intentionally not using `URLSession.data(for:)` — that API cancels the
+        // HTTP task when the *calling* Swift Task is cancelled. Menu-bar popover
+        // remounts / Sign In button disable mid-flight were surfacing as
+        // `NSURLErrorCancelled (-999)`. Keep the round-trip alive via dataTask.
+        let (data, response) = try await Self.dataIgnoringCallerCancellation(for: request)
+        let text = String(data: data, encoding: .utf8) ?? ""
         if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
-            let text = String(data: data, encoding: .utf8) ?? ""
             if http.statusCode == 401 {
                 throw GraphQLClientError.unauthorized
+            }
+            // mf-go often returns GraphQL validation failures as HTTP 422 with an errors[] body.
+            if let envelope = try? JSONDecoder.iso8601.decode(GraphQLEnvelope<T>.self, from: data),
+               let errors = envelope.errors, !errors.isEmpty
+            {
+                let messages = errors.map(\.message)
+                if messages.contains(where: { Self.isAuthFailureMessage($0) }) {
+                    throw GraphQLClientError.unauthorized
+                }
+                throw GraphQLClientError.graphQL(messages)
             }
             throw GraphQLClientError.httpStatus(http.statusCode, text)
         }
@@ -70,7 +104,7 @@ public final class GraphQLClient: @unchecked Sendable {
         let envelope = try JSONDecoder.iso8601.decode(GraphQLEnvelope<T>.self, from: data)
         if let errors = envelope.errors, !errors.isEmpty {
             let messages = errors.map(\.message)
-            if messages.contains(where: { $0.lowercased().contains("unauthorized") || $0.lowercased().contains("unauthenticated") }) {
+            if messages.contains(where: { Self.isAuthFailureMessage($0) }) {
                 throw GraphQLClientError.unauthorized
             }
             throw GraphQLClientError.graphQL(messages)
@@ -79,6 +113,52 @@ public final class GraphQLClient: @unchecked Sendable {
             throw GraphQLClientError.graphQL(["Empty GraphQL data"])
         }
         return payload
+    }
+
+    /// mf-go returns TOKEN_INVALID ("token is invalid") on stale refresh; treat like unauthorized.
+    /// Keep this narrow — particular / org errors that merely say "unauthorized" must not
+    /// wipe a fresh Keychain session via withAuthRetry → refreshIfNeeded.
+    private static func isAuthFailureMessage(_ message: String) -> Bool {
+        let m = message.lowercased()
+        if m.contains("token is invalid") || m.contains("token is expired") {
+            return true
+        }
+        if m.contains("authentication required") || m.contains("unauthenticated") {
+            return true
+        }
+        // Bare "unauthorized" only when it looks like a bearer/session problem.
+        if m.contains("unauthorized") {
+            return m.contains("token") || m.contains("bearer") || m.contains("jwt")
+                || m.contains("session") || m.contains("access")
+        }
+        return false
+    }
+
+    /// X-Bundle-ID + X-API-Key from App Group / support files / Info.plist.
+    public static func applyClientHeaders(to request: inout URLRequest) {
+        let bundleID = AppGroupStore.clientBundleID
+        request.setValue(bundleID, forHTTPHeaderField: "X-Bundle-ID")
+        if let apiKey = AppGroupStore.apiKey, !apiKey.isEmpty {
+            request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
+        }
+    }
+
+    /// Completes even if the awaiting Swift Task is cancelled (popover remount / button disable).
+    private static func dataIgnoringCallerCancellation(for request: URLRequest) async throws -> (Data, URLResponse) {
+        try await withCheckedThrowingContinuation { continuation in
+            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                guard let data, let response else {
+                    continuation.resume(throwing: URLError(.badServerResponse))
+                    return
+                }
+                continuation.resume(returning: (data, response))
+            }
+            task.resume()
+        }
     }
 }
 
@@ -127,6 +207,15 @@ public enum MFAPI {
     public static let myTodosQuery = """
     query MyTodos {
       myTodos {
+        id userID title completed organizationID assignedToUserID dueAt createdAt updatedAt
+      }
+    }
+    """
+
+    /// Fallback when live mf-go schema has no UserTodo.dueAt (same pattern as Expo CREATE/UPDATE_TODO_NO_DUE).
+    public static let myTodosQueryNoDue = """
+    query MyTodosNoDue {
+      myTodos {
         id userID title completed organizationID assignedToUserID createdAt updatedAt
       }
     }
@@ -135,6 +224,14 @@ public enum MFAPI {
     public static let createTodoMutation = """
     mutation CreateTodo($input: CreateTodoInput!) {
       createTodo(input: $input) {
+        id userID title completed organizationID assignedToUserID dueAt createdAt updatedAt
+      }
+    }
+    """
+
+    public static let createTodoMutationNoDue = """
+    mutation CreateTodoNoDue($input: CreateTodoInput!) {
+      createTodo(input: $input) {
         id userID title completed organizationID assignedToUserID createdAt updatedAt
       }
     }
@@ -142,6 +239,14 @@ public enum MFAPI {
 
     public static let updateTodoMutation = """
     mutation UpdateTodo($input: UpdateTodoInput!) {
+      updateTodo(input: $input) {
+        id userID title completed organizationID assignedToUserID dueAt createdAt updatedAt
+      }
+    }
+    """
+
+    public static let updateTodoMutationNoDue = """
+    mutation UpdateTodoNoDue($input: UpdateTodoInput!) {
       updateTodo(input: $input) {
         id userID title completed organizationID assignedToUserID createdAt updatedAt
       }
@@ -155,7 +260,7 @@ public enum MFAPI {
     """
 
     public static let organizationProjectsQuery = """
-    query OrganizationProjects($organizationId: UUID!) {
+    query OrganizationProjects($organizationId: String!) {
       organizationProjects(organizationId: $organizationId) {
         id organizationId name description
       }
@@ -163,9 +268,74 @@ public enum MFAPI {
     """
 
     public static let organizationProjectTodosQuery = """
-    query OrganizationProjectTodos($projectId: UUID!) {
+    query OrganizationProjectTodos($projectId: String!) {
+      organizationProjectTodos(projectId: $projectId) {
+        id projectId title status dueAt
+      }
+    }
+    """
+
+    public static let organizationProjectTodosQueryNoDue = """
+    query OrganizationProjectTodosNoDue($projectId: String!) {
       organizationProjectTodos(projectId: $projectId) {
         id projectId title status
+      }
+    }
+    """
+
+    public static let createOrganizationProjectTodoMutation = """
+    mutation CreateOrganizationProjectTodo($input: CreateOrganizationProjectTodoInput!) {
+      createOrganizationProjectTodo(input: $input) {
+        id projectId title status dueAt
+      }
+    }
+    """
+
+    public static let createOrganizationProjectTodoMutationNoDue = """
+    mutation CreateOrganizationProjectTodoNoDue($input: CreateOrganizationProjectTodoInput!) {
+      createOrganizationProjectTodo(input: $input) {
+        id projectId title status
+      }
+    }
+    """
+
+    public static let updateOrganizationProjectTodoMutation = """
+    mutation UpdateOrganizationProjectTodo($input: UpdateOrganizationProjectTodoInput!) {
+      updateOrganizationProjectTodo(input: $input) {
+        id projectId title status dueAt
+      }
+    }
+    """
+
+    public static let updateOrganizationProjectTodoMutationNoDue = """
+    mutation UpdateOrganizationProjectTodoNoDue($input: UpdateOrganizationProjectTodoInput!) {
+      updateOrganizationProjectTodo(input: $input) {
+        id projectId title status
+      }
+    }
+    """
+
+    public static let particularEnvelopeQuery = """
+    query ParticularGraphqlEnvelope($input: ParticularGraphqlInput!) {
+      particularGraphqlEnvelope(input: $input) {
+        dataJson
+        errorsJson
+      }
+    }
+    """
+
+    public static let organizationMessagesQuery = """
+    query OrganizationMessages($organizationId: UUID!, $limit: Int) {
+      organizationMessages(organizationId: $organizationId, limit: $limit) {
+        id organizationID authorUserID authorNickname body createdAt
+      }
+    }
+    """
+
+    public static let postOrganizationMessageMutation = """
+    mutation PostOrganizationMessage($organizationId: UUID!, $body: String!) {
+      postOrganizationMessage(organizationId: $organizationId, body: $body) {
+        id organizationID authorUserID authorNickname body createdAt
       }
     }
     """
@@ -221,6 +391,35 @@ private struct OrganizationProjectsData: Decodable {
 
 private struct OrganizationProjectTodosData: Decodable {
     let organizationProjectTodos: [OrganizationProjectTodo]
+}
+
+private struct CreateOrganizationProjectTodoData: Decodable {
+    let createOrganizationProjectTodo: OrganizationProjectTodo
+}
+
+private struct UpdateOrganizationProjectTodoData: Decodable {
+    let updateOrganizationProjectTodo: OrganizationProjectTodo
+}
+
+private struct OrganizationMessagesData: Decodable {
+    let organizationMessages: [OrganizationMessage]
+}
+
+private struct PostOrganizationMessageData: Decodable {
+    let postOrganizationMessage: OrganizationMessage
+}
+
+private struct ParticularEnvelopeData: Decodable {
+    let particularGraphqlEnvelope: ParticularEnvelopeDTO
+}
+
+private struct ParticularEnvelopeDTO: Decodable {
+    let dataJson: String?
+    let errorsJson: String?
+}
+
+private struct ParticularDataWrap<T: Decodable>: Decodable {
+    let data: T
 }
 
 public extension GraphQLClient {
@@ -280,27 +479,50 @@ public extension GraphQLClient {
     }
 
     func myTodos() async throws -> [UserTodo] {
-        let data: MyTodosData = try await execute(query: MFAPI.myTodosQuery)
-        return data.myTodos
+        do {
+            let data: MyTodosData = try await execute(query: MFAPI.myTodosQuery)
+            return data.myTodos
+        } catch let error as GraphQLClientError where error.isDueAtSchemaMismatch {
+            let data: MyTodosData = try await execute(query: MFAPI.myTodosQueryNoDue)
+            return data.myTodos
+        }
     }
 
     func createTodo(title: String) async throws -> UserTodo {
-        let data: CreateTodoData = try await execute(
-            query: MFAPI.createTodoMutation,
-            variables: ["input": ["title": title, "completed": false]]
-        )
-        return data.createTodo
+        let variables: [String: Any] = ["input": ["title": title, "completed": false]]
+        do {
+            let data: CreateTodoData = try await execute(
+                query: MFAPI.createTodoMutation,
+                variables: variables
+            )
+            return data.createTodo
+        } catch let error as GraphQLClientError where error.isDueAtSchemaMismatch {
+            let data: CreateTodoData = try await execute(
+                query: MFAPI.createTodoMutationNoDue,
+                variables: variables
+            )
+            return data.createTodo
+        }
     }
 
     func updateTodo(id: String, completed: Bool? = nil, title: String? = nil) async throws -> UserTodo {
         var input: [String: Any] = ["id": id]
         if let completed { input["completed"] = completed }
         if let title { input["title"] = title }
-        let data: UpdateTodoData = try await execute(
-            query: MFAPI.updateTodoMutation,
-            variables: ["input": input]
-        )
-        return data.updateTodo
+        let variables: [String: Any] = ["input": input]
+        do {
+            let data: UpdateTodoData = try await execute(
+                query: MFAPI.updateTodoMutation,
+                variables: variables
+            )
+            return data.updateTodo
+        } catch let error as GraphQLClientError where error.isDueAtSchemaMismatch {
+            let data: UpdateTodoData = try await execute(
+                query: MFAPI.updateTodoMutationNoDue,
+                variables: variables
+            )
+            return data.updateTodo
+        }
     }
 
     func myOrganizations() async throws -> [Organization] {
@@ -308,19 +530,157 @@ public extension GraphQLClient {
         return data.myOrganizations
     }
 
+    func organizationMessages(organizationId: String, limit: Int = 30) async throws -> [OrganizationMessage] {
+        let data: OrganizationMessagesData = try await execute(
+            query: MFAPI.organizationMessagesQuery,
+            variables: ["organizationId": organizationId, "limit": limit]
+        )
+        return data.organizationMessages
+    }
+
+    func postOrganizationMessage(organizationId: String, body: String) async throws -> OrganizationMessage {
+        let data: PostOrganizationMessageData = try await execute(
+            query: MFAPI.postOrganizationMessageMutation,
+            variables: ["organizationId": organizationId, "body": body]
+        )
+        return data.postOrganizationMessage
+    }
+
+    /// Org projects hop through mf-go `particularGraphqlEnvelope` → particular-project-tracker (same as mf-expo).
     func organizationProjects(organizationId: String) async throws -> [OrganizationProject] {
-        let data: OrganizationProjectsData = try await execute(
+        let data: OrganizationProjectsData = try await projectTrackerEnvelope(
+            organizationId: organizationId,
             query: MFAPI.organizationProjectsQuery,
             variables: ["organizationId": organizationId]
         )
         return data.organizationProjects
     }
 
-    func organizationProjectTodos(projectId: String) async throws -> [OrganizationProjectTodo] {
-        let data: OrganizationProjectTodosData = try await execute(
-            query: MFAPI.organizationProjectTodosQuery,
-            variables: ["projectId": projectId]
+    func organizationProjectTodos(organizationId: String, projectId: String) async throws -> [OrganizationProjectTodo] {
+        do {
+            let data: OrganizationProjectTodosData = try await projectTrackerEnvelope(
+                organizationId: organizationId,
+                query: MFAPI.organizationProjectTodosQuery,
+                variables: ["projectId": projectId]
+            )
+            return data.organizationProjectTodos
+        } catch let error as GraphQLClientError where error.isDueAtSchemaMismatch {
+            let data: OrganizationProjectTodosData = try await projectTrackerEnvelope(
+                organizationId: organizationId,
+                query: MFAPI.organizationProjectTodosQueryNoDue,
+                variables: ["projectId": projectId]
+            )
+            return data.organizationProjectTodos
+        }
+    }
+
+    func createOrganizationProjectTodo(
+        organizationId: String,
+        projectId: String,
+        title: String
+    ) async throws -> OrganizationProjectTodo {
+        let variables: [String: Any] = [
+            "input": [
+                "projectId": projectId,
+                "title": title,
+            ] as [String: Any],
+        ]
+        do {
+            let data: CreateOrganizationProjectTodoData = try await projectTrackerEnvelope(
+                organizationId: organizationId,
+                query: MFAPI.createOrganizationProjectTodoMutation,
+                variables: variables
+            )
+            return data.createOrganizationProjectTodo
+        } catch let error as GraphQLClientError where error.isDueAtSchemaMismatch {
+            let data: CreateOrganizationProjectTodoData = try await projectTrackerEnvelope(
+                organizationId: organizationId,
+                query: MFAPI.createOrganizationProjectTodoMutationNoDue,
+                variables: variables
+            )
+            return data.createOrganizationProjectTodo
+        }
+    }
+
+    func updateOrganizationProjectTodo(
+        organizationId: String,
+        todoId: String,
+        status: String? = nil,
+        title: String? = nil
+    ) async throws -> OrganizationProjectTodo {
+        var input: [String: Any] = ["todoId": todoId]
+        if let status { input["status"] = status }
+        if let title { input["title"] = title }
+        let variables: [String: Any] = ["input": input]
+        do {
+            let data: UpdateOrganizationProjectTodoData = try await projectTrackerEnvelope(
+                organizationId: organizationId,
+                query: MFAPI.updateOrganizationProjectTodoMutation,
+                variables: variables
+            )
+            return data.updateOrganizationProjectTodo
+        } catch let error as GraphQLClientError where error.isDueAtSchemaMismatch {
+            let data: UpdateOrganizationProjectTodoData = try await projectTrackerEnvelope(
+                organizationId: organizationId,
+                query: MFAPI.updateOrganizationProjectTodoMutationNoDue,
+                variables: variables
+            )
+            return data.updateOrganizationProjectTodo
+        }
+    }
+
+    private func projectTrackerEnvelope<T: Decodable>(
+        organizationId: String,
+        query: String,
+        variables: [String: Any]
+    ) async throws -> T {
+        let orgId = organizationId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !orgId.isEmpty else {
+            throw GraphQLClientError.graphQL(["organizationId is required for project tracker Particular calls"])
+        }
+        let variablesJSON = try JSONSerialization.data(withJSONObject: variables)
+        let variablesString = String(data: variablesJSON, encoding: .utf8) ?? "{}"
+        let envelope: ParticularEnvelopeData = try await execute(
+            query: MFAPI.particularEnvelopeQuery,
+            variables: [
+                "input": [
+                    "particularKey": AppGroupStore.projectTrackerParticularKey,
+                    "organizationId": orgId,
+                    "requiredCapability": MFTrackerConstants.projectTrackerCapability,
+                    "query": query,
+                    "variablesJson": variablesString,
+                ] as [String: Any],
+            ]
         )
-        return data.organizationProjectTodos
+        let env = envelope.particularGraphqlEnvelope
+        if let errorsJSON = env.errorsJson,
+           errorsJSON != "null",
+           errorsJSON != "[]",
+           !errorsJSON.isEmpty
+        {
+            let err = GraphQLClientError.graphQL(["project_tracker errors: \(errorsJSON)"])
+            if err.isDueAtSchemaMismatch {
+                throw err
+            }
+            // Also detect dueAt inside nested Particular errorsJson text.
+            let lower = errorsJSON.lowercased()
+            if (lower.contains("dueat") || lower.contains("due_at"))
+                && (lower.contains("cannot query field") || lower.contains("unknown field") || lower.contains("validation"))
+            {
+                throw GraphQLClientError.graphQL(["Cannot query field \"dueAt\": \(errorsJSON)"])
+            }
+            throw err
+        }
+        guard let dataJSON = env.dataJson, let data = dataJSON.data(using: .utf8) else {
+            throw GraphQLClientError.graphQL(["project_tracker returned empty dataJson"])
+        }
+        if let direct = try? JSONDecoder.iso8601.decode(T.self, from: data) {
+            return direct
+        }
+        do {
+            return try JSONDecoder.iso8601.decode(ParticularDataWrap<T>.self, from: data).data
+        } catch {
+            throw GraphQLClientError.decoding(error)
+        }
     }
 }

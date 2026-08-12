@@ -6,3 +6,5 @@ xcuserdata/
 *.xccheckout
 *.moved-aside
 .DS_Store
+.env
+Configs/GeneratedEnv.xcconfig

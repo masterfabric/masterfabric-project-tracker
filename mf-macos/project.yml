@@ -14,8 +14,14 @@ settings:
   base:
     SWIFT_VERSION: "5.9"
     MACOSX_DEPLOYMENT_TARGET: "14.0"
-    DEVELOPMENT_TEAM: ""
+    # Team ID from Apple Development cert (codesign TeamIdentifier).
+    DEVELOPMENT_TEAM: "4GW994398K"
     CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_IDENTITY: "Apple Development"
+
+configFiles:
+  Debug: Configs/Env.xcconfig
+  Release: Configs/Env.xcconfig
 
 targets:
   MFProjectTracker:
@@ -39,26 +45,28 @@ targets:
         ENABLE_HARDENED_RUNTIME: false
         COMBINE_HIDPI_IMAGES: true
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        GRAPHQL_URL: http://localhost:8080/graphql
-        CODE_SIGN_IDENTITY: "-"
-        CODE_SIGNING_REQUIRED: false
-      configs:
-        Debug:
-          GRAPHQL_URL: http://localhost:8080/graphql
-        Release:
-          GRAPHQL_URL: http://localhost:8080/graphql
+        # Env.xcconfig (+ GeneratedEnv from sync-env) supplies GRAPHQL_URL / MF_* keys.
+        # Do not set MF_APP_API_KEY here — an empty target setting overrides the xcconfig secret.
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGNING_REQUIRED: true
+        CODE_SIGNING_ALLOWED: true
+        DEVELOPMENT_TEAM: "4GW994398K"
+        CODE_SIGN_STYLE: Automatic
     info:
       path: Configs/App-Info.plist
       properties:
         CFBundleDisplayName: MF Project Tracker
         CFBundleName: MF Project Tracker
-        CFBundleShortVersionString: "1.0.0"
-        CFBundleVersion: "1"
+        CFBundleShortVersionString: "1.0.12"
+        CFBundleVersion: "12"
         LSUIElement: true
         LSMinimumSystemVersion: "14.0"
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
         GRAPHQL_URL: $(GRAPHQL_URL)
+        MF_CLIENT_BUNDLE_ID: $(MF_CLIENT_BUNDLE_ID)
+        MF_APP_API_KEY: $(MF_APP_API_KEY)
+        MF_PROJECT_TRACKER_PARTICULAR: $(MF_PROJECT_TRACKER_PARTICULAR)
         CFBundleURLTypes:
           - CFBundleURLName: com.masterfabric.projectTracker.macos
             CFBundleURLSchemes:
@@ -66,8 +74,12 @@ targets:
     entitlements:
       path: Configs/App.entitlements
       properties:
-        com.apple.security.app-sandbox: false
+        com.apple.security.app-sandbox: true
         com.apple.security.network.client: true
+        com.apple.security.application-groups:
+          - group.com.masterfabric.projectTracker
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)group.com.masterfabric.projectTracker
 
   MFTrackerWidgets:
     type: app-extension
@@ -86,19 +98,35 @@ targets:
         GENERATE_INFOPLIST_FILE: false
         LD_RUNPATH_SEARCH_PATHS: ["$(inherited)", "@executable_path/../Frameworks", "@executable_path/../../../../Frameworks"]
         SKIP_INSTALL: true
+        # Env.xcconfig (+ GeneratedEnv) supplies GRAPHQL_URL / MF_* — do not blank MF_APP_API_KEY here.
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGNING_REQUIRED: true
+        CODE_SIGNING_ALLOWED: true
+        DEVELOPMENT_TEAM: "4GW994398K"
+        CODE_SIGN_STYLE: Automatic
     info:
       path: Configs/Widgets-Info.plist
       properties:
-        CFBundleDisplayName: MF Tracker Widgets
-        CFBundleShortVersionString: "1.0.0"
-        CFBundleVersion: "1"
+        # Gallery / search: "pro", "project", "tracker", "MF"
+        CFBundleDisplayName: Project Tracker
+        # Bump so WidgetKit/chronod invalidates archived timeline chrome after layout changes.
+        CFBundleShortVersionString: "1.0.12"
+        CFBundleVersion: "12"
+        GRAPHQL_URL: $(GRAPHQL_URL)
+        MF_CLIENT_BUNDLE_ID: $(MF_CLIENT_BUNDLE_ID)
+        MF_APP_API_KEY: $(MF_APP_API_KEY)
+        MF_PROJECT_TRACKER_PARTICULAR: $(MF_PROJECT_TRACKER_PARTICULAR)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     entitlements:
       path: Configs/Widgets.entitlements
       properties:
-        com.apple.security.app-sandbox: false
+        com.apple.security.app-sandbox: true
         com.apple.security.network.client: true
+        com.apple.security.application-groups:
+          - group.com.masterfabric.projectTracker
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)group.com.masterfabric.projectTracker
 
 schemes:
   MFProjectTracker:

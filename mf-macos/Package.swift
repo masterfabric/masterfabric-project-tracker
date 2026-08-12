@@ -12,7 +12,10 @@ let package = Package(
     targets: [
         .target(
             name: "MFTrackerKit",
-            path: "MFTrackerKit/Sources/MFTrackerKit"
+            path: "MFTrackerKit/Sources/MFTrackerKit",
+            linkerSettings: [
+                .linkedFramework("Charts"),
+            ]
         ),
     ]
 )
