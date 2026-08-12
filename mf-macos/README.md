@@ -1,5 +1,7 @@
 # MF Project Tracker — macOS menu bar + Desktop widgets
 
+Visual reference (hosted via GitHub Releases API, not in git): [`docs/WIDGETS.md`](docs/WIDGETS.md).
+
 SwiftUI companion for Project Tracker: **MenuBarExtra** (primary UI + GraphQL refresh) + **WidgetKit** widgets you pin on the **Desktop** or Notification Center (same gallery as Weather / Calendar).
 
 Talks to the **same backend as mf-expo**:
