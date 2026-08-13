@@ -14,6 +14,12 @@ Notable changes to the **masterfabric-project-tracker** client repo are recorded
 
 ### Added
 
+- **mf-tracker-client:** Particular PM lifecycle types/API — issue people (`reporterUserId`, `developerUserId`, `testerUserId`, `reviewerUserId`), `estimateAt` / `testDueAt` / `testEstimateSeconds`, custom workflow statuses, custom board stages (`boardStageId`, `mapsToBoardColumn`), and timer entries with kind `DEV` | `TEST` | `REVIEW` | `OTHER`. No desktop UI in this slice.
+
+- **mf-tracker-client:** Particular issue collab types/API — project labels, comments, issue links (`BLOCKED_BY`/`BLOCKS`/`RELATED`/`DUPLICATE`), `parentTodoId`, watchers, lightweight activity, and releases (`fixVersionId`). No desktop UI in this slice.
+
+- **mf-tracker-client:** Particular PM ops types/API — attachments (URL metadata), project custom fields + todo values, issue templates, in-app notifications, components, lightweight SLA, org teams, sprint capacity / one-ACTIVE / start-complete, saved reports (velocity/burndown/throughput/time/priority/team), `priorityRank` + project `issueSort`, sprint story-point totals. No desktop UI in this slice.
+
 - **mf-web:** New **Next.js** Linear-style tracker UI (`mf-web/`) — sign-in (OTP-aware), org/project switcher, issue **list** + **board** (Open/Done, drag-and-drop), issue drawer with subtasks, keyboard shortcuts (`C` `/` `1` `2` `Esc` `?`). Same mf-go GraphQL as mobile/macOS via `particularGraphqlEnvelope`. Desktop-first polish (dense list, board drop targets, dimmed drawer). **v0.3.0 parity:** create org + invites, project rename/delete, project members, assignee + due on create, assignee filters, editable due in drawer, **Purchases** tab, **My todos** (personal). See [`mf-web/README.md`](mf-web/README.md).
 
 - **mf-macos:** New SwiftUI **menu bar** companion (`MenuBarExtra`) and **WidgetKit** gallery (My Tasks, Project Pulse, Focus Timer, Quick Add) talking to existing mf-go GraphQL (`myTodos`, org projects, login/refresh). Local focus timer (25/15/5). See [`mf-macos/README.md`](mf-macos/README.md).
