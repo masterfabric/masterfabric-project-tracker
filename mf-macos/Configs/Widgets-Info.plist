@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>MF Tracker Widgets</string>
+	<string>Project Tracker</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -17,9 +17,17 @@
 	<key>CFBundlePackageType</key>
 	<string>XPC!</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.0</string>
+	<string>1.0.12</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>12</string>
+	<key>GRAPHQL_URL</key>
+	<string>$(GRAPHQL_URL)</string>
+	<key>MF_APP_API_KEY</key>
+	<string>$(MF_APP_API_KEY)</string>
+	<key>MF_CLIENT_BUNDLE_ID</key>
+	<string>$(MF_CLIENT_BUNDLE_ID)</string>
+	<key>MF_PROJECT_TRACKER_PARTICULAR</key>
+	<string>$(MF_PROJECT_TRACKER_PARTICULAR)</string>
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionPointIdentifier</key>

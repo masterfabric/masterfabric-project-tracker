@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.0</string>
+	<string>1.0.12</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -30,13 +30,19 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>12</string>
 	<key>GRAPHQL_URL</key>
 	<string>$(GRAPHQL_URL)</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
 	<key>LSUIElement</key>
 	<true/>
+	<key>MF_APP_API_KEY</key>
+	<string>$(MF_APP_API_KEY)</string>
+	<key>MF_CLIENT_BUNDLE_ID</key>
+	<string>$(MF_CLIENT_BUNDLE_ID)</string>
+	<key>MF_PROJECT_TRACKER_PARTICULAR</key>
+	<string>$(MF_PROJECT_TRACKER_PARTICULAR)</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

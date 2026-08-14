@@ -126,14 +126,9 @@ if let btn = signInButtons.first {
 let sheets = collect(root) { role($0) == "AXSheet" }
 let formRoot = sheets.first ?? root
 let fields = collect(formRoot) { ["AXTextField", "AXSecureTextField"].contains(role($0)) }
-log(fields.count >= 2 ? "PASS" : "FAIL", "login fields", "count=\(fields.count)")
+log(fields.count == 2 ? "PASS" : "FAIL", "login fields", "count=\(fields.count) (want email+password only)")
 
-if fields.count >= 4 {
-    _ = setValue(fields[0], creds.email)
-    _ = setValue(fields[1], creds.password)
-    _ = setValue(fields[2], "http://localhost:8080/graphql")
-    _ = setValue(fields[3], creds.bundleId ?? "com.masterfabric.monoExpo")
-} else if fields.count >= 2 {
+if fields.count >= 2 {
     _ = setValue(fields[0], creds.email)
     _ = setValue(fields[1], creds.password)
 }

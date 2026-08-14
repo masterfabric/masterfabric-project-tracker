@@ -1,0 +1,6 @@
+// Example — real file is GeneratedEnv.xcconfig (gitignored).
+// Generate: ./scripts/sync-env.sh
+GRAPHQL_URL = http://127.0.0.1:8080/graphql
+MF_CLIENT_BUNDLE_ID = com.masterfabric.monoExpo
+MF_APP_API_KEY =
+MF_PROJECT_TRACKER_PARTICULAR = project_tracker

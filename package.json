@@ -16,7 +16,8 @@
     "mf-expo:version": "bash scripts/app-deploy-version.sh",
     "mf-desktop:dev": "npm --prefix mf-desktop run dev",
     "mf-desktop:build": "npm --prefix mf-desktop run build",
-    "mf-desktop:env": "bash scripts/sync-desktop-env.sh"
+    "mf-desktop:env": "bash scripts/sync-desktop-env.sh",
+    "mf-macos:env": "bash mf-macos/scripts/sync-env.sh"
   },
   "bin": {
     "start-all": "./scripts/cli.js",

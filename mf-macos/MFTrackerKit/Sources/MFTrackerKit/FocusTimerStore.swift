@@ -9,20 +9,57 @@ public final class FocusTimerStore: ObservableObject {
         self.state = Self.normalized(initial)
     }
 
+    public var canStart: Bool {
+        !state.isRunning && (state.remainingSeconds > 0 || state.hasFocusTask)
+    }
+
     public func applyPreset(seconds: Int) {
         pause()
         state = FocusTimerState(
             durationSeconds: seconds,
             remainingSeconds: seconds,
             isRunning: false,
-            endsAt: nil
+            endsAt: nil,
+            selectedFocusTaskId: state.selectedFocusTaskId,
+            selectedFocusTaskTitle: state.selectedFocusTaskTitle,
+            selectedFocusTaskScope: state.selectedFocusTaskScope
         )
+        persist()
+    }
+
+    /// Bind the local focus session to an open personal/project task. At 0:00, applies the 25m preset.
+    public func selectFocusTask(_ task: TrackerTaskItem?) {
+        if state.isRunning {
+            pause()
+        }
+        if let task {
+            state.selectedFocusTaskId = task.id
+            state.selectedFocusTaskTitle = task.title
+            state.selectedFocusTaskScope = task.scope
+            if state.remainingSeconds <= 0 {
+                let seconds = FocusTimerState.defaultPresetSeconds
+                state.durationSeconds = seconds
+                state.remainingSeconds = seconds
+            }
+        } else {
+            state.selectedFocusTaskId = nil
+            state.selectedFocusTaskTitle = nil
+            state.selectedFocusTaskScope = nil
+        }
         persist()
     }
 
     public func start() {
         guard !state.isRunning else { return }
-        let remaining = max(1, state.remainingSeconds)
+        var remaining = state.remainingSeconds
+        if remaining <= 0 {
+            let seconds = state.durationSeconds > 0
+                ? state.durationSeconds
+                : FocusTimerState.defaultPresetSeconds
+            state.durationSeconds = seconds
+            remaining = seconds
+            state.remainingSeconds = seconds
+        }
         state.isRunning = true
         state.endsAt = Date().addingTimeInterval(TimeInterval(remaining))
         persist()
@@ -41,7 +78,10 @@ public final class FocusTimerStore: ObservableObject {
             durationSeconds: state.durationSeconds,
             remainingSeconds: state.durationSeconds,
             isRunning: false,
-            endsAt: nil
+            endsAt: nil,
+            selectedFocusTaskId: state.selectedFocusTaskId,
+            selectedFocusTaskTitle: state.selectedFocusTaskTitle,
+            selectedFocusTaskScope: state.selectedFocusTaskScope
         )
         persist()
     }
@@ -49,8 +89,9 @@ public final class FocusTimerStore: ObservableObject {
     public func tick() {
         guard state.isRunning else { return }
         let remaining = state.liveRemaining()
+        // Always assign so @Published refreshes closed MenuBarExtra / widgets each second.
+        state.remainingSeconds = remaining
         if remaining == 0 {
-            state.remainingSeconds = 0
             state.isRunning = false
             state.endsAt = nil
             persist()
@@ -63,6 +104,7 @@ public final class FocusTimerStore: ObservableObject {
 
     private func persist() {
         AppGroupStore.saveTimer(state)
+        WidgetReloader.reload()
     }
 
     private static func normalized(_ state: FocusTimerState) -> FocusTimerState {
