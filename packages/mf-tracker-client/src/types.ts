@@ -1,10 +1,47 @@
 export type TodoStatus = "OPEN" | "DONE";
 export type BoardColumn = "TODO" | "DOING" | "REVIEW" | "DONE";
+/** Process pack toggles mid-flow stages (Review / Doing). */
+export type BoardProcessPack = "DEFAULT" | "NO_REVIEW" | "SIMPLE";
+export type TodoPriority = "NONE" | "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+export type ProjectMemberRole = "LEAD" | "MEMBER";
 export type SprintStatus = "PLANNED" | "ACTIVE" | "CLOSED";
 export type PurchaseStatus = "REQUESTED" | "PURCHASED" | "CANCELLED";
+export type WorkflowStatusCategory =
+  | "BACKLOG"
+  | "ACTIVE"
+  | "TEST"
+  | "DONE"
+  | "CANCELLED";
+export type TodoTimerKind = "DEV" | "TEST" | "REVIEW" | "OTHER";
+export type TodoLinkKind = "BLOCKED_BY" | "BLOCKS" | "RELATED" | "DUPLICATE";
+export type ReleaseStatus = "UNRELEASED" | "RELEASED" | "ARCHIVED";
+export type TodoActivityKind = "STATUS_CHANGED" | "ASSIGNEE_CHANGED";
+export type CustomFieldType =
+  | "TEXT"
+  | "NUMBER"
+  | "DATE"
+  | "SELECT"
+  | "MULTISELECT"
+  | "BOOL";
+export type NotificationKind =
+  | "ASSIGNED"
+  | "COMMENTED"
+  | "STATUS"
+  | "WATCHING"
+  | "DUE";
+export type IssueSort = "RANK" | "PRIORITY" | "DUE" | "PRIORITY_THEN_RANK";
+export type SprintIncompleteMove = "BACKLOG" | "NEXT";
+export type ReportKind =
+  | "VELOCITY"
+  | "BURNDOWN"
+  | "THROUGHPUT"
+  | "TIME"
+  | "PRIORITY"
+  | "TEAM"
+  | "CUSTOM";
 /** Issues surface: Pipeline table · Board · Timeline */
 export type ViewMode = "list" | "board" | "timeline";
-export type StatusFilter = "all" | "OPEN" | "DONE";
+export type StatusFilter = "all" | "OPEN" | "DONE" | "TRIAGE";
 /** all | me | unassigned | member:<userId> */
 export type AssigneeFilter = "all" | "me" | "unassigned" | `member:${string}`;
 export type WorkspaceTab =
@@ -92,6 +129,9 @@ export interface Project {
   name: string;
   description: string;
   createdByUserId: string;
+  teamId: string | null;
+  issueSort: IssueSort;
+  slaPolicy: SlaPolicy | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -101,6 +141,7 @@ export interface ProjectMember {
   projectId: string;
   userId: string;
   userNickname: string;
+  role: ProjectMemberRole;
   addedAt: string;
 }
 
@@ -120,16 +161,250 @@ export interface Todo {
   title: string;
   status: TodoStatus;
   boardColumn: BoardColumn;
+  boardStageId: string | null;
+  workflowStatusId: string | null;
+  priority: TodoPriority;
   storyPoints: number | null;
   description: string;
   sprintId: string | null;
   rank: number;
   createdByUserId: string;
+  reporterUserId: string | null;
   assignedToUserId: string | null;
+  developerUserId: string | null;
+  testerUserId: string | null;
+  reviewerUserId: string | null;
   dueAt: string | null;
+  estimateAt: string | null;
+  testDueAt: string | null;
+  testEstimateSeconds: number | null;
+  timeSpentSeconds: number;
+  testTimeSpentSeconds: number;
+  devTimeSpentSeconds: number;
+  parentTodoId: string | null;
+  fixVersionId: string | null;
+  teamId: string | null;
+  effectiveTeamId: string | null;
+  priorityRank: number;
+  slaDueAt: string | null;
+  slaBreached: boolean;
   createdAt: string;
   updatedAt: string;
   subtasks: TodoSubtask[];
+  timeEntries: TodoTimeEntry[];
+  labels: ProjectLabel[];
+  comments: TodoComment[];
+  links: TodoLink[];
+  watchers: TodoWatcher[];
+  attachments: TodoAttachment[];
+  customFieldValues: CustomFieldValue[];
+  components: ProjectComponent[];
+}
+
+export interface ProjectLabel {
+  id: string;
+  projectId: string;
+  name: string;
+  color: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TodoComment {
+  id: string;
+  todoId: string;
+  authorUserId: string;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TodoLink {
+  id: string;
+  fromTodoId: string;
+  toTodoId: string;
+  kind: TodoLinkKind;
+  createdAt: string;
+}
+
+export interface TodoWatcher {
+  todoId: string;
+  userId: string;
+  addedAt: string;
+}
+
+export interface TodoActivity {
+  id: string;
+  todoId: string;
+  actorUserId: string;
+  kind: TodoActivityKind;
+  fromValue: string | null;
+  toValue: string | null;
+  createdAt: string;
+}
+
+export interface ProjectRelease {
+  id: string;
+  projectId: string;
+  name: string;
+  status: ReleaseStatus;
+  releasedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SlaPolicy {
+  projectId: string;
+  hours: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TodoAttachment {
+  id: string;
+  todoId: string;
+  uploadedByUserId: string;
+  filename: string;
+  contentType: string | null;
+  sizeBytes: number | null;
+  url: string;
+  storageKey: string | null;
+  createdAt: string;
+}
+
+export interface CustomField {
+  id: string;
+  projectId: string;
+  key: string;
+  label: string;
+  type: CustomFieldType;
+  options: string[];
+  required: boolean;
+  sortOrder: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CustomFieldValue {
+  todoId: string;
+  fieldId: string;
+  valueJson: string;
+  updatedAt: string;
+}
+
+export interface IssueTemplate {
+  id: string;
+  projectId: string;
+  name: string;
+  titleTemplate: string;
+  description: string;
+  defaultPriority: TodoPriority;
+  defaultWorkflowStatusId: string | null;
+  defaultLabelIds: string[];
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectNotification {
+  id: string;
+  organizationId: string;
+  projectId: string;
+  userId: string;
+  todoId: string | null;
+  kind: NotificationKind;
+  title: string;
+  body: string;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export interface ProjectComponent {
+  id: string;
+  projectId: string;
+  name: string;
+  description: string;
+  leadUserId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrgTeam {
+  id: string;
+  organizationId: string;
+  name: string;
+  description: string;
+  parentTeamId: string | null;
+  leadUserId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrgTeamMember {
+  teamId: string;
+  userId: string;
+  addedAt: string;
+}
+
+export interface ProjectReport {
+  id: string;
+  organizationId: string;
+  projectId: string | null;
+  name: string;
+  kind: ReportKind;
+  configJson: string;
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReportBucket {
+  key: string;
+  label: string;
+  points: number;
+  issues: number;
+  seconds: number;
+}
+
+export interface ReportResult {
+  kind: ReportKind;
+  generatedAt: string;
+  series: ReportBucket[];
+  totals: ReportBucket;
+}
+
+export interface PriorityStat {
+  priority: TodoPriority;
+  issues: number;
+  points: number;
+}
+
+export interface TodoTimeEntry {
+  id: string;
+  todoId: string;
+  userId: string;
+  kind: TodoTimerKind;
+  startedAt: string;
+  endedAt: string | null;
+  durationSeconds: number | null;
+  createdAt: string;
+}
+
+export interface WorkflowStatus {
+  id: string;
+  projectId: string;
+  key: string;
+  label: string;
+  category: WorkflowStatusCategory;
+  sortOrder: number;
+  color: string | null;
+  mapsToBoardColumn: BoardColumn;
+  boardStageId: string | null;
+  active: boolean;
+  isSystem: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Sprint {
@@ -141,6 +416,27 @@ export interface Sprint {
   endsAt: string | null;
   status: SprintStatus;
   retroNotes: string;
+  capacityPoints: number | null;
+  maxIssues: number | null;
+  committedPoints: number;
+  completedPoints: number;
+  issueCount: number;
+  completedIssueCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Project workflow column. `columnKey` is TODO/DOING/REVIEW/DONE or a custom slug. */
+export interface BoardStage {
+  id: string;
+  projectId: string;
+  columnKey: string;
+  label: string;
+  sortOrder: number;
+  active: boolean;
+  wipLimit: number | null;
+  mapsToBoardColumn: BoardColumn;
+  isSystem: boolean;
   createdAt: string;
   updatedAt: string;
 }
