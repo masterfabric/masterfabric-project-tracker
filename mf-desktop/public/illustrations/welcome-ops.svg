@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" fill="none">
+<ellipse cx="180" cy="224" rx="140" ry="10" fill="#1E293B" opacity=".06"/>
+<rect x="48" y="24" width="240" height="150" rx="14" fill="#0F172A" stroke="#1E293B" stroke-width="2"/>
+<rect x="48" y="24" width="32" height="150" rx="14" fill="#1E293B"/><rect x="48" y="40" width="32" height="118" fill="#1E293B"/>
+<rect x="56" y="40" width="16" height="16" rx="4" fill="#14B8A6"/>
+<text x="92" y="52" fill="#FFFFFF" font-family="system-ui,sans-serif" font-size="13" font-weight="700">Projects</text>
+<text x="92" y="74" fill="#F1F5F9" font-family="system-ui,sans-serif" font-size="9" font-weight="600">To Do</text>
+<rect x="92" y="82" width="52" height="32" rx="5" fill="#0B1220" stroke="#CBD5E1" stroke-opacity="0.2"/>
+<rect x="92" y="82" width="18" height="2.5" fill="#14B8A6"/><circle cx="132" cy="104" r="4" fill="#14B8A6"/><text x="152" y="74" fill="#F1F5F9" font-family="system-ui,sans-serif" font-size="9" font-weight="600">Doing</text>
+<rect x="152" y="82" width="52" height="32" rx="5" fill="#0B1220" stroke="#14B8A6" stroke-opacity="0.4"/>
+<rect x="152" y="82" width="18" height="2.5" fill="#14B8A6"/><circle cx="192" cy="104" r="4" fill="#F1F5F9"/><text x="212" y="74" fill="#F1F5F9" font-family="system-ui,sans-serif" font-size="9" font-weight="600">Done</text>
+<rect x="212" y="82" width="52" height="32" rx="5" fill="#0B1220" stroke="#CBD5E1" stroke-opacity="0.2"/>
+<rect x="212" y="82" width="18" height="2.5" fill="#14B8A6"/><circle cx="252" cy="104" r="4" fill="#F1F5F9"/>
+<circle cx="310" cy="120" r="13" fill="#E8C4B0"/><path d="M296 112 Q310 102 324 112 L322 126 Q310 132 298 126Z" fill="#1E293B"/>
+<path d="M292 136 Q310 128 328 136 L332 188 L288 188 Z" fill="#14B8A6"/>
+<path d="M292 152 Q270 140 256 128" stroke="#E8C4B0" stroke-width="8" stroke-linecap="round"/>
+<rect x="296" y="188" width="10" height="28" rx="3" fill="#1E293B"/><rect x="314" y="188" width="10" height="28" rx="3" fill="#1E293B"/>
+<rect x="20" y="160" width="64" height="48" rx="8" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.75"/>
+<rect x="30" y="172" width="10" height="10" rx="2" fill="#14B8A6"/><rect x="44" y="174" width="28" height="5" rx="1" fill="#CBD5E1"/>
+<rect x="30" y="188" width="10" height="10" rx="2" fill="#F1F5F9" stroke="#CBD5E1"/><rect x="44" y="190" width="24" height="5" rx="1" fill="#CBD5E1"/>
+</svg>

@@ -1,0 +1,127 @@
+/*
+  MasterFabric Tracker — shared design tokens
+  Brand cues from masterfabric.co: Inter, slate-800 mark, gray-900 body, white surfaces.
+  Product chrome (tracker), not a full marketing clone.
+*/
+
+:root {
+  --radius: 0.375rem;
+
+  /* Brand tokens from masterfabric.co */
+  --mf-brand: #1e293b; /* slate-800 — logo fill */
+  --mf-brand-soft: #64748b; /* slate-500 */
+  --mf-brand-tag: #6b7280; /* gray-500 — site muted */
+  --mf-text: #111827; /* gray-900 — site body */
+  --mf-accent: #1e293b; /* brand ink CTA (site is slate, not blue SaaS) */
+  --mf-accent-hover: #0f172a;
+  --mf-accent-soft: #f8fafc;
+  --mf-accent-ring: #e2e8f0;
+  --mf-accent-text: #1e293b;
+
+  --background: #fafafa;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  --primary: #1e293b;
+  --primary-foreground: #ffffff;
+  --secondary: #f8fafc;
+  --secondary-foreground: #111827;
+  --muted: #f4f4f5;
+  --muted-foreground: #6b7280;
+  --accent: #f1f5f9;
+  --accent-foreground: #111827;
+  --destructive: #1e293b;
+  --border: #e4e4e7;
+  /* Input border (idle) — stronger slate stroke on white cards */
+  --input: #94a3b8;
+  --ring: #1e293b;
+
+  --chart-1: #0f172a;
+  --chart-2: #475569;
+  --chart-3: #64748b;
+  --chart-4: #94a3b8;
+  --chart-5: #cbd5e1;
+
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #0f172a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #1e293b;
+
+  --glass: #ffffff;
+  --glass-strong: #ffffff;
+  --glass-border: #e4e4e7;
+  --hairline: #e4e4e7;
+  --open: #0f172a;
+  --done: #64748b;
+  --overlay: rgba(15, 23, 42, 0.4);
+  --shadow: none;
+  --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.06);
+
+  /* Apps set concrete font stacks (next/font or Google Fonts link). */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --mf-density: 0.85;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #111111;
+  --card-foreground: #fafafa;
+  --popover: #111111;
+  --popover-foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #0a0a0a;
+  --secondary: #18181b;
+  --secondary-foreground: #fafafa;
+  --muted: #18181b;
+  --muted-foreground: #a1a1aa;
+  --accent: #18181b;
+  --accent-foreground: #fafafa;
+  --destructive: #fafafa;
+  --border: #27272a;
+  --input: #3f3f46;
+  --ring: #fafafa;
+
+  --chart-1: #fafafa;
+  --chart-2: #d4d4d8;
+  --chart-3: #a1a1aa;
+  --chart-4: #71717a;
+  --chart-5: #52525b;
+
+  --sidebar: #0f0f0f;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #fafafa;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #18181b;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #27272a;
+  --sidebar-ring: #fafafa;
+
+  --mf-brand: #fafafa;
+  --mf-brand-soft: #a1a1aa;
+  --mf-brand-tag: #71717a;
+  --mf-text: #fafafa;
+  --mf-accent: #fafafa;
+  --mf-accent-hover: #e4e4e7;
+  --mf-accent-soft: #18181b;
+  --mf-accent-ring: #27272a;
+  --mf-accent-text: #fafafa;
+
+  --glass: #111111;
+  --glass-strong: #111111;
+  --glass-border: #27272a;
+  --hairline: #27272a;
+  --open: #fafafa;
+  --done: #a1a1aa;
+  --overlay: rgba(0, 0, 0, 0.65);
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.45);
+}
